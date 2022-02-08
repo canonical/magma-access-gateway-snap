@@ -1,0 +1,43 @@
+name: main-branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  agw-lint-report:
+    name: Lint report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install tox
+        run: pip install tox
+      - name: Run tests using tox
+        run: |
+          set -eux
+          tox -e lint
+
+  agw-static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install tox
+        run: pip install tox
+      - name: Run tests using tox
+        run: |
+          set -eux
+          tox -e static
+
+  agw-unit-tests-with-coverage:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install tox
+        run: pip install tox
+      - name: Run tests using tox
+        run: |
+          set -eux
+          tox -e unit
