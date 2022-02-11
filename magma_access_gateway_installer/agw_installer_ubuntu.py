@@ -33,7 +33,7 @@ class AGWInstallerUbuntu:
         self.network_interfaces = netifaces.interfaces()
         self.network_interfaces.remove("lo")
 
-    def _preinstall_checks(self):
+    def preinstall_checks(self):
         """Checks whether installation preconditions are met. If not, relevant errors are being
         logged and installation is cancelled.
 
@@ -42,10 +42,10 @@ class AGWInstallerUbuntu:
             InvalidNumberOfInterfaces: if number of available network interfaces is different from
                 expected
         """
-        if not self._check_if_ubuntu_is_installed():
+        if not self._ubuntu_is_installed:
             logger.error("Invalid OS! \n Magma AGW can only be installed on Ubuntu! Exiting...")
             raise UnsupportedOSError()
-        elif not self._check_if_required_amount_of_network_interfaces_is_available():
+        elif not self._required_amount_of_network_interfaces_is_available:
             logger.error(
                 "Invalid number of network interfaces!"
                 "Magma AGW needs two network interfaces - SGi and S1! Exiting..."
@@ -54,22 +54,24 @@ class AGWInstallerUbuntu:
         else:
             logger.info("Magma AGW pre-install checks completed. Starting installation...")
 
-    def _magma_service_user_creation(self):
+    def magma_service_user_creation(self):
         """Creates and configures Magma service user if necessary."""
-        if not self._check_if_magma_user_exists():
+        if not self._magma_user_exists:
             self._create_magma_user()
-            self._configure_magma_user()
+            self._add_magma_user_to_sudoers()
 
-    @staticmethod
-    def _check_if_ubuntu_is_installed():
+    @property
+    def _ubuntu_is_installed(self) -> bool:
         """Checks whether installed OS is Ubuntu."""
         return "Ubuntu" in platform.version()
 
-    def _check_if_required_amount_of_network_interfaces_is_available(self):
+    @property
+    def _required_amount_of_network_interfaces_is_available(self) -> bool:
         """Checks whether required amount of network interfaces has been attached."""
         return len(self.network_interfaces) == self.REQUIRED_NUMBER_OF_NICS
 
-    def _check_if_magma_user_exists(self):
+    @property
+    def _magma_user_exists(self) -> bool:
         """Checks whether Magma user exists."""
         try:
             pwd.getpwnam(self.MAGMA_USER)
@@ -83,13 +85,9 @@ class AGWInstallerUbuntu:
         logger.info(f"Adding Magma user: {self.MAGMA_USER}...")
         os.system(f'adduser --disabled-password --gecos "" {self.MAGMA_USER}')
 
-    def _configure_magma_user(self):
+    def _add_magma_user_to_sudoers(self):
         """Adds Magma user to sudoers."""
         logger.info(f'Adding Magma user "{self.MAGMA_USER}" to sudoers...')
         os.system(f"adduser ${self.MAGMA_USER} sudo")
         with open("/etc/sudoers", "w") as sudoers:
             sudoers.write(f"{self.MAGMA_USER} ALL=(ALL) NOPASSWD:ALL")
-
-    def main(self):
-        self._preinstall_checks()
-        self._magma_service_user_creation()
