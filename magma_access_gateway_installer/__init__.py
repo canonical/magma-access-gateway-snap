@@ -8,4 +8,4 @@ from .agw_installer_ubuntu import AGWInstallerUbuntu
 def main():
     agw_installer = AGWInstallerUbuntu()
     agw_installer.preinstall_checks()
-    agw_installer.magma_service_user_creation()
+    agw_installer.create_magma_service_user()

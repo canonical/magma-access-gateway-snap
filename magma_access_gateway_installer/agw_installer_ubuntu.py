@@ -54,7 +54,7 @@ class AGWInstallerUbuntu:
         else:
             logger.info("Magma AGW pre-install checks completed. Starting installation...")
 
-    def magma_service_user_creation(self):
+    def create_magma_service_user(self):
         """Creates and configures Magma service user if necessary."""
         if not self._magma_user_exists:
             self._create_magma_user()
@@ -88,6 +88,6 @@ class AGWInstallerUbuntu:
     def _add_magma_user_to_sudoers(self):
         """Adds Magma user to sudoers."""
         logger.info(f'Adding Magma user "{self.MAGMA_USER}" to sudoers...')
-        os.system(f"adduser ${self.MAGMA_USER} sudo")
+        os.system(f"adduser {self.MAGMA_USER} sudo")
         with open("/etc/sudoers", "w") as sudoers:
             sudoers.write(f"{self.MAGMA_USER} ALL=(ALL) NOPASSWD:ALL")

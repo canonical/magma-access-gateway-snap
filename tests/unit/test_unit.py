@@ -130,6 +130,6 @@ class TestSnap(unittest.TestCase):
         ) as create_magma_user_mock, patch.object(
             self.agw_ubuntu_installer, "_add_magma_user_to_sudoers"
         ) as configure_magma_user_mock:
-            self.agw_ubuntu_installer.magma_service_user_creation()
+            self.agw_ubuntu_installer.create_magma_service_user()
         create_magma_user_mock.assert_called_once()
         configure_magma_user_mock.assert_called_once()

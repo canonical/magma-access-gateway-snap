@@ -1,4 +1,4 @@
-name: magma-access-gateway-installer
+name: magma-access-gateway
 base: core20
 version: '1.6.0'
 summary: Snap for Magma Access Gateway
@@ -12,11 +12,11 @@ grade: devel
 confinement: devmode
 
 apps:
-  magma-access-gateway-installer:
+  magma-access-gateway:
     command: bin/install-agw
 
 parts:
-  magma-access-gateway-installer:
+  magma-access-gateway:
     plugin: python
     source: .
     build-packages:
