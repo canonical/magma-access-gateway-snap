@@ -17,7 +17,7 @@ class UnsupportedOSError(AGWInstallationError):
 
 
 class InvalidNumberOfInterfacesError(AGWInstallationError):
-    """Exception raised when installation has been started on an OS other than Ubuntu."""
+    """Exception raised if number of available network interfaces is different from expected."""
 
     def __init__(self):
         super().__init__(
