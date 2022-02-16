@@ -9,7 +9,16 @@ description: |
   For detailed description visit https://docs.magmacore.org/docs/next/lte/architecture_overview.
 
 grade: devel
-confinement: classic
+confinement: devmode
+
+apps:
+  magma-access-gateway:
+    command: bin/install-agw
 
 parts:
-  magma-agw-installer:
+  magma-access-gateway:
+    plugin: python
+    source: .
+    build-packages:
+      - libsystemd-dev
+      - pkg-config

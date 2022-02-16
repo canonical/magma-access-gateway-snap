@@ -2,12 +2,10 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""TBD."""
+from .agw_installer_ubuntu import AGWInstallerUbuntu
 
 
-class AGWInstallerUbuntu:
-    """TBD."""
-
-    def __init__(self):
-        """TBD."""
-        pass
+def main():
+    agw_installer = AGWInstallerUbuntu()
+    agw_installer.preinstall_checks()
+    agw_installer.create_magma_service_user()
