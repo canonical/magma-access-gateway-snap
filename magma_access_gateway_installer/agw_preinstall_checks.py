@@ -4,6 +4,7 @@
 
 import logging
 import platform
+from subprocess import check_call
 
 from systemd.journal import JournalHandler  # type: ignore[import]
 
@@ -17,6 +18,7 @@ logger.setLevel(logging.INFO)
 class AGWInstallerPreinstallChecks:
 
     REQUIRED_NUMBER_OF_NICS = 2
+    REQUIRED_SYSTEM_PACKAGES = ["ifupdown", "net-tools", "sudo"]
 
     def __init__(self, network_interfaces):
         self.network_interfaces = network_interfaces
@@ -41,6 +43,15 @@ class AGWInstallerPreinstallChecks:
             raise InvalidNumberOfInterfacesError()
         else:
             logger.info("Magma AGW pre-install checks completed. Starting installation...")
+
+    def install_required_system_packages(self):
+        """Installs required system packages using apt."""
+        logger.info("Updating apt cache...")
+        check_call(["apt", "update"])
+        logger.info("Installing required system packages...")
+        for required_package in self.REQUIRED_SYSTEM_PACKAGES:
+            logger.info(f"Installing {required_package}")
+            check_call(["apt", "install", "-y", required_package])
 
     @property
     def _ubuntu_is_installed(self) -> bool:

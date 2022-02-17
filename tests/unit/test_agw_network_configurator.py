@@ -464,3 +464,26 @@ DNS=8.8.8.8 208.67.222.222
                 self.TEST_NETWORK_INTERFACES, None, None
             )._configure_dns()
             mock_check_call.assert_called_once_with(["service", "systemd-resolved", "restart"])
+
+    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
+    def test_given_agw_installer_network_configurator_when_update_grub_cfg_is_called_then_grub_mkconfig_command_is_run(  # noqa: E501
+        self, mock_check_call
+    ):
+        AGWInstallerNetworkConfigurator(
+            self.TEST_NETWORK_INTERFACES, None, None
+        )._update_grub_cfg()
+        mock_check_call.assert_called_once_with(["grub-mkconfig", "-o", "/boot/grub/grub.cfg"])
+
+    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
+    def test_given_agw_installer_network_configurator_when_remove_netplan_is_called_then_relevant_apt_command_is_run_and_networking_is_being_enabled(  # noqa: E501
+        self, mock_check_call
+    ):
+        expected_commands_to_be_called = [
+            call(["systemctl", "unmask", "networking"]),
+            call(["systemctl", "enable", "networking"]),
+            call(["apt", "remove", "-y", "--purge", "netplan.io"]),
+        ]
+        AGWInstallerNetworkConfigurator(
+            self.TEST_NETWORK_INTERFACES, None, None
+        )._remove_netplan()
+        mock_check_call.assert_has_calls(expected_commands_to_be_called)

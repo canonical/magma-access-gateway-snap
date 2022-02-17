@@ -3,7 +3,7 @@
 # See LICENSE file for licensing details.
 
 import unittest
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, PropertyMock, call, patch
 
 from magma_access_gateway_installer.agw_installation_errors import (
     InvalidNumberOfInterfacesError,
@@ -126,3 +126,13 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
             logs.records[0].getMessage(),
             "Magma AGW pre-install checks completed. Starting installation...",
         )
+
+    @patch("magma_access_gateway_installer.agw_preinstall_checks.check_call")
+    def test_given_agw_installer_preinstall_checks_when_install_required_system_packages_is_called_then_apt_installs_required_packages(  # noqa: E501
+        self, mock_check_call
+    ):
+        expected_apt_calls = [call(['apt', 'update'])]
+        for required_package in self.agw_preinstall_checks.REQUIRED_SYSTEM_PACKAGES:
+            expected_apt_calls.append(call(["apt", "install", "-y", required_package]))
+        self.agw_preinstall_checks.install_required_system_packages()
+        mock_check_call.assert_has_calls(expected_apt_calls)

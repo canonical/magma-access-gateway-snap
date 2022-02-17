@@ -44,6 +44,7 @@ def main():
     network_interfaces = netifaces.interfaces()
     network_interfaces.remove("lo")
 
+    AGWInstallerPreinstallChecks(network_interfaces).install_required_system_packages()
     AGWInstallerPreinstallChecks(network_interfaces).preinstall_checks()
     AGWInstallerNetworkConfigurator(
         network_interfaces, args.ip_address, args.gw_ip_address

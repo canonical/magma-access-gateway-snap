@@ -44,7 +44,9 @@ To see what's happening during Snap's building process, `-d` can be used along w
 Since Snap has been built locally, `--dangerous` flag is required to deploy it.
 6. Once Snap is installed (it will be indicated by the `magma-access-gateway 1.6.0 installed` 
 message printed to the console), start AGW deployment by executing:<br>
-`magma-access-gateway`
+   - `magma-access-gateway` - to deploy Magma AGW using DHCP configured SGi interface
+   - `magma-access-gateway --ip-address 1.1.1.1/24 --gw-ip-address 1.1.1.1` - to deploy Magma AGW
+   using statically configured SGi interface
 
 ## Contributing
 

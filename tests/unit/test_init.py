@@ -17,9 +17,9 @@ class TestAGWInstallerInit(unittest.TestCase):
         self,
     ):
         args_parser = magma_access_gateway_installer._cli_arguments_parser(
-            ["--ip-address", "1.2.3.4", "--gw-ip-address", "2.3.4.5"]
+            ["--ip-address", "1.2.3.4/24", "--gw-ip-address", "2.3.4.5"]
         )
-        self.assertEqual(args_parser.ip_address, "1.2.3.4")
+        self.assertEqual(args_parser.ip_address, "1.2.3.4/24")
         self.assertEqual(args_parser.gw_ip_address, "2.3.4.5")
 
     def test_given_agw_installer_init_when_only_ip_address_cli_argument_is_given_then_value_error_is_raised(  # noqa: E501
@@ -27,7 +27,7 @@ class TestAGWInstallerInit(unittest.TestCase):
     ):
         with patch(
             "magma_access_gateway_installer._cli_arguments_parser",
-            MagicMock(return_value=Namespace(ip_address="1.2.3.4", gw_ip_address=None)),
+            MagicMock(return_value=Namespace(ip_address="1.2.3.4/24", gw_ip_address=None)),
         ), self.assertRaises(ValueError):
             magma_access_gateway_installer.main()
 
@@ -47,6 +47,9 @@ class TestAGWInstallerInit(unittest.TestCase):
             "magma_access_gateway_installer._cli_arguments_parser",
             MagicMock(return_value=Namespace(ip_address=None, gw_ip_address=None)),
         ), patch(
+            "magma_access_gateway_installer.AGWInstallerPreinstallChecks.install_required_system_packages",  # noqa: E501
+            Mock(),
+        ) as install_required_system_packages, patch(
             "magma_access_gateway_installer.AGWInstallerPreinstallChecks.preinstall_checks", Mock()
         ) as preinstall_checks, patch(
             "magma_access_gateway_installer.AGWInstallerNetworkConfigurator.configure_network_interfaces",  # noqa: E501
@@ -56,6 +59,7 @@ class TestAGWInstallerInit(unittest.TestCase):
             Mock(),
         ) as create_magma_service_user:
             magma_access_gateway_installer.main()
+        install_required_system_packages.assert_called_once()
         preinstall_checks.assert_called_once()
         configure_network_interfaces.assert_called_once()
         create_magma_service_user.assert_called_once()

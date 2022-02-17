@@ -124,6 +124,7 @@ class AGWInstallerNetworkConfigurator:
         self.REBOOT_NEEDED = True
 
     def _prepare_interfaces_configuration_dir_if_doesnt_exist(self):
+        """Creates a directory to store network interfaces configuration files."""
         if not os.path.exists(self.INTERFACES_DIR):
             logger.info(f"Preparing interfaces configuration directory: {self.INTERFACES_DIR}...")
             os.makedirs(self.INTERFACES_DIR)
@@ -131,6 +132,7 @@ class AGWInstallerNetworkConfigurator:
             interfaces_file.write(f"source-directory {self.INTERFACES_DIR}")
 
     def _prepare_eth0_configuration(self):
+        """Creates eth0 configuration file under {self.INTERFACES_DIR}/eth0."""
         logger.info("Preparing configuration for SGi interface (eth0)...")
         if self.eth0_address:
             logger.info(
@@ -143,12 +145,14 @@ class AGWInstallerNetworkConfigurator:
             eth0_config_file.writelines(line + "\n" for line in self._eth0_config)
 
     def _prepare_eth1_configuration(self):
+        """Creates eth1 configuration file under {self.INTERFACES_DIR}/eth1."""
         logger.info("Preparing configuration for S1 interface (eth1)...")
         with open(f"{self.INTERFACES_DIR}/eth1", "w") as eth1_config_file:
             eth1_config_file.writelines(line + "\n" for line in self._eth1_config)
 
     @staticmethod
     def _remove_netplan():
+        """Removes netplan and enables networking instead."""
         logger.info("Removing netplan...")
         check_call(["systemctl", "unmask", "networking"])
         check_call(["systemctl", "enable", "networking"])
@@ -156,6 +160,8 @@ class AGWInstallerNetworkConfigurator:
 
     @property
     def _eth0_config(self) -> list:
+        """Returns eth0 interface configuration depending on ip address allocation
+        type (static or DHCP)."""
         if self.eth0_address:
             eth0_ip_address = self.eth0_address.split("/")[0]
             eth0_subnet = str(ipcalc.Network(self.eth0_address).netmask())
@@ -174,6 +180,7 @@ class AGWInstallerNetworkConfigurator:
 
     @property
     def _eth1_config(self) -> list:
+        """Returns eth1 interface configuration."""
         return [
             "auto eth1",
             "iface eth1 inet static",
