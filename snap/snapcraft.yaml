@@ -9,11 +9,13 @@ description: |
   For detailed description visit https://docs.magmacore.org/docs/next/lte/architecture_overview.
 
 grade: devel
-confinement: devmode
+confinement: classic
 
 apps:
   magma-access-gateway:
     command: bin/install-agw
+    environment:
+      PATH: /snap/magma-access-gateway/current/bin:$PATH
 
 parts:
   magma-access-gateway:

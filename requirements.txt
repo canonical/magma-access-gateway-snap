@@ -1,4 +1,6 @@
 cryptography
+ipcalc
 netifaces
+six
 systemd-python
 PyYAML

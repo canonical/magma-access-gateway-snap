@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+set -x
+
+echo "This is an installation hook to print usage of Magma AGW snap!"
+
+apt update
+apt install -y ifupdown net-tools sudo
