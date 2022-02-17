@@ -483,7 +483,5 @@ DNS=8.8.8.8 208.67.222.222
             call(["systemctl", "enable", "networking"]),
             call(["apt", "remove", "-y", "--purge", "netplan.io"]),
         ]
-        AGWInstallerNetworkConfigurator(
-            self.TEST_NETWORK_INTERFACES, None, None
-        )._remove_netplan()
+        AGWInstallerNetworkConfigurator(self.TEST_NETWORK_INTERFACES, None, None)._remove_netplan()
         mock_check_call.assert_has_calls(expected_commands_to_be_called)
