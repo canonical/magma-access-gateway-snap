@@ -7,6 +7,12 @@ description: |
   the AGW implements an evolved packet core (EPC), and a combination of an AAA and a PGW. It works 
   with existing, unmodified commercial radio hardware.
   For detailed description visit https://docs.magmacore.org/docs/next/lte/architecture_overview.
+  
+  System requirements:
+  - Ubuntu 20.04 LTS installed (other OSs are not supported right now)
+  - 64bit-X86 machine
+  - baremetal strongly recommended
+  - two ethernet interfaces (SGi and S1)
 
 grade: devel
 confinement: classic
