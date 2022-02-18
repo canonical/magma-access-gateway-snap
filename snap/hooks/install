@@ -1,3 +1,0 @@
-#!/bin/sh -e
-
-echo "This is an installation hook to print usage of Magma AGW snap!"

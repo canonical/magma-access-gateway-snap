@@ -4,7 +4,7 @@
 
 import logging
 import os
-from subprocess import check_call
+from subprocess import check_call, check_output
 
 import ipcalc  # type: ignore[import]
 import yaml
@@ -17,6 +17,7 @@ logger.setLevel(logging.INFO)
 
 class AGWInstallerNetworkConfigurator:
 
+    DNS_ADDRESSES = "8.8.8.8 208.67.222.222"
     INTERFACES_DIR = "/etc/network/interfaces.d"
     REBOOT_NEEDED = False
 
@@ -31,8 +32,14 @@ class AGWInstallerNetworkConfigurator:
             self._update_interfaces_names_in_cloud_init()
             self._configure_grub()
             self._update_grub_cfg()
-        self._configure_dns()
-        self._configure_interfaces()
+        if not self._dns_configured:
+            self._configure_dns()
+        if not self._network_interfaces_config_files_exist:
+            self._create_interfaces_config_files()
+        if self._netplan_installed:
+            self._remove_netplan()
+        if not self._networking_service_enabled:
+            self._enable_networking_service()
 
     @property
     def _network_interfaces_are_named_eth0_and_eth1(self) -> bool:
@@ -57,8 +64,7 @@ class AGWInstallerNetworkConfigurator:
         updated_grub_file.writelines(updated_grub_file_content)
         updated_grub_file.close()
 
-    @staticmethod
-    def _update_interfaces_names_in_cloud_init():
+    def _update_interfaces_names_in_cloud_init(self):
         """Changes names of network interfaces in /etc/netplan/50-cloud-init.yaml to ethX."""
         cloud_init_config_file = "/etc/netplan/50-cloud-init.yaml"
         with open(cloud_init_config_file, "r") as cloud_init_file:
@@ -83,14 +89,24 @@ class AGWInstallerNetworkConfigurator:
         with open(cloud_init_config_file, "w") as cloud_init_file:
             yaml.dump(cloud_init_content, cloud_init_file)
 
-    @staticmethod
-    def _update_grub_cfg():
+        self.REBOOT_NEEDED = True
+
+    def _update_grub_cfg(self):
         """Updates /boot/grub/grub.cfg."""
         logger.info("Updating /boot/grub/grub.cfg...")
         check_call(["grub-mkconfig", "-o", "/boot/grub/grub.cfg"])
+        self.REBOOT_NEEDED = True
 
-    @staticmethod
-    def _configure_dns():
+    @property
+    def _dns_configured(self) -> bool:
+        """Checks whether DNS has already been configured."""
+        with open("/etc/systemd/resolved.conf", "r") as dns_config:
+            for line in dns_config.readlines():
+                if f"DNS={self.DNS_ADDRESSES}" in line:
+                    return True
+        return False
+
+    def _configure_dns(self):
         """Configures Ubuntu's DNS."""
         logger.info("Configuring DNS...")
         try:
@@ -101,8 +117,8 @@ class AGWInstallerNetworkConfigurator:
         original_resolved_conf_file = open("/etc/systemd/resolved.conf", "r")
         original_resolved_conf_file_content = original_resolved_conf_file.readlines()
         updated_resolved_conf_file_content = [
-            line.replace(line, "DNS=8.8.8.8 208.67.222.222\n")
-            if line.startswith("#DNS=")
+            line.replace(line, f"DNS={self.DNS_ADDRESSES}\n")
+            if line.startswith("#DNS=") or line.startswith("DNS=")
             else line
             for line in original_resolved_conf_file_content
         ]
@@ -114,13 +130,24 @@ class AGWInstallerNetworkConfigurator:
         logger.info("Restarting systemd-resolved service...")
         check_call(["service", "systemd-resolved", "restart"])
 
-    def _configure_interfaces(self):
+        self.REBOOT_NEEDED = True
+
+    @property
+    def _network_interfaces_config_files_exist(self) -> bool:
+        """Checks whether configuration files for eth0 and eth1 exist in {self.INTERFACES_DIR}."""
+        if os.path.exists(f"{self.INTERFACES_DIR}/eth0") and os.path.exists(
+            f"{self.INTERFACES_DIR}/eth1"
+        ):
+            return True
+        else:
+            return False
+
+    def _create_interfaces_config_files(self):
         """Configures SGi and S1 AGW interfaces."""
         logger.info("Configuring SGi and S1 interfaces...")
         self._prepare_interfaces_configuration_dir_if_doesnt_exist()
         self._prepare_eth0_configuration()
         self._prepare_eth1_configuration()
-        self._remove_netplan()
         self.REBOOT_NEEDED = True
 
     def _prepare_interfaces_configuration_dir_if_doesnt_exist(self):
@@ -144,19 +171,40 @@ class AGWInstallerNetworkConfigurator:
         with open(f"{self.INTERFACES_DIR}/eth0", "w") as eth0_config_file:
             eth0_config_file.writelines(line + "\n" for line in self._eth0_config)
 
+        self.REBOOT_NEEDED = True
+
     def _prepare_eth1_configuration(self):
         """Creates eth1 configuration file under {self.INTERFACES_DIR}/eth1."""
         logger.info("Preparing configuration for S1 interface (eth1)...")
         with open(f"{self.INTERFACES_DIR}/eth1", "w") as eth1_config_file:
             eth1_config_file.writelines(line + "\n" for line in self._eth1_config)
 
-    @staticmethod
-    def _remove_netplan():
-        """Removes netplan and enables networking instead."""
-        logger.info("Removing netplan...")
+        self.REBOOT_NEEDED = True
+
+    @property
+    def _networking_service_enabled(self) -> bool:
+        for service in check_output(["systemctl", "list-unit-files"]).decode().splitlines():
+            if all(status in service for status in ["networking.service", "enabled"]):
+                return True
+        return False
+
+    def _enable_networking_service(self):
+        """Enables networking service which replaces netplan."""
+        logger.info("Enabling networking service...")
         check_call(["systemctl", "unmask", "networking"])
         check_call(["systemctl", "enable", "networking"])
+        self.REBOOT_NEEDED = True
+
+    @property
+    def _netplan_installed(self) -> bool:
+        """Checks whether netplan is installed."""
+        return "netplan.io" in str(check_output(["apt", "list", "--installed"]))
+
+    def _remove_netplan(self):
+        """Removes netplan."""
+        logger.info("Removing netplan...")
         check_call(["apt", "remove", "-y", "--purge", "netplan.io"])
+        self.REBOOT_NEEDED = True
 
     @property
     def _eth0_config(self) -> list:
