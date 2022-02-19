@@ -129,8 +129,6 @@ class AGWInstallerNetworkConfigurator:
         logger.info("Restarting systemd-resolved service...")
         check_call(["service", "systemd-resolved", "restart"])
 
-        self.reboot_needed = True
-
     @property
     def _network_interfaces_config_files_exist(self) -> bool:
         """Checks whether configuration files for eth0 and eth1 exist in {self.INTERFACES_DIR}."""
@@ -168,15 +166,11 @@ class AGWInstallerNetworkConfigurator:
         with open(f"{self.INTERFACES_DIR}/eth0", "w") as eth0_config_file:
             eth0_config_file.writelines(line + "\n" for line in self._eth0_config)
 
-        self.reboot_needed = True
-
     def _prepare_eth1_configuration(self):
         """Creates eth1 configuration file under {self.INTERFACES_DIR}/eth1."""
         logger.info("Preparing configuration for S1 interface (eth1)...")
         with open(f"{self.INTERFACES_DIR}/eth1", "w") as eth1_config_file:
             eth1_config_file.writelines(line + "\n" for line in self._eth1_config)
-
-        self.reboot_needed = True
 
     @property
     def _networking_service_enabled(self) -> bool:
@@ -190,7 +184,6 @@ class AGWInstallerNetworkConfigurator:
         logger.info("Enabling networking service...")
         check_call(["systemctl", "unmask", "networking"])
         check_call(["systemctl", "enable", "networking"])
-        self.reboot_needed = True
 
     @property
     def _netplan_installed(self) -> bool:
@@ -201,7 +194,6 @@ class AGWInstallerNetworkConfigurator:
         """Removes netplan."""
         logger.info("Removing netplan...")
         check_call(["apt", "remove", "-y", "--purge", "netplan.io"])
-        self.reboot_needed = True
 
     @property
     def _eth0_config(self) -> list:
