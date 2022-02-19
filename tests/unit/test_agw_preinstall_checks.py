@@ -16,7 +16,6 @@ from magma_access_gateway_installer.agw_preinstall_checks import (
 
 class TestAGWInstallerPreinstallChecks(unittest.TestCase):
 
-    MAGMA_USER_DETAILS = ("magma", "x", 1001, 1001, ",,,", "/home/magma", "/bin/bash")
     TEST_NETWORK_INTERFACES = ["eth0", "eth1"]
 
     def setUp(self) -> None:
@@ -124,7 +123,7 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
             self.agw_preinstall_checks.preinstall_checks()
         self.assertEqual(
             logs.records[0].getMessage(),
-            "Magma AGW pre-install checks completed. Starting installation...",
+            "Magma AGW pre-install checks completed.",
         )
 
     @patch("magma_access_gateway_installer.agw_preinstall_checks.check_call")

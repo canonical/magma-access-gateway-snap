@@ -20,7 +20,7 @@ class AGWInstallerPreinstallChecks:
     REQUIRED_NUMBER_OF_NICS = 2
     REQUIRED_SYSTEM_PACKAGES = ["ifupdown", "net-tools", "sudo"]
 
-    def __init__(self, network_interfaces):
+    def __init__(self, network_interfaces: list):
         self.network_interfaces = network_interfaces
 
     def preinstall_checks(self):
@@ -33,16 +33,11 @@ class AGWInstallerPreinstallChecks:
                 expected
         """
         if not self._ubuntu_is_installed:
-            logger.error("Invalid OS! \n Magma AGW can only be installed on Ubuntu! Exiting...")
             raise UnsupportedOSError()
         elif not self._required_amount_of_network_interfaces_is_available:
-            logger.error(
-                "Invalid number of network interfaces!"
-                "Magma AGW needs two network interfaces - SGi and S1! Exiting..."
-            )
             raise InvalidNumberOfInterfacesError()
         else:
-            logger.info("Magma AGW pre-install checks completed. Starting installation...")
+            logger.info("Magma AGW pre-install checks completed.")
 
     def install_required_system_packages(self):
         """Installs required system packages using apt."""

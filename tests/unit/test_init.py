@@ -10,24 +10,26 @@ import magma_access_gateway_installer
 
 
 class TestAGWInstallerInit(unittest.TestCase):
-    def setUp(self) -> None:
-        pass
+
+    TEST_IP_ADDRESS = "1.2.3.4/24"
+    TEST_GW_IP_ADDRESS = "2.3.4.5"
 
     def test_given_agw_installer_init_when_cli_arguments_are_given_then_parser_parses_arguments_correctly(  # noqa: E501
         self,
     ):
+
         args_parser = magma_access_gateway_installer._cli_arguments_parser(
-            ["--ip-address", "1.2.3.4/24", "--gw-ip-address", "2.3.4.5"]
+            ["--ip-address", self.TEST_IP_ADDRESS, "--gw-ip-address", self.TEST_GW_IP_ADDRESS]
         )
-        self.assertEqual(args_parser.ip_address, "1.2.3.4/24")
-        self.assertEqual(args_parser.gw_ip_address, "2.3.4.5")
+        self.assertEqual(args_parser.ip_address, self.TEST_IP_ADDRESS)
+        self.assertEqual(args_parser.gw_ip_address, self.TEST_GW_IP_ADDRESS)
 
     def test_given_agw_installer_init_when_only_ip_address_cli_argument_is_given_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         with patch(
             "magma_access_gateway_installer._cli_arguments_parser",
-            MagicMock(return_value=Namespace(ip_address="1.2.3.4/24", gw_ip_address=None)),
+            MagicMock(return_value=Namespace(ip_address=self.TEST_IP_ADDRESS, gw_ip_address=None)),
         ), self.assertRaises(ValueError):
             magma_access_gateway_installer.main()
 
@@ -36,7 +38,9 @@ class TestAGWInstallerInit(unittest.TestCase):
     ):
         with patch(
             "magma_access_gateway_installer._cli_arguments_parser",
-            MagicMock(return_value=Namespace(ip_address=None, gw_ip_address="1.2.3.4")),
+            MagicMock(
+                return_value=Namespace(ip_address=None, gw_ip_address=self.TEST_GW_IP_ADDRESS),
+            ),
         ), self.assertRaises(ValueError):
             magma_access_gateway_installer.main()
 

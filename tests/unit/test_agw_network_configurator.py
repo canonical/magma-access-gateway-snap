@@ -2,8 +2,6 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import os
-import time
 import unittest
 from unittest.mock import Mock, PropertyMock, call, mock_open, patch
 
@@ -15,37 +13,32 @@ from magma_access_gateway_installer.agw_network_configurator import (
 class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
     TEST_NETWORK_INTERFACES = ["eth0", "eth1"]
 
-    def setUp(self) -> None:
-        self.timestamp = time.time()
-
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator.INTERFACES_DIR"  # noqa: E501, W505
-    )
+    @patch("os.makedirs")
     @patch("builtins.open", new_callable=mock_open())
     def test_given_agw_installer_network_configurator_when_prepare_interfaces_configuration_dir_if_doesnt_exist_then_configuration_dir_gets_created_properly(  # noqa: E501
-        self, mocked_open_file, ifaces_dir
+        self, _, mocked_makedirs
     ):
-        ifaces_dir.return_value = f".tox/.tmp/interfaces.d_{self.timestamp}"
-        AGWInstallerNetworkConfigurator(
+        network_configurator = AGWInstallerNetworkConfigurator(
             self.TEST_NETWORK_INTERFACES, None, None
-        )._prepare_interfaces_configuration_dir_if_doesnt_exist()
-        self.assertTrue(os.path.exists(ifaces_dir))
+        )
+        network_configurator._prepare_interfaces_configuration_dir_if_doesnt_exist()
+        mocked_makedirs.assert_called_once_with(network_configurator.INTERFACES_DIR)
 
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator.INTERFACES_DIR"  # noqa: E501, W505
-    )
+    @patch("os.makedirs")
+    @patch("builtins.open", new_callable=mock_open)
     def test_given_agw_installer_network_configurator_when_prepare_interfaces_configuration_dir_if_doesnt_exist_then_interfaces_configuration_dir_is_written_to_etc_network_interfaces_file(  # noqa: E501
-        self, ifaces_dir
+        self, mocked_open_file, _
     ):
-        ifaces_dir.return_value = f".tox/.tmp/interfaces.d_{self.timestamp}"
-        with patch("builtins.open", mock_open()) as mocked_open_file:
-            AGWInstallerNetworkConfigurator(
-                self.TEST_NETWORK_INTERFACES, None, None
-            )._prepare_interfaces_configuration_dir_if_doesnt_exist()
-            mocked_open_file.assert_called_with("/etc/network/interfaces", "w")
-            mocked_open_file().write.assert_called_once_with(f"source-directory {ifaces_dir}")
+        network_configurator = AGWInstallerNetworkConfigurator(
+            self.TEST_NETWORK_INTERFACES, None, None
+        )
+        network_configurator._prepare_interfaces_configuration_dir_if_doesnt_exist()
+        mocked_open_file.assert_called_with("/etc/network/interfaces", "w")
+        mocked_open_file().write.assert_called_once_with(
+            f"source-directory {network_configurator.INTERFACES_DIR}"
+        )
 
-    def test_given_agw_installer_network_configurator_when_static_eth0_address_given_then_correct_eth0_configuration_is_retured(  # noqa: E501
+    def test_given_agw_installer_network_configurator_when_static_eth0_address_given_then_correct_eth0_configuration_is_returned(  # noqa: E501
         self,
     ):
         test_static_ip_address = "1.2.3.4/24"
@@ -89,7 +82,7 @@ class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
             f"and Gateway {test_static_gw_ip_address}...",
         )
 
-    def test_given_agw_installer_network_configurator_when_no_static_eth0_address_given_then_correct_eth0_configuration_is_retured(  # noqa: E501
+    def test_given_agw_installer_network_configurator_when_no_static_eth0_address_given_then_correct_eth0_configuration_is_returned(  # noqa: E501
         self,
     ):
         expected_config = [
@@ -125,7 +118,7 @@ class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
             "Using DHCP allocated addresses...",
         )
 
-    def test_given_agw_installer_network_configurator_when_configuring_eth1_interface_then_correct_eth1_configuration_is_retured(  # noqa: E501
+    def test_given_agw_installer_network_configurator_when_configuring_eth1_interface_then_correct_eth1_configuration_is_returned(  # noqa: E501
         self,
     ):
         expected_config = [
@@ -260,8 +253,12 @@ class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
             )
             agw_network_configurator._update_interfaces_names_in_cloud_init()
             mocked_open_file_calls = mocked_open_file.mock_calls
-            self.assertTrue(call("/etc/netplan/50-cloud-init.yaml", "r") in mocked_open_file_calls)
-            self.assertTrue(call("/etc/netplan/50-cloud-init.yaml", "w") in mocked_open_file_calls)
+            self.assertTrue(
+                call(agw_network_configurator.CLOUD_INIT_YAML_PATH, "r") in mocked_open_file_calls
+            )
+            self.assertTrue(
+                call(agw_network_configurator.CLOUD_INIT_YAML_PATH, "w") in mocked_open_file_calls
+            )
             mocked_open_file().write.assert_has_calls(expected_cloud_init_file_write_calls)
 
     def test_given_agw_installer_network_configurator_when_configure_grub_is_called_then_required_parameters_are_added_to_etc_default_grub(  # noqa: E501
@@ -334,8 +331,12 @@ GRUB_TERMINAL=console
             )
             agw_network_configurator._configure_grub()
             mocked_open_file_calls = mocked_open_file.mock_calls
-            self.assertTrue(call("/etc/default/grub", "r") in mocked_open_file_calls)
-            self.assertTrue(call("/etc/default/grub", "w") in mocked_open_file_calls)
+            self.assertTrue(
+                call(agw_network_configurator.ETC_DEFAULT_GRUB_PATH, "r") in mocked_open_file_calls
+            )
+            self.assertTrue(
+                call(agw_network_configurator.ETC_DEFAULT_GRUB_PATH, "w") in mocked_open_file_calls
+            )
             mocked_open_file().writelines.assert_called_once_with(
                 [line + "\n" for line in expected_etc_default_grub_content.splitlines()]
             )
@@ -373,13 +374,19 @@ DNS=8.8.8.8 208.67.222.222
             "magma_access_gateway_installer.agw_network_configurator.open",
             new=mock_open(read_data=mocked_etc_systemd_resolved_conf_content),
         ) as mocked_open_file:
-            agw_network_configurator = AGWInstallerNetworkConfigurator(
+            network_configurator = AGWInstallerNetworkConfigurator(
                 self.TEST_NETWORK_INTERFACES, None, None
             )
-            agw_network_configurator._configure_dns()
+            network_configurator._configure_dns()
             mocked_open_file_calls = mocked_open_file.mock_calls
-            self.assertTrue(call("/etc/systemd/resolved.conf", "r") in mocked_open_file_calls)
-            self.assertTrue(call("/etc/systemd/resolved.conf", "w") in mocked_open_file_calls)
+            self.assertTrue(
+                call(network_configurator.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r")
+                in mocked_open_file_calls
+            )
+            self.assertTrue(
+                call(network_configurator.ETC_SYSTEMD_RESOLVED_CONF_PATH, "w")
+                in mocked_open_file_calls
+            )
             mocked_open_file().writelines.assert_called_once_with(
                 [line + "\n" for line in expected_etc_systemd_resolved_conf_content.splitlines()]
             )
@@ -402,10 +409,13 @@ DNS=8.8.8.8 208.67.222.222
     def test_given_agw_installer_network_configurator_when_update_grub_cfg_is_called_then_grub_mkconfig_command_is_run(  # noqa: E501
         self, mock_check_call
     ):
-        AGWInstallerNetworkConfigurator(
+        network_configurator = AGWInstallerNetworkConfigurator(
             self.TEST_NETWORK_INTERFACES, None, None
-        )._update_grub_cfg()
-        mock_check_call.assert_called_once_with(["grub-mkconfig", "-o", "/boot/grub/grub.cfg"])
+        )
+        network_configurator._update_grub_cfg()
+        mock_check_call.assert_called_once_with(
+            ["grub-mkconfig", "-o", network_configurator.BOOT_GRUB_GRUB_CFG_PATH]
+        )
 
     @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
     def test_given_agw_installer_network_configurator_when_enable_networking_service_then_relevant_systemctl_command_are_run(  # noqa: E501
@@ -783,7 +793,7 @@ DNS=8.8.8.8 208.67.222.222
             agw_network_configurator, "_enable_networking_service"
         ):
             agw_network_configurator.configure_network_interfaces()
-        self.assertFalse(agw_network_configurator.REBOOT_NEEDED)
+        self.assertFalse(agw_network_configurator.reboot_needed)
 
     def test_given_agw_installer_network_configurator_when_update_interfaces_names_in_cloud_init_is_called_then_reboot_needed_is_set_to_true(  # noqa: E501
         self,
@@ -812,7 +822,7 @@ DNS=8.8.8.8 208.67.222.222
                 self.TEST_NETWORK_INTERFACES, None, None
             )
             agw_network_configurator._update_interfaces_names_in_cloud_init()
-        self.assertTrue(agw_network_configurator.REBOOT_NEEDED)
+        self.assertTrue(agw_network_configurator.reboot_needed)
 
     @patch("magma_access_gateway_installer.agw_network_configurator.check_output")
     def test_given_agw_installer_network_configurator_when_netplan_is_installed_then_netplan_installed_returns_true(  # noqa: E501

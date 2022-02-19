@@ -7,8 +7,10 @@
   with existing, unmodified commercial radio hardware.
   For detailed description visit https://docs.magmacore.org/docs/next/lte/architecture_overview.
 """
+
 import sys
 from argparse import ArgumentParser
+from ipaddress import ip_address, ip_network
 
 import netifaces  # type: ignore[import]
 
@@ -40,13 +42,23 @@ def main():
         raise ValueError("Upstream router IP for SGi interface is missing! Exiting...")
     elif not args.ip_address and args.gw_ip_address:
         raise ValueError("SGi interface IP address is missing! Exiting...")
+    elif args.ip_address and args.gw_ip_address:
+        try:
+            ip_network(args.ip_address)
+            ip_address(args.gw_ip_address)
+        except ValueError as e:
+            raise e
 
     network_interfaces = netifaces.interfaces()
     network_interfaces.remove("lo")
 
-    AGWInstallerPreinstallChecks(network_interfaces).install_required_system_packages()
-    AGWInstallerPreinstallChecks(network_interfaces).preinstall_checks()
-    AGWInstallerNetworkConfigurator(
+    preinstall_checks = AGWInstallerPreinstallChecks(network_interfaces)
+    network_configurator = AGWInstallerNetworkConfigurator(
         network_interfaces, args.ip_address, args.gw_ip_address
-    ).configure_network_interfaces()
-    AGWInstallerServiceUserCreator().create_magma_service_user()
+    )
+    service_user_creator = AGWInstallerServiceUserCreator()
+
+    preinstall_checks.preinstall_checks()
+    preinstall_checks.install_required_system_packages()
+    network_configurator.configure_network_interfaces()
+    service_user_creator.create_magma_service_user()

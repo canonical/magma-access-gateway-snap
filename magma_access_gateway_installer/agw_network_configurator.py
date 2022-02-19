@@ -18,13 +18,17 @@ logger.setLevel(logging.INFO)
 class AGWInstallerNetworkConfigurator:
 
     DNS_ADDRESSES = "8.8.8.8 208.67.222.222"
+    BOOT_GRUB_GRUB_CFG_PATH = "/boot/grub/grub.cfg"
+    CLOUD_INIT_YAML_PATH = "/etc/netplan/50-cloud-init.yaml"
+    ETC_DEFAULT_GRUB_PATH = "/etc/default/grub"
+    ETC_SYSTEMD_RESOLVED_CONF_PATH = "/etc/systemd/resolved.conf"
     INTERFACES_DIR = "/etc/network/interfaces.d"
-    REBOOT_NEEDED = False
 
-    def __init__(self, network_interfaces, eth0_address, eth0_gw_ip_address):
+    def __init__(self, network_interfaces: list, eth0_address: str, eth0_gw_ip_address: str):
         self.eth0_address = eth0_address
         self.eth0_gw_ip_address = eth0_gw_ip_address
         self.network_interfaces = network_interfaces
+        self.reboot_needed = False
 
     def configure_network_interfaces(self):
         """Configures network interfaces if necessary."""
@@ -46,35 +50,31 @@ class AGWInstallerNetworkConfigurator:
         """Checks whether available network interfaces are named correctly."""
         return all(interface in self.network_interfaces for interface in ["eth0", "eth1"])
 
-    @staticmethod
-    def _configure_grub():
+    def _configure_grub(self):
         """Adds required configuration to /etc/default/grub"""
-        logger.info("Configuring /etc/default/grub...")
-        original_grub_file = open("/etc/default/grub", "r")
-        original_grub_file_content = original_grub_file.readlines()
+        logger.info(f"Configuring {self.ETC_DEFAULT_GRUB_PATH}...")
+        with open(self.ETC_DEFAULT_GRUB_PATH, "r") as original_grub_file:
+            original_grub_file_content = original_grub_file.readlines()
         updated_grub_file_content = [
             line.replace(line, 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"\n')
             if line.startswith("GRUB_CMDLINE_LINUX=")
             else line
             for line in original_grub_file_content
         ]
-        original_grub_file.close()
 
-        updated_grub_file = open("/etc/default/grub", "w")
-        updated_grub_file.writelines(updated_grub_file_content)
-        updated_grub_file.close()
+        with open(self.ETC_DEFAULT_GRUB_PATH, "w") as updated_grub_file:
+            updated_grub_file.writelines(updated_grub_file_content)
 
     def _update_interfaces_names_in_cloud_init(self):
         """Changes names of network interfaces in /etc/netplan/50-cloud-init.yaml to ethX."""
-        cloud_init_config_file = "/etc/netplan/50-cloud-init.yaml"
-        with open(cloud_init_config_file, "r") as cloud_init_file:
+        with open(self.CLOUD_INIT_YAML_PATH, "r") as cloud_init_file:
             cloud_init_content = yaml.safe_load(cloud_init_file)
 
         cloud_init_interfaces = list(cloud_init_content["network"]["ethernets"].keys())
         for network_interface in cloud_init_interfaces:
             network_interface_index = cloud_init_interfaces.index(network_interface)
             logger.info(
-                f"Changing interface name in {cloud_init_config_file}. "
+                f"Changing interface name in {self.CLOUD_INIT_YAML_PATH}. "
                 f"Old interface name: {network_interface} "
                 f"New interface name: eth{network_interface_index}."
             )
@@ -86,16 +86,16 @@ class AGWInstallerNetworkConfigurator:
                 "set-name"
             ] = f"eth{network_interface_index}"
 
-        with open(cloud_init_config_file, "w") as cloud_init_file:
+        with open(self.CLOUD_INIT_YAML_PATH, "w") as cloud_init_file:
             yaml.dump(cloud_init_content, cloud_init_file)
 
-        self.REBOOT_NEEDED = True
+        self.reboot_needed = True
 
     def _update_grub_cfg(self):
         """Updates /boot/grub/grub.cfg."""
-        logger.info("Updating /boot/grub/grub.cfg...")
-        check_call(["grub-mkconfig", "-o", "/boot/grub/grub.cfg"])
-        self.REBOOT_NEEDED = True
+        logger.info(f"Updating {self.BOOT_GRUB_GRUB_CFG_PATH}...")
+        check_call(["grub-mkconfig", "-o", self.BOOT_GRUB_GRUB_CFG_PATH])
+        self.reboot_needed = True
 
     @property
     def _dns_configured(self) -> bool:
@@ -114,33 +114,30 @@ class AGWInstallerNetworkConfigurator:
         except FileExistsError:
             os.remove("/etc/resolv.conf")
             os.symlink("/var/run/systemd/resolve/resolv.conf", "/etc/resolv.conf")
-        original_resolved_conf_file = open("/etc/systemd/resolved.conf", "r")
-        original_resolved_conf_file_content = original_resolved_conf_file.readlines()
+        with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r") as original_resolved_conf_file:
+            original_resolved_conf_file_content = original_resolved_conf_file.readlines()
         updated_resolved_conf_file_content = [
             line.replace(line, f"DNS={self.DNS_ADDRESSES}\n")
             if line.startswith("#DNS=") or line.startswith("DNS=")
             else line
             for line in original_resolved_conf_file_content
         ]
-        original_resolved_conf_file.close()
 
-        updated_resolved_conf_file = open("/etc/systemd/resolved.conf", "w")
-        updated_resolved_conf_file.writelines(updated_resolved_conf_file_content)
-        updated_resolved_conf_file.close()
+        with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "w") as updated_resolved_conf_file:
+            updated_resolved_conf_file.writelines(updated_resolved_conf_file_content)
+
         logger.info("Restarting systemd-resolved service...")
         check_call(["service", "systemd-resolved", "restart"])
 
-        self.REBOOT_NEEDED = True
+        self.reboot_needed = True
 
     @property
     def _network_interfaces_config_files_exist(self) -> bool:
         """Checks whether configuration files for eth0 and eth1 exist in {self.INTERFACES_DIR}."""
-        if os.path.exists(f"{self.INTERFACES_DIR}/eth0") and os.path.exists(
-            f"{self.INTERFACES_DIR}/eth1"
-        ):
-            return True
-        else:
-            return False
+        return bool(
+            os.path.exists(f"{self.INTERFACES_DIR}/eth0")
+            and os.path.exists(f"{self.INTERFACES_DIR}/eth1")  # noqa W503
+        )
 
     def _create_interfaces_config_files(self):
         """Configures SGi and S1 AGW interfaces."""
@@ -148,7 +145,7 @@ class AGWInstallerNetworkConfigurator:
         self._prepare_interfaces_configuration_dir_if_doesnt_exist()
         self._prepare_eth0_configuration()
         self._prepare_eth1_configuration()
-        self.REBOOT_NEEDED = True
+        self.reboot_needed = True
 
     def _prepare_interfaces_configuration_dir_if_doesnt_exist(self):
         """Creates a directory to store network interfaces configuration files."""
@@ -171,7 +168,7 @@ class AGWInstallerNetworkConfigurator:
         with open(f"{self.INTERFACES_DIR}/eth0", "w") as eth0_config_file:
             eth0_config_file.writelines(line + "\n" for line in self._eth0_config)
 
-        self.REBOOT_NEEDED = True
+        self.reboot_needed = True
 
     def _prepare_eth1_configuration(self):
         """Creates eth1 configuration file under {self.INTERFACES_DIR}/eth1."""
@@ -179,7 +176,7 @@ class AGWInstallerNetworkConfigurator:
         with open(f"{self.INTERFACES_DIR}/eth1", "w") as eth1_config_file:
             eth1_config_file.writelines(line + "\n" for line in self._eth1_config)
 
-        self.REBOOT_NEEDED = True
+        self.reboot_needed = True
 
     @property
     def _networking_service_enabled(self) -> bool:
@@ -193,7 +190,7 @@ class AGWInstallerNetworkConfigurator:
         logger.info("Enabling networking service...")
         check_call(["systemctl", "unmask", "networking"])
         check_call(["systemctl", "enable", "networking"])
-        self.REBOOT_NEEDED = True
+        self.reboot_needed = True
 
     @property
     def _netplan_installed(self) -> bool:
@@ -204,7 +201,7 @@ class AGWInstallerNetworkConfigurator:
         """Removes netplan."""
         logger.info("Removing netplan...")
         check_call(["apt", "remove", "-y", "--purge", "netplan.io"])
-        self.REBOOT_NEEDED = True
+        self.reboot_needed = True
 
     @property
     def _eth0_config(self) -> list:
