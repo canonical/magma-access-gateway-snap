@@ -179,7 +179,8 @@ class AGWInstallerNetworkConfigurator:
                 return True
         return False
 
-    def _enable_networking_service(self):
+    @staticmethod
+    def _enable_networking_service():
         """Enables networking service which replaces netplan."""
         logger.info("Enabling networking service...")
         check_call(["systemctl", "unmask", "networking"])
@@ -190,7 +191,8 @@ class AGWInstallerNetworkConfigurator:
         """Checks whether netplan is installed."""
         return "netplan.io" in str(check_output(["apt", "list", "--installed"]))
 
-    def _remove_netplan(self):
+    @staticmethod
+    def _remove_netplan():
         """Removes netplan."""
         logger.info("Removing netplan...")
         check_call(["apt", "remove", "-y", "--purge", "netplan.io"])
