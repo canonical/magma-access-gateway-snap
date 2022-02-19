@@ -174,10 +174,10 @@ class AGWInstallerNetworkConfigurator:
 
     @property
     def _networking_service_enabled(self) -> bool:
-        for service in check_output(["systemctl", "list-unit-files"]).decode().splitlines():
-            if all(status in service for status in ["networking.service", "enabled"]):
-                return True
-        return False
+        return any(
+            all(status in service for status in ["networking.service", "enabled"])
+            for service in check_output(["systemctl", "list-unit-files"]).decode().splitlines()
+        )
 
     @staticmethod
     def _enable_networking_service():
