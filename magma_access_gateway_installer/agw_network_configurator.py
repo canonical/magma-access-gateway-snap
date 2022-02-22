@@ -5,6 +5,7 @@
 import logging
 import os
 from subprocess import check_call, check_output
+from typing import Optional
 
 import ipcalc  # type: ignore[import]
 import yaml
@@ -24,7 +25,12 @@ class AGWInstallerNetworkConfigurator:
     ETC_SYSTEMD_RESOLVED_CONF_PATH = "/etc/systemd/resolved.conf"
     INTERFACES_DIR = "/etc/network/interfaces.d"
 
-    def __init__(self, network_interfaces: list, eth0_address: str, eth0_gw_ip_address: str):
+    def __init__(
+        self,
+        network_interfaces: list,
+        eth0_address: Optional[str],
+        eth0_gw_ip_address: Optional[str],
+    ):
         self.eth0_address = eth0_address
         self.eth0_gw_ip_address = eth0_gw_ip_address
         self.network_interfaces = network_interfaces
@@ -50,21 +56,6 @@ class AGWInstallerNetworkConfigurator:
         """Checks whether available network interfaces are named correctly."""
         return all(interface in self.network_interfaces for interface in ["eth0", "eth1"])
 
-    def _configure_grub(self):
-        """Adds required configuration to /etc/default/grub"""
-        logger.info(f"Configuring {self.ETC_DEFAULT_GRUB_PATH}...")
-        with open(self.ETC_DEFAULT_GRUB_PATH, "r") as original_grub_file:
-            original_grub_file_content = original_grub_file.readlines()
-        updated_grub_file_content = [
-            line.replace(line, 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"\n')
-            if line.startswith("GRUB_CMDLINE_LINUX=")
-            else line
-            for line in original_grub_file_content
-        ]
-
-        with open(self.ETC_DEFAULT_GRUB_PATH, "w") as updated_grub_file:
-            updated_grub_file.writelines(updated_grub_file_content)
-
     def _update_interfaces_names_in_cloud_init(self):
         """Changes names of network interfaces in /etc/netplan/50-cloud-init.yaml to ethX."""
         with open(self.CLOUD_INIT_YAML_PATH, "r") as cloud_init_file:
@@ -89,7 +80,20 @@ class AGWInstallerNetworkConfigurator:
         with open(self.CLOUD_INIT_YAML_PATH, "w") as cloud_init_file:
             yaml.dump(cloud_init_content, cloud_init_file)
 
-        self.reboot_needed = True
+    def _configure_grub(self):
+        """Adds required configuration to /etc/default/grub"""
+        logger.info(f"Configuring {self.ETC_DEFAULT_GRUB_PATH}...")
+        with open(self.ETC_DEFAULT_GRUB_PATH, "r") as original_grub_file:
+            original_grub_file_content = original_grub_file.readlines()
+        updated_grub_file_content = [
+            line.replace(line, 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"\n')
+            if line.startswith("GRUB_CMDLINE_LINUX=")
+            else line
+            for line in original_grub_file_content
+        ]
+
+        with open(self.ETC_DEFAULT_GRUB_PATH, "w") as updated_grub_file:
+            updated_grub_file.writelines(updated_grub_file_content)
 
     def _update_grub_cfg(self):
         """Updates /boot/grub/grub.cfg."""
@@ -163,14 +167,16 @@ class AGWInstallerNetworkConfigurator:
             )
         else:
             logger.info("Using DHCP allocated addresses...")
+        eth0_configuration = [line + "\n" for line in self._eth0_config]
         with open(f"{self.INTERFACES_DIR}/eth0", "w") as eth0_config_file:
-            eth0_config_file.writelines(line + "\n" for line in self._eth0_config)
+            eth0_config_file.writelines(eth0_configuration)
 
     def _prepare_eth1_configuration(self):
         """Creates eth1 configuration file under {self.INTERFACES_DIR}/eth1."""
         logger.info("Preparing configuration for S1 interface (eth1)...")
+        eth1_configuration = [line + "\n" for line in self._eth1_config]
         with open(f"{self.INTERFACES_DIR}/eth1", "w") as eth1_config_file:
-            eth1_config_file.writelines(line + "\n" for line in self._eth1_config)
+            eth1_config_file.writelines(eth1_configuration)
 
     @property
     def _networking_service_enabled(self) -> bool:

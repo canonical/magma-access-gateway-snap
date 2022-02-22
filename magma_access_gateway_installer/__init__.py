@@ -2,12 +2,6 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-""" The Access Gateway (AGW) provides network services and policy enforcement. In an LTE network,
-  the AGW implements an evolved packet core (EPC), and a combination of an AAA and a PGW. It works
-  with existing, unmodified commercial radio hardware.
-  For detailed description visit https://docs.magmacore.org/docs/next/lte/architecture_overview.
-"""
-
 import sys
 from argparse import ArgumentParser
 from ipaddress import ip_address, ip_network
@@ -44,7 +38,7 @@ def main():
         raise ValueError("SGi interface IP address is missing! Exiting...")
     elif args.ip_address and args.gw_ip_address:
         try:
-            ip_network(args.ip_address)
+            ip_network(args.ip_address, False)
             ip_address(args.gw_ip_address)
         except ValueError as e:
             raise e
