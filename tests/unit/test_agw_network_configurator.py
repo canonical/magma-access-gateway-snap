@@ -55,8 +55,7 @@ DNS=8.8.8.8 208.67.222.222
         }
 
     @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open, read_data=GOOD_DNS_CONFIG)
-    def test_given_dns_is_already_configured_when_configure_dns_then_dns_is_not_configured(self, mocked_open_file):
-
+    def test_given_dns_is_already_configured_when_configure_dns_then_no_config_is_written(self, mocked_open_file):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             None,
@@ -102,7 +101,7 @@ DNS=8.8.8.8 208.67.222.222
         mock_check_call.assert_called_once_with(['service', 'systemd-resolved', 'restart'])
 
     @patch("magma_access_gateway_installer.agw_network_configurator.open")
-    def test_given_interfaces_have_correct_names_when_update_names_then_no_configuration_file_is_updated(self, mocked_open_file):
+    def test_given_interfaces_have_correct_names_when_update_names_then_no_config_is_written(self, mocked_open_file):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             None,
@@ -155,7 +154,6 @@ DNS=8.8.8.8 208.67.222.222
         args, kwargs = mock_yaml_dump.call_args
         self.assertEqual(args[0], expected_cloud_init_content)
         self.assertEqual(mock_yaml_dump.call_count, 1)
-
 
     @patch("magma_access_gateway_installer.agw_network_configurator.yaml.safe_load", return_value=CLOUD_INIT_CONTENT)
     @patch("magma_access_gateway_installer.agw_network_configurator.open")
