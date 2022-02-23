@@ -54,5 +54,9 @@ def main():
 
     preinstall_checks.preinstall_checks()
     preinstall_checks.install_required_system_packages()
-    network_configurator.configure_network_interfaces()
+    network_configurator.update_names()
+    network_configurator.configure_dns()
+    network_configurator.create_interfaces_config_files()
+    network_configurator.remove_netplan()
+    network_configurator.enable_networking_service()
     service_user_creator.create_magma_service_user()

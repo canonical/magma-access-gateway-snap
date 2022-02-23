@@ -36,18 +36,25 @@ class AGWInstallerNetworkConfigurator:
         self.network_interfaces = network_interfaces
         self.reboot_needed = False
 
-    def configure_network_interfaces(self):
-        """Configures network interfaces if necessary."""
+    def update_names(self):
         if not self._network_interfaces_are_named_eth0_and_eth1:
             self._update_interfaces_names_in_cloud_init()
             self._configure_grub()
             self._update_grub_cfg()
+
+    def configure_dns(self):
         if not self._dns_configured:
             self._configure_dns()
+
+    def create_interfaces_config_files(self):
         if not self._network_interfaces_config_files_exist:
             self._create_interfaces_config_files()
+
+    def remove_netplan(self):
         if self._netplan_installed:
             self._remove_netplan()
+
+    def enable_networking_service(self):
         if not self._networking_service_enabled:
             self._enable_networking_service()
 
