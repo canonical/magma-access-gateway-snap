@@ -453,7 +453,7 @@ ondemand.service                               enabled         enabled
         return_value=APT_LIST_WITH_NETPLAN,
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_netplan_is_installed_when_remove_netplan_then_no_commands_are_executed(
+    def test_given_netplan_is_installed_when_remove_netplan_then_apt_remove_command_is_executed(
         self, mock_check_call, _
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
