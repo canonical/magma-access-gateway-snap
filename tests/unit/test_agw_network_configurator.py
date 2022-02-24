@@ -281,7 +281,7 @@ ondemand.service                               enabled         enabled
         "magma_access_gateway_installer.agw_network_configurator.open",
         new_callable=mock_open,
     )
-    def test_given_network_interfaces_config_files_exist_when_create_interfaces_config_files_then_no_configurtations_are_written_to_any_file(  # noqa: E501
+    def test_given_network_interfaces_config_files_exist_when_create_interfaces_config_files_then_no_configurations_are_written_to_any_file(  # noqa: E501
         self, mock_open_file, _
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
