@@ -51,7 +51,7 @@ root	ALL=(ALL:ALL) ALL
         self.agw_service_user_creator = AGWInstallerServiceUserCreator()
 
     @patch("magma_access_gateway_installer.agw_service_user_creator.check_call")
-    def test_given_magma_user_doesnt_exist_when_create_magma_service_user_is_called_then_magma_user_is_created(  # noqa: E501
+    def test_given_magma_user_doesnt_exist_when_create_magma_service_user_then_magma_user_is_created(  # noqa: E501
         self, mock_check_call
     ):
         self.agw_service_user_creator.create_magma_user()
@@ -68,7 +68,7 @@ root	ALL=(ALL:ALL) ALL
 
     @patch("pwd.getpwnam", Mock(return_value=MAGMA_USER_DETAILS))
     @patch("magma_access_gateway_installer.agw_service_user_creator.check_call")
-    def test_given_magma_user_exists_when_create_magma_service_user_is_called_then_adduser_is_not_called(  # noqa: E501
+    def test_given_magma_user_exists_when_create_magma_service_user_then_adduser_is_not_called(
         self, mock_check_call
     ):
         self.agw_service_user_creator.create_magma_user()

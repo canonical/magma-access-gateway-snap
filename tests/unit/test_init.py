@@ -15,7 +15,7 @@ class TestAGWInstallerInit(unittest.TestCase):
     VALID_TEST_GW_IP_ADDRESS = "2.3.4.5"
     INVALID_TEST_GW_IP_ADDRESS = "321.3.4.5"
 
-    def test_given_args_validator_when_only_ip_address_cli_argument_is_given_then_value_error_is_raised(  # noqa: E501
+    def test_given_only_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(ip_address=self.VALID_TEST_IP_ADDRESS, gw_ip_address=None)
@@ -23,7 +23,7 @@ class TestAGWInstallerInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             magma_access_gateway_installer.validate_args(test_args)
 
-    def test_given_args_validator_when_only_gw_ip_address_cli_argument_is_given_then_value_error_is_raised(  # noqa: E501
+    def test_given_only_gw_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(ip_address=None, gw_ip_address=self.VALID_TEST_GW_IP_ADDRESS)
@@ -31,7 +31,7 @@ class TestAGWInstallerInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             magma_access_gateway_installer.validate_args(test_args)
 
-    def test_given_args_validator_when_invalid_gw_ip_address_is_given_then_value_error_is_raised(
+    def test_given_invalid_gw_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(
@@ -41,7 +41,7 @@ class TestAGWInstallerInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             magma_access_gateway_installer.validate_args(test_args)
 
-    def test_given_args_validator_when_invalid_ip_address_is_given_then_value_error_is_raised(
+    def test_given_invalid_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(
