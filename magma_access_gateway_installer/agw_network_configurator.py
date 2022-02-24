@@ -4,6 +4,7 @@
 
 import logging
 import os
+from copy import deepcopy
 from subprocess import check_call, check_output
 from typing import Optional
 
@@ -66,9 +67,10 @@ class AGWInstallerNetworkConfigurator:
     def _update_interfaces_names_in_cloud_init(self):
         """Changes names of network interfaces in /etc/netplan/50-cloud-init.yaml to ethX."""
         with open(self.CLOUD_INIT_YAML_PATH, "r") as cloud_init_file:
-            cloud_init_content = yaml.safe_load(cloud_init_file)
+            initial_cloud_init_content = yaml.safe_load(cloud_init_file)
 
-        cloud_init_interfaces = list(cloud_init_content["network"]["ethernets"].keys())
+        cloud_init_interfaces = list(initial_cloud_init_content["network"]["ethernets"].keys())
+        modified_cloud_init_content = deepcopy(initial_cloud_init_content)
         for network_interface in cloud_init_interfaces:
             network_interface_index = cloud_init_interfaces.index(network_interface)
             logger.info(
@@ -76,16 +78,16 @@ class AGWInstallerNetworkConfigurator:
                 f"Old interface name: {network_interface} "
                 f"New interface name: eth{network_interface_index}."
             )
-            cloud_init_content["network"]["ethernets"][
+            modified_cloud_init_content["network"]["ethernets"][
                 f"eth{network_interface_index}"
-            ] = cloud_init_content["network"]["ethernets"][network_interface]
-            del cloud_init_content["network"]["ethernets"][network_interface]
-            cloud_init_content["network"]["ethernets"][f"eth{network_interface_index}"][
+            ] = modified_cloud_init_content["network"]["ethernets"][network_interface]
+            del modified_cloud_init_content["network"]["ethernets"][network_interface]
+            modified_cloud_init_content["network"]["ethernets"][f"eth{network_interface_index}"][
                 "set-name"
             ] = f"eth{network_interface_index}"
 
         with open(self.CLOUD_INIT_YAML_PATH, "w") as cloud_init_file:
-            yaml.dump(cloud_init_content, cloud_init_file)
+            yaml.dump(modified_cloud_init_content, cloud_init_file)
 
     def _configure_grub(self):
         """Adds required configuration to /etc/default/grub"""

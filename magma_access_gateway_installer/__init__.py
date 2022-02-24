@@ -66,5 +66,5 @@ def validate_args(args):
         try:
             ip_network(args.ip_address, False)
             ip_address(args.gw_ip_address)
-        except ValueError as e:
+        except Exception as e:
             raise e
