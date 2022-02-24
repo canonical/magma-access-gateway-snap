@@ -34,6 +34,7 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
     ):
         mock_ubuntu_is_installed.return_value = False
         mock_required_amount_of_network_interfaces_is_available.return_value = True
+
         with self.assertRaises(UnsupportedOSError):
             self.agw_preinstall_checks.preinstall_checks()
 
@@ -50,6 +51,7 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
     ):
         mock_ubuntu_is_installed.return_value = True
         mock_required_amount_of_network_interfaces_is_available.return_value = False
+
         with self.assertRaises(InvalidNumberOfInterfacesError):
             self.agw_preinstall_checks.preinstall_checks()
 
@@ -61,4 +63,5 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
         for required_package in self.agw_preinstall_checks.REQUIRED_SYSTEM_PACKAGES:
             expected_apt_calls.append(call(["apt", "install", "-y", required_package]))
         self.agw_preinstall_checks.install_required_system_packages()
+
         mock_check_call.assert_has_calls(expected_apt_calls)

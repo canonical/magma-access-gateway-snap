@@ -13,7 +13,34 @@ from .agw_preinstall_checks import AGWInstallerPreinstallChecks
 from .agw_service_user_creator import AGWInstallerServiceUserCreator
 
 
-def _cli_arguments_parser(args):
+def main():
+    args = cli_arguments_parser(sys.argv[1:])
+    validate_args(args)
+
+    network_interfaces = netifaces.interfaces()
+    network_interfaces.remove("lo")
+
+    preinstall_checks = AGWInstallerPreinstallChecks(network_interfaces)
+    network_configurator = AGWInstallerNetworkConfigurator(
+        network_interfaces, args.ip_address, args.gw_ip_address
+    )
+    service_user_creator = AGWInstallerServiceUserCreator()
+
+    preinstall_checks.preinstall_checks()
+    preinstall_checks.install_required_system_packages()
+
+    network_configurator.update_interfaces_names()
+    network_configurator.configure_dns()
+    network_configurator.create_interfaces_config_files()
+    network_configurator.remove_netplan()
+    network_configurator.enable_networking_service()
+
+    service_user_creator.create_magma_user()
+    service_user_creator.add_magma_user_to_sudo_group()
+    service_user_creator.add_magma_user_to_sudoers_file()
+
+
+def cli_arguments_parser(cli_arguments):
     cli_options = ArgumentParser()
     cli_options.add_argument(
         "--ip-address",
@@ -27,11 +54,10 @@ def _cli_arguments_parser(args):
         required=False,
         help="Upstream router IP for SGi interface. Example: 1.1.1.200",
     )
-    return cli_options.parse_args(args)
+    return cli_options.parse_args(cli_arguments)
 
 
-def main():
-    args = _cli_arguments_parser(sys.argv[1:])
+def validate_args(args):
     if args.ip_address and not args.gw_ip_address:
         raise ValueError("Upstream router IP for SGi interface is missing! Exiting...")
     elif not args.ip_address and args.gw_ip_address:
@@ -42,17 +68,3 @@ def main():
             ip_address(args.gw_ip_address)
         except ValueError as e:
             raise e
-
-    network_interfaces = netifaces.interfaces()
-    network_interfaces.remove("lo")
-
-    preinstall_checks = AGWInstallerPreinstallChecks(network_interfaces)
-    network_configurator = AGWInstallerNetworkConfigurator(
-        network_interfaces, args.ip_address, args.gw_ip_address
-    )
-    service_user_creator = AGWInstallerServiceUserCreator()
-
-    preinstall_checks.preinstall_checks()
-    preinstall_checks.install_required_system_packages()
-    network_configurator.configure_network_interfaces()
-    service_user_creator.create_magma_service_user()
