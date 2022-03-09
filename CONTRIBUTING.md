@@ -3,7 +3,7 @@
 ## Intended use case
 
 The Snap in this repository is specifically developed for the
-[Magma](https://www.magmacore.org/) usecase.
+[Magma](https://www.magmacore.org/) use case.
 
 ## Developing and testing
 

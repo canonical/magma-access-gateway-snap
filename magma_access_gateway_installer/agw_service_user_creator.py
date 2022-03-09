@@ -6,11 +6,7 @@ import logging
 import pwd
 from subprocess import check_call, check_output
 
-from systemd.journal import JournalHandler  # type: ignore[import]
-
-logger = logging.getLogger(__name__)
-logger.addHandler(JournalHandler())
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstallerServiceUserCreator:

@@ -6,13 +6,9 @@ import logging
 import platform
 from subprocess import check_call
 
-from systemd.journal import JournalHandler  # type: ignore[import]
-
 from .agw_installation_errors import InvalidNumberOfInterfacesError, UnsupportedOSError
 
-logger = logging.getLogger(__name__)
-logger.addHandler(JournalHandler())
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstallerPreinstallChecks:

@@ -10,11 +10,8 @@ from typing import Optional
 
 import ipcalc  # type: ignore[import]
 import yaml
-from systemd.journal import JournalHandler  # type: ignore[import]
 
-logger = logging.getLogger(__name__)
-logger.addHandler(JournalHandler())
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstallerNetworkConfigurator:

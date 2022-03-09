@@ -2,15 +2,26 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+import logging
+import os
 import sys
+import time
 from argparse import ArgumentParser
 from ipaddress import ip_address, ip_network
 
 import netifaces  # type: ignore[import]
+from systemd.journal import JournalHandler  # type: ignore[import]
 
+from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
 from .agw_network_configurator import AGWInstallerNetworkConfigurator
 from .agw_preinstall_checks import AGWInstallerPreinstallChecks
 from .agw_service_user_creator import AGWInstallerServiceUserCreator
+
+logger = logging.getLogger(__name__)
+handler = JournalHandler()
+handler.setFormatter(logging.Formatter("Magma AGW Installer: %(message)s"))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 def main():
@@ -25,6 +36,7 @@ def main():
         network_interfaces, args.ip_address, args.gw_ip_address
     )
     service_user_creator = AGWInstallerServiceUserCreator()
+    installation_service_creator = AGWInstallerInstallationServiceCreator()
 
     preinstall_checks.preinstall_checks()
     preinstall_checks.install_required_system_packages()
@@ -38,6 +50,17 @@ def main():
     service_user_creator.create_magma_user()
     service_user_creator.add_magma_user_to_sudo_group()
     service_user_creator.add_magma_user_to_sudoers_file()
+
+    installation_service_creator.create_magma_agw_installation_service()
+    installation_service_creator.create_magma_agw_installation_service_link()
+
+    if network_configurator.reboot_needed:
+        logger.info(
+            "Rebooting system to apply pre-installation changes...\n"
+            "Magma AGW installation process will be resumed automatically once machine is back up."
+        )
+        time.sleep(5)
+        os.system("reboot")
 
 
 def cli_arguments_parser(cli_arguments):

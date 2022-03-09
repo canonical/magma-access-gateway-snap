@@ -4,11 +4,7 @@
 
 import logging
 
-from systemd.journal import JournalHandler  # type: ignore[import]
-
-logger = logging.getLogger(__name__)
-logger.addHandler(JournalHandler())
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstallationError(Exception):
