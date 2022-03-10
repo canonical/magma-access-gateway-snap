@@ -1,0 +1,10 @@
+cloud_address: controller.{{ domain }}
+cloud_port: 443
+bootstrap_address: bootstrapper-controller.{{ domain }}
+bootstrap_port: 443
+fluentd_address: fluentd.{{ domain }}
+fluentd_port: 24224
+
+sentry_url_python: ""
+
+rootca_cert: {{ root_ca_pem_path }}/{{ root_ca_pem_file_name }}
