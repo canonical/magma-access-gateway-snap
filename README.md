@@ -33,7 +33,7 @@ This Snap is currently delivered as a [classic](https://snapcraft.io/docs/snap-c
 - [Multipass](https://multipass.run/)
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-**In order to build and install Magma AGW snap:**
+**Building and installing Magma AGW snap:**
 
 1. Install required software listed above
 2. Checkout [magma-access-gateway-snap](https://github.com/canonical/magma-access-gateway-snap)
@@ -49,6 +49,14 @@ This Snap is currently delivered as a [classic](https://snapcraft.io/docs/snap-c
    - `magma-access-gateway` - to deploy Magma AGW using DHCP configured SGi interface
    - `magma-access-gateway --ip-address 1.1.1.1/24 --gw-ip-address 1.1.1.1` - to deploy Magma AGW
      using statically configured SGi interface
+
+**Configuring Magma Access Gateway:**
+
+Magma Access Gateway can be configured by executing:<br>
+`magma-access-gateway.configure --domain <your domain> --root-ca-pem-path <path to Root CA PEM>`
+<br>
+For more details about Magma Access Gateway configuration, visit 
+[Magma documentation](https://docs.magmacore.org/docs/next/lte/deploy_config_agw).
 
 ## Contributing
 

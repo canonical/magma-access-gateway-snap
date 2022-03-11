@@ -3,12 +3,12 @@
 # See LICENSE file for licensing details.
 
 import unittest
-from unittest.mock import Mock, call, mock_open, patch
+from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 from magma_access_gateway_installer.agw_installer import AGWInstaller
 
 
-class TestAGWInstallerInstallationServiceCreator(unittest.TestCase):
+class TestAGWInstaller(unittest.TestCase):
 
     APT_LIST_WITH_MAGMA = b"""lua-cjson/focal,now 2.1.0+dfsg-2.1 amd64 [installed,automatic]\n
 lvm2/focal,now 2.03.07-1ubuntu1 amd64 [installed,automatic]\n
@@ -252,7 +252,9 @@ Verify-Host "false";
 
     @patch("magma_access_gateway_installer.agw_installer.os.system")
     @patch("magma_access_gateway_installer.agw_installer.check_call", Mock())
+    @patch("magma_access_gateway_installer.agw_installer.check_output", MagicMock())
     @patch("magma_access_gateway_installer.agw_installer.open", mock_open())
+    @patch("magma_access_gateway_installer.agw_installer.time.sleep", Mock())
     def test_given_magma_not_installed_when_install_then_system_goes_for_reboot_once_installation_is_done(  # noqa: E501
         self, mock_os_system
     ):

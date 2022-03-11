@@ -3,4 +3,6 @@ ipcalc
 netifaces
 six
 systemd-python
+validators
+Jinja2
 PyYAML

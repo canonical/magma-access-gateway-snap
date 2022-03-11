@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/snap/magma-access-gateway/current/bin/python3
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
