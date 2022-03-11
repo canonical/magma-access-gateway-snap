@@ -25,6 +25,8 @@ apps:
     command: bin/install-agw
   configure:
     command: bin/configure-agw
+  post-install:
+    command: bin/agw-postinstall
 
 parts:
   magma-access-gateway:

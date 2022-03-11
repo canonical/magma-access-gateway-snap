@@ -1,6 +1,7 @@
 cryptography
 ipcalc
 netifaces
+ping3
 six
 systemd-python
 validators
