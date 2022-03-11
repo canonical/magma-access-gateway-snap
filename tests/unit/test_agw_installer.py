@@ -254,6 +254,7 @@ Verify-Host "false";
     @patch("magma_access_gateway_installer.agw_installer.check_call", Mock())
     @patch("magma_access_gateway_installer.agw_installer.check_output", MagicMock())
     @patch("magma_access_gateway_installer.agw_installer.open", mock_open())
+    @patch("magma_access_gateway_installer.agw_installer.time.sleep", Mock())
     def test_given_magma_not_installed_when_install_then_system_goes_for_reboot_once_installation_is_done(  # noqa: E501
         self, mock_os_system
     ):

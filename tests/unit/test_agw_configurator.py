@@ -42,6 +42,10 @@ class TestAGWConfigurator(unittest.TestCase):
         "magma_access_gateway_configurator.agw_configurator.shutil.copy",
         Mock(),
     )
+    @patch(
+        "magma_access_gateway_configurator.agw_configurator.os.path.exists",
+        Mock(return_value=False),
+    )
     def test_given_non_existent_root_ca_pem_destination_dir_when_copy_root_ca_pem_then_root_ca_pem_destination_dir_is_created(  # noqa: E501
         self, mocked_makedirs
     ):
