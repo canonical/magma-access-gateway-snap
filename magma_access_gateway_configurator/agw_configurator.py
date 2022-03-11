@@ -80,9 +80,6 @@ class AGWConfigurator:
         """Checks whether directory in which Proxy Config stores its configuration exists."""
         return os.path.exists(self.MAGMA_CONTROL_PROXY_CONFIG_DIR)
 
-    def _create_control_proxy_config_dir(self):
-        """Creates directory in which Proxy Config stores its configuration."""
-
     @staticmethod
     def _stop_service(service_name):
         """Stops system service."""
