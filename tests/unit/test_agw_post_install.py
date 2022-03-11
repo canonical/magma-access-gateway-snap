@@ -3,11 +3,8 @@
 # See LICENSE file for licensing details.
 
 import unittest
-from unittest.mock import MagicMock, Mock, PropertyMock, call, mock_open, patch
+from unittest.mock import Mock, PropertyMock, call, mock_open, patch
 
-import systemd.journal
-
-import magma_access_gateway_post_install.agw_post_install
 from magma_access_gateway_post_install.agw_post_install import (
     AGWCloudCheckinError,
     AGWConfigurationError,
@@ -59,7 +56,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         new_callable=mock_open,
         read_data="up",
     )
-    def test_given_some_agw_interfaces_missing_operstate_when_check_whether_required_interfaces_are_configured_then_AGWConfigurationError_is_raised(  # noqa: E501
+    def test_given_some_agw_interfaces_missing_operstate_when_check_whether_required_interfaces_are_configured_then_agwconfigurationerror_is_raised(  # noqa: E501
         self, _, mocked_magma_interfaces, mocked_path_exists
     ):
         mocked_magma_interfaces.return_value = self.TEST_MAGMA_AGW_INTERFACES
@@ -80,7 +77,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         "magma_access_gateway_post_install.agw_post_install.AGWPostInstallChecks.MAGMA_AGW_INTERFACES",  # noqa: E501
         new_callable=PropertyMock,
     )
-    def test_given_some_agw_interfaces_in_down_state_when_check_whether_required_interfaces_are_configured_then_AGWConfigurationError_is_raised(  # noqa: E501
+    def test_given_some_agw_interfaces_in_down_state_when_check_whether_required_interfaces_are_configured_then_agwconfigurationerror_is_raised(  # noqa: E501
         self, mocked_agw_ifaces, mocked_open
     ):
         mocked_agw_ifaces.return_value = self.TEST_MAGMA_AGW_INTERFACES
@@ -96,7 +93,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         "magma_access_gateway_post_install.agw_post_install.ping",
         Mock(return_value=None),
     )
-    def test_given_no_network_connectivity_on_eth0_when_check_eth0_internet_connectivity_then_AGWConfigurationError_is_raised(  # noqa: E501
+    def test_given_no_network_connectivity_on_eth0_when_check_eth0_internet_connectivity_then_agwconfigurationerror_is_raised(  # noqa: E501
         self,
     ):
         with self.assertRaises(AGWConfigurationError):
@@ -127,7 +124,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         "magma_access_gateway_post_install.agw_post_install.AGWPostInstallChecks.WAIT_FOR_SERVICE_INTERVAL",  # noqa: E501
         new_callable=PropertyMock,
     )
-    def test_given_some_agw_services_not_running_when_check_whether_required_services_are_running_then_AGWServicesNotRunningError_is_raised(  # noqa: E501
+    def test_given_some_agw_services_not_running_when_check_whether_required_services_are_running_then_agwservicesnotrunningerror_is_raised(  # noqa: E501
         self,
         mocked_wait_for_service_interval,
         mocked_timeout_waiting_for_service,
@@ -151,7 +148,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         "magma_access_gateway_post_install.agw_post_install.AGWPostInstallChecks.REQUIRED_PACKAGES",  # noqa: E501
         new_callable=PropertyMock,
     )
-    def test_given_not_all_required_magma_packages_are_installed_when_check_whether_required_packages_are_installed_then_AGWPackagesMissingError_is_raised(  # noqa: E501
+    def test_given_not_all_required_magma_packages_are_installed_when_check_whether_required_packages_are_installed_then_agwpackagesmissingerror_is_raised(  # noqa: E501
         self, mocked_required_packages, mocked_call
     ):
         mocked_required_packages.return_value = self.TEST_REQUIRED_PACKAGES
@@ -166,7 +163,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         "magma_access_gateway_post_install.agw_post_install.os.path.exists",
         Mock(return_value=False),
     )
-    def test_given_invalid_root_ca_pem_path_when_check_whether_root_certificate_exists_then_AGWRootCertificateMissingError_is_raised(  # noqa: E501
+    def test_given_invalid_root_ca_pem_path_when_check_whether_root_certificate_exists_then_agwrootcertificatemissingerror_is_raised(  # noqa: E501
         self,
     ):
         with self.assertRaises(AGWRootCertificateMissingError):
@@ -176,7 +173,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         "magma_access_gateway_post_install.agw_post_install.os.path.exists",
         Mock(return_value=False),
     )
-    def test_given_control_proxy_config_file_missing_when_check_control_proxy_then_AGWControlProxyConfigFileMissingError_is_raised(  # noqa: E501
+    def test_given_control_proxy_config_file_missing_when_check_control_proxy_then_agwcontrolproxyconfigfilemissingerror_is_raised(  # noqa: E501
         self,
     ):
         with self.assertRaises(AGWControlProxyConfigFileMissingError):
@@ -188,7 +185,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         "magma_access_gateway_post_install.agw_post_install.os.path.exists",
         Mock(return_value=True),
     )
-    def test_given_control_proxy_config_file_is_missing_required_keys_when_check_control_proxy_then_AGWControlProxyConfigurationError_is_raised(  # noqa: E501
+    def test_given_control_proxy_config_file_is_missing_required_keys_when_check_control_proxy_then_agwcontrolproxyconfigurationerror_is_raised(  # noqa: E501
         self, _, mocked_yaml_safe_load
     ):
         invalid_control_proxy_config_file = {
@@ -204,8 +201,8 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         with self.assertRaises(AGWControlProxyConfigurationError):
             self.agw_post_install.check_control_proxy()
 
-    # def test_given_journal_not_containing_cloud_checkin_logs_when_check_cloud_check_in_then_AGWCloudCheckinError_is_raised(  # noqa: E501
-    #     self,
-    # ):
-    #     with self.assertRaises(AGWCloudCheckinError):
-    #         self.agw_post_install.check_cloud_check_in()
+    def test_given_journal_not_containing_cloud_checkin_logs_when_check_cloud_check_in_then_agwcloudcheckinerror_is_raised(  # noqa: E501
+        self,
+    ):
+        with self.assertRaises(AGWCloudCheckinError):
+            self.agw_post_install.check_cloud_check_in()
