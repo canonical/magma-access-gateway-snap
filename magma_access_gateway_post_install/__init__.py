@@ -12,8 +12,9 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-from .agw_post_install import AGWPostInstallChecks
 from systemd.journal import JournalHandler  # type: ignore[import]
+
+from .agw_post_install import AGWPostInstallChecks
 
 logger = logging.getLogger(__name__)
 handler = JournalHandler()

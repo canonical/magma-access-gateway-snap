@@ -2,14 +2,14 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import os
 import logging
+import os
 import time
-from subprocess import call, check_call, DEVNULL
+from subprocess import DEVNULL, call, check_call
 
 import yaml
-from ping3 import ping
-from systemd import journal
+from ping3 import ping  # type: ignore[import]
+from systemd import journal  # type: ignore[import]
 
 logger = logging.getLogger("magma_access_gateway_post_install")
 
@@ -77,10 +77,10 @@ class AGWPostInstallChecks:
         """
         logger.info("Checking network interfaces configuration...")
         faulty_interfaces = [
-            interface for interface in self.MAGMA_AGW_INTERFACES
-            if not os.path.exists(
-                os.path.join("/sys/class/net", interface, "operstate")
-            ) or "down" in self._get_interface_state(interface)
+            interface
+            for interface in self.MAGMA_AGW_INTERFACES
+            if not os.path.exists(os.path.join("/sys/class/net", interface, "operstate"))
+            or "down" in self._get_interface_state(interface)  # noqa: W503
         ]
         if faulty_interfaces:
             raise AGWConfigurationError(
@@ -114,7 +114,8 @@ class AGWPostInstallChecks:
         """
         logger.info("Checking whether required services are running...")
         services_down = [
-            service for service in self.MAGMA_AGW_SERVICES + self.NON_MAGMA_SERVICES
+            service
+            for service in self.MAGMA_AGW_SERVICES + self.NON_MAGMA_SERVICES
             if self._wait_for_service(service)
         ]
         if services_down:
@@ -128,7 +129,8 @@ class AGWPostInstallChecks:
         """
         logger.info("Checking whether required packages are installed...")
         missing_packages = [
-            package for package in self.REQUIRED_PACKAGES
+            package
+            for package in self.REQUIRED_PACKAGES
             if not self._package_is_installed(package)
         ]
         if missing_packages:
@@ -158,14 +160,17 @@ class AGWPostInstallChecks:
         journal_reader.log_level(journal.LOG_INFO)
         journal_reader.this_boot()
         journal_reader.add_match(SYSLOG_IDENTIFIER="magmad")
-        if not any(
+        if not (
+            any(
                 entry["MESSAGE"]
                 for entry in journal_reader
                 if self.GOT_CLOUD_HEARTBEAT_MSG in entry["MESSAGE"]
-        ) and any(
-            entry["MESSAGE"]
-            for entry in journal_reader
-            if self.CLOUD_CHECKIN_SUCCESSFUL_MSG in entry["MESSAGE"]
+            )
+            or any(  # noqa: W503
+                entry["MESSAGE"]
+                for entry in journal_reader
+                if self.CLOUD_CHECKIN_SUCCESSFUL_MSG in entry["MESSAGE"]
+            )
         ):
             raise AGWCloudCheckinError()
 
@@ -322,12 +327,12 @@ class AGWControlProxyConfigurationError(Exception):
 class AGWCloudCheckinError(Exception):
     def __init__(self):
         logger.error(
-            f"Cloud checkin failed!"
+            "Cloud checkin failed!"
             "Please follow Access Gateway Configuration section of Magma AGW documentation "
             "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
         )
         super().__init__(
-            f"Cloud checkin failed!"
+            "Cloud checkin failed!"
             "Please follow Access Gateway Configuration section of Magma AGW documentation "
             "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
         )
