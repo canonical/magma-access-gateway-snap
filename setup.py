@@ -32,11 +32,13 @@ setup(
     packages=[
         "magma_access_gateway_installer",
         "magma_access_gateway_configurator",
+        "magma_access_gateway_post_install",
     ],
     entry_points={
         "console_scripts": [
             "install-agw=magma_access_gateway_installer:main",
             "configure-agw=magma_access_gateway_configurator:main",
+            "agw-postinstall=magma_access_gateway_post_install:main",
         ],
     },
 )
