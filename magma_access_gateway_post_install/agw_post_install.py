@@ -87,7 +87,7 @@ class AGWPostInstallChecks:
             AGWConfigurationError: if eth0 fails to connect to the internet
         """
         logger.info("Checking eth0's internet connectivity...")
-        if not bool(ping("8.8.8.8")):
+        if not bool(ping(dest_addr="8.8.8.8", interface="eth0")):
             raise AGWConfigurationError(
                 "eth0 is not connected to the internet!\n"
                 "Make sure the hardware has been properly plugged in (eth0 to internet)."
