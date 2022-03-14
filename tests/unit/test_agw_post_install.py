@@ -179,7 +179,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         with self.assertRaises(AGWControlProxyConfigFileMissingError):
             self.agw_post_install.check_control_proxy()
 
-    @patch("magma_access_gateway_installer.agw_network_configurator.yaml.safe_load")
+    @patch("magma_access_gateway_post_install.agw_post_install.yaml.safe_load")
     @patch("magma_access_gateway_post_install.agw_post_install.open", new_callable=mock_open())
     @patch(
         "magma_access_gateway_post_install.agw_post_install.os.path.exists",
@@ -201,8 +201,49 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         with self.assertRaises(AGWControlProxyConfigurationError):
             self.agw_post_install.check_control_proxy()
 
+    @patch("magma_access_gateway_post_install.agw_post_install.journal.Reader", new_callable=Mock)
     def test_given_journal_not_containing_cloud_checkin_logs_when_check_cloud_check_in_then_agwcloudcheckinerror_is_raised(  # noqa: E501
-        self,
+        self, mocked_journal_reader
     ):
+        mocked_journal_reader.return_value = MockedJournalReader()
+
         with self.assertRaises(AGWCloudCheckinError):
             self.agw_post_install.check_cloud_check_in()
+
+
+class MockedJournalReader:
+    def __iter__(self):
+        return iter(
+            [
+                {
+                    "PRIORITY": 6,
+                    "_HOSTNAME": "test-host",
+                    "SYSLOG_IDENTIFIER": "magmad",
+                    "_PID": 1111,
+                    "MESSAGE": "Test message without desired text.",
+                },
+                {
+                    "PRIORITY": 6,
+                    "_HOSTNAME": "test-host",
+                    "SYSLOG_IDENTIFIER": "magmad",
+                    "_PID": 1111,
+                    "MESSAGE": "Another test message without desired text.",
+                },
+                {
+                    "PRIORITY": 6,
+                    "_HOSTNAME": "test-host",
+                    "SYSLOG_IDENTIFIER": "magmad",
+                    "_PID": 1111,
+                    "MESSAGE": "One more test message without desired text.",
+                },
+            ]
+        )
+
+    def log_level(self, _):
+        pass
+
+    def this_boot(self):
+        pass
+
+    def add_match(self, *args, **kwargs):
+        pass
