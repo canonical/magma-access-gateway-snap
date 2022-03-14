@@ -173,6 +173,8 @@ class AGWPostInstallChecks:
             )
         ):
             raise AGWCloudCheckinError()
+        else:
+            return True
 
     @staticmethod
     def _get_interface_state(interface_name):

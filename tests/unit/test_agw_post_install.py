@@ -205,16 +205,55 @@ class TestAGWPostInstallChecks(unittest.TestCase):
     def test_given_journal_not_containing_cloud_checkin_logs_when_check_cloud_check_in_then_agwcloudcheckinerror_is_raised(  # noqa: E501
         self, mocked_journal_reader
     ):
-        mocked_journal_reader.return_value = MockedJournalReader()
+        mocked_journal_reader.return_value = MockedJournalReader(False)
 
         with self.assertRaises(AGWCloudCheckinError):
             self.agw_post_install.check_cloud_check_in()
 
+    @patch("magma_access_gateway_post_install.agw_post_install.journal.Reader", new_callable=Mock)
+    def test_given_journal_containing_cloud_checkin_logs_when_check_cloud_check_in_then_true_is_returned(  # noqa: E501
+        self, mocked_journal_reader
+    ):
+        mocked_journal_reader.return_value = MockedJournalReader(True)
+
+        self.assertTrue(self.agw_post_install.check_cloud_check_in())
+
 
 class MockedJournalReader:
+    def __init__(self, agw_configured: bool):
+        self.journal_logs = self._set_journal_logs(agw_configured)
+
     def __iter__(self):
-        return iter(
-            [
+        return iter(self.journal_logs)
+
+    @staticmethod
+    def _set_journal_logs(agw_configured):
+        if agw_configured:
+            return [
+                {
+                    "PRIORITY": 6,
+                    "_HOSTNAME": "test-host",
+                    "SYSLOG_IDENTIFIER": "magmad",
+                    "_PID": 1111,
+                    "MESSAGE": "[SyncRPC] Got heartBeat from cloud",
+                },
+                {
+                    "PRIORITY": 6,
+                    "_HOSTNAME": "test-host",
+                    "SYSLOG_IDENTIFIER": "magmad",
+                    "_PID": 1111,
+                    "MESSAGE": "Just some random log message.",
+                },
+                {
+                    "PRIORITY": 6,
+                    "_HOSTNAME": "test-host",
+                    "SYSLOG_IDENTIFIER": "magmad",
+                    "_PID": 1111,
+                    "MESSAGE": "Checkin Successful! Successfully sent states to the cloud!",
+                },
+            ]
+        else:
+            return [
                 {
                     "PRIORITY": 6,
                     "_HOSTNAME": "test-host",
@@ -237,7 +276,6 @@ class MockedJournalReader:
                     "MESSAGE": "One more test message without desired text.",
                 },
             ]
-        )
 
     def log_level(self, _):
         pass
