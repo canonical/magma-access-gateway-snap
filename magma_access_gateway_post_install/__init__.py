@@ -29,10 +29,8 @@ def main():
     agw_post_install_checks = AGWPostInstallChecks(args.root_ca_path)
 
     logger.info("Starting Magma AGW post-installation checks...")
-    agw_post_install_checks.prepare_system_for_post_install_checks()
     agw_post_install_checks.check_whether_required_interfaces_are_configured()
     agw_post_install_checks.check_eth0_internet_connectivity()
-    agw_post_install_checks.start_magma_service()
     agw_post_install_checks.check_whether_required_services_are_running()
     agw_post_install_checks.check_whether_required_packages_are_installed()
     agw_post_install_checks.check_whether_root_certificate_exists()

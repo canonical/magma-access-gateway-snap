@@ -3,7 +3,7 @@
 # See LICENSE file for licensing details.
 
 import unittest
-from unittest.mock import Mock, PropertyMock, call, mock_open, patch
+from unittest.mock import Mock, PropertyMock, mock_open, patch
 
 from magma_access_gateway_post_install.agw_post_install import (
     AGWCloudCheckinError,
@@ -28,23 +28,6 @@ class TestAGWPostInstallChecks(unittest.TestCase):
 
     def setUp(self) -> None:
         self.agw_post_install = AGWPostInstallChecks("/test/root/ca/pem/path")
-
-    @patch("magma_access_gateway_post_install.agw_post_install.check_call")
-    def test_given_installed_magma_agw_when_prepare_system_for_post_install_checks_then_relevant_actions_on_services_and_interfaces_are_executed(  # noqa: E501
-        self, mocked_check_call
-    ):
-        expected_calls = [
-            call(["service", "magma@*", "stop"]),
-            call(["ifdown", "gtp_br0"]),
-            call(["ifdown", "uplink_br0"]),
-            call(["service", "openvswitch-switch", "restart"]),
-            call(["ifup", "gtp_br0"]),
-            call(["ifup", "uplink_br0"]),
-        ]
-
-        self.agw_post_install.prepare_system_for_post_install_checks()
-
-        mocked_check_call.assert_has_calls(expected_calls)
 
     @patch("magma_access_gateway_post_install.agw_post_install.os.path.exists")
     @patch(
@@ -98,14 +81,6 @@ class TestAGWPostInstallChecks(unittest.TestCase):
     ):
         with self.assertRaises(AGWConfigurationError):
             self.agw_post_install.check_eth0_internet_connectivity()
-
-    @patch("magma_access_gateway_post_install.agw_post_install.check_call")
-    def test_given_magma_service_not_running_when_start_magma_service_then_magma_service_is_started(  # noqa: E501
-        self, mocked_check_call
-    ):
-        self.agw_post_install.start_magma_service()
-
-        mocked_check_call.assert_called_once_with(["service", "magma@magmad", "start"])
 
     @patch("magma_access_gateway_post_install.agw_post_install.call")
     @patch(

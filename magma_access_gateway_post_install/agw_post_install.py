@@ -5,7 +5,7 @@
 import logging
 import os
 import time
-from subprocess import DEVNULL, call, check_call
+from subprocess import DEVNULL, call
 
 import yaml
 from ping3 import ping  # type: ignore[import]
@@ -60,15 +60,6 @@ class AGWPostInstallChecks:
     def __init__(self, root_ca_pem_path: str):
         self.root_ca_pem_path = root_ca_pem_path
 
-    def prepare_system_for_post_install_checks(self):
-        """Makes sure system is in the right state for performing post-install checks."""
-        self._stop_service("magma@*")
-        self._bring_down_interface("gtp_br0")
-        self._bring_down_interface("uplink_br0")
-        self._restart_service("openvswitch-switch")
-        self._bring_up_interface("gtp_br0")
-        self._bring_up_interface("uplink_br0")
-
     def check_whether_required_interfaces_are_configured(self):
         """Checks whether Magma AGW interfaces are configured or not.
 
@@ -101,10 +92,6 @@ class AGWPostInstallChecks:
                 "eth0 is not connected to the internet!\n"
                 "Make sure the hardware has been properly plugged in (eth0 to internet)."
             )
-
-    def start_magma_service(self):
-        """Starts magma service."""
-        self._start_service("magma@magmad")
 
     def check_whether_required_services_are_running(self):
         """Checks whether all services required by Magma AGW are running.
@@ -222,36 +209,6 @@ class AGWPostInstallChecks:
     def _package_is_installed(package_name) -> bool:
         """Checks whether specified system package is installed."""
         return call(["dpkg-query", "-W", "-f='${Status}'", package_name], stdout=DEVNULL) == 0
-
-    @staticmethod
-    def _bring_up_interface(interface_name):
-        """Brings up interface using ifup command."""
-        logger.info(f"Bringing up {interface_name}...")
-        check_call(["ifup", interface_name])
-
-    @staticmethod
-    def _bring_down_interface(interface_name):
-        """Brings down interface using ifup command."""
-        logger.info(f"Bringing down {interface_name}...")
-        check_call(["ifdown", interface_name])
-
-    @staticmethod
-    def _start_service(service_name):
-        """Starts system service."""
-        logger.info(f"Starting {service_name} service...")
-        check_call(["service", service_name, "start"])
-
-    @staticmethod
-    def _stop_service(service_name):
-        """Stops system service."""
-        logger.info(f"Stopping {service_name} service...")
-        check_call(["service", service_name, "stop"])
-
-    @staticmethod
-    def _restart_service(service_name):
-        """Restarts system service."""
-        logger.info(f"Restarting {service_name} service...")
-        check_call(["service", service_name, "restart"])
 
 
 class AGWConfigurationError(Exception):
