@@ -116,12 +116,11 @@ class AGWPostInstallChecks:
             AGWPackageMissingError: if any Magma AGW packages are missing
         """
         logger.info("Checking whether required packages are installed...")
-        missing_packages = [
+        if missing_packages := [
             package
             for package in self.REQUIRED_PACKAGES
             if not self._package_is_installed(package)
-        ]
-        if missing_packages:
+        ]:
             raise AGWPackagesMissingError(missing_packages)
 
     def check_whether_root_certificate_exists(self):
