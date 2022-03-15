@@ -101,12 +101,11 @@ class AGWPostInstallChecks:
             AGWServiceNotRunningError: if any of required services is not running
         """
         logger.info("Checking whether required services are running...")
-        services_down = [
+       if services_down := [
             service
             for service in self.MAGMA_AGW_SERVICES + self.NON_MAGMA_SERVICES
             if self._wait_for_service(service)
-        ]
-        if services_down:
+        ]:
             raise AGWServicesNotRunningError(services_down)
 
     def check_whether_required_packages_are_installed(self):
