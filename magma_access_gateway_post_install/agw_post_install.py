@@ -67,13 +67,14 @@ class AGWPostInstallChecks:
             AGWConfigurationError: if any of specified interfaces hasn't been configured
         """
         logger.info("Checking network interfaces configuration...")
-        faulty_interfaces = [
+       if faulty_interfaces := [
             interface
             for interface in self.MAGMA_AGW_INTERFACES
-            if not os.path.exists(os.path.join("/sys/class/net", interface, "operstate"))
+            if not os.path.exists(
+                os.path.join("/sys/class/net", interface, "operstate")
+            )
             or "down" in self._get_interface_state(interface)  # noqa: W503
-        ]
-        if faulty_interfaces:
+        ]:
             raise AGWConfigurationError(
                 f'Following interfaces are not configured: {" ".join(faulty_interfaces)}\n'
                 f"Check each interface's setup under /etc/network/interfaces.d/."
