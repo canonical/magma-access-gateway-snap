@@ -67,12 +67,10 @@ class AGWPostInstallChecks:
             AGWConfigurationError: if any of specified interfaces hasn't been configured
         """
         logger.info("Checking network interfaces configuration...")
-       if faulty_interfaces := [
+        if faulty_interfaces := [
             interface
             for interface in self.MAGMA_AGW_INTERFACES
-            if not os.path.exists(
-                os.path.join("/sys/class/net", interface, "operstate")
-            )
+            if not os.path.exists(os.path.join("/sys/class/net", interface, "operstate"))
             or "down" in self._get_interface_state(interface)  # noqa: W503
         ]:
             raise AGWConfigurationError(
@@ -101,7 +99,7 @@ class AGWPostInstallChecks:
             AGWServiceNotRunningError: if any of required services is not running
         """
         logger.info("Checking whether required services are running...")
-       if services_down := [
+        if services_down := [
             service
             for service in self.MAGMA_AGW_SERVICES + self.NON_MAGMA_SERVICES
             if self._wait_for_service(service)
@@ -182,9 +180,8 @@ class AGWPostInstallChecks:
         """
         with open("/var/opt/magma/configs/control_proxy.yml", "r") as control_proxy_file:
             control_proxy_file_content = yaml.safe_load(control_proxy_file)
-      if missing_config_keys := list(
-            set(self.REQUIRED_CONTROL_PROXY_KEYS)
-            - set(control_proxy_file_content.keys())
+        if missing_config_keys := list(
+            set(self.REQUIRED_CONTROL_PROXY_KEYS) - set(control_proxy_file_content.keys())
         ):
             raise AGWControlProxyConfigurationError(missing_config_keys)
 
