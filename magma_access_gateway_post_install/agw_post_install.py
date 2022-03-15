@@ -184,10 +184,10 @@ class AGWPostInstallChecks:
         """
         with open("/var/opt/magma/configs/control_proxy.yml", "r") as control_proxy_file:
             control_proxy_file_content = yaml.safe_load(control_proxy_file)
-        missing_config_keys = list(
-            set(self.REQUIRED_CONTROL_PROXY_KEYS) - set(control_proxy_file_content.keys())
-        )
-        if missing_config_keys:
+      if missing_config_keys := list(
+            set(self.REQUIRED_CONTROL_PROXY_KEYS)
+            - set(control_proxy_file_content.keys())
+        ):
             raise AGWControlProxyConfigurationError(missing_config_keys)
 
     def _wait_for_service(self, service_name):
