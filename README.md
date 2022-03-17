@@ -58,6 +58,13 @@ Magma Access Gateway can be configured by executing:<br>
 For more details about Magma Access Gateway configuration, visit 
 [Magma documentation](https://docs.magmacore.org/docs/next/lte/deploy_config_agw).
 
+**Magma Access Gateway post-installation checks**
+
+Once Magma Access Gateway is installed and configured, post-installation checks can be run to 
+make sure everything has been configured correctly.<br>
+Post-installation checks can be executed by issuing:<br>
+`magma-access-gateway.post-install`
+
 ## Contributing
 
 Please see `CONTRIBUTING.md` for developer guidance.
