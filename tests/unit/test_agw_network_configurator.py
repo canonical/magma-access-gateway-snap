@@ -12,10 +12,11 @@ from magma_access_gateway_installer.agw_network_configurator import (
 
 
 class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
+    TEST_DNS_LIST = ["1.2.3.4", "5.6.7.8"]
     CORRECT_NETWORK_INTERFACES = ["eth0", "eth1"]
     INCORRECT_NETWORK_INTERFACES = ["abc", "def"]
     GOOD_DNS_CONFIG = """[Resolve]
-DNS=8.8.8.8 208.67.222.222
+DNS=1.2.3.4 5.6.7.8
 #FallbackDNS=
 #Domains=
 #LLMNR=no
@@ -83,6 +84,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -97,6 +99,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -111,6 +114,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -131,6 +135,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.INCORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -165,6 +170,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.INCORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -184,6 +190,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.INCORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -204,6 +211,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -225,6 +233,7 @@ ondemand.service                               enabled         enabled
         patch_symlink.return_value = True
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -248,6 +257,7 @@ ondemand.service                               enabled         enabled
         patch_symlink.return_value = True
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -267,6 +277,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -286,6 +297,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -305,6 +317,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -324,6 +337,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -347,6 +361,7 @@ ondemand.service                               enabled         enabled
         ]
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -376,6 +391,7 @@ ondemand.service                               enabled         enabled
         ]
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             test_static_ip_address,
             test_static_gw_ip_address,
         )
@@ -402,6 +418,7 @@ ondemand.service                               enabled         enabled
         ]
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -422,6 +439,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -440,6 +458,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -458,6 +477,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -476,6 +496,7 @@ ondemand.service                               enabled         enabled
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
@@ -498,6 +519,7 @@ ondemand.service                               enabled         enabled
         ]
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
             None,
             None,
         )
