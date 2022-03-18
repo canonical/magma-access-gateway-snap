@@ -50,6 +50,10 @@ This Snap is currently delivered as a [classic](https://snapcraft.io/docs/snap-c
    - `magma-access-gateway --ip-address 1.1.1.1/24 --gw-ip-address 1.1.1.1` - to deploy Magma AGW
      using statically configured SGi interface
 
+   Magma AGW uses **Google (8.8.8.8)** and **OpenDNS (208.67.222.222)** DNS servers by default. 
+   Default DNS servers can be changed by using `--dns` flag along with `magma-access-gateway` 
+   command. Custom DNS servers should be specified as space separated list of IP addresses.
+
 **Configuring Magma Access Gateway:**
 
 Magma Access Gateway can be configured by executing:<br>
