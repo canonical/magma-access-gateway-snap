@@ -39,7 +39,7 @@ DNS=1.2.3.4 5.6.7.8
 #DNSStubListener=yes
 #ReadEtcHosts=yes
 """
-    CLOUD_INIT_CONTENT = {
+    CLOUD_INIT_CONTENT_2_INTERFACES_ONLY = {
         "network": {
             "ethernets": {
                 "test_if_name": {
@@ -47,11 +47,50 @@ DNS=1.2.3.4 5.6.7.8
                     "dhcp6": False,
                     "match": {"macaddress": "02:45:b8:e6:23:c6"},
                     "set-name": "test_if_name",
-                }
+                },
+                "test_if_name_2": {
+                    "dhcp4": True,
+                    "dhcp6": False,
+                    "match": {"macaddress": "02:45:b8:e6:c6:23"},
+                    "set-name": "test_if_name_2",
+                },
             },
             "version": 2,
         }
     }
+    CLOUD_INIT_CONTENT_MORE_INTERFACES = {
+        "network": {
+            "ethernets": {
+                "test_if_name": {
+                    "dhcp4": True,
+                    "dhcp6": False,
+                    "match": {"macaddress": "02:45:b8:e6:23:c6"},
+                    "set-name": "test_if_name",
+                },
+                "test_if_name_2": {
+                    "dhcp4": True,
+                    "dhcp6": False,
+                    "match": {"macaddress": "02:45:b8:e6:c6:23"},
+                    "set-name": "test_if_name_2",
+                },
+                "test_if_name_3": {
+                    "dhcp4": True,
+                    "dhcp6": False,
+                    "match": {"macaddress": "02:45:23:e6:c6:b8"},
+                    "set-name": "test_if_name_3",
+                },
+                "test_if_name_4": {
+                    "dhcp4": True,
+                    "dhcp6": False,
+                    "match": {"macaddress": "02:23:b8:e6:c6:45"},
+                    "set-name": "test_if_name_4",
+                },
+            },
+            "version": 2,
+        }
+    }
+    TEST_SGi_INTERFACE = "test_if_name_2"
+    TEST_S1_INTERFACE = "test_if_name_4"
     APT_LIST_WITH_NETPLAN = """netcat-openbsd/focal,now 1.206-1ubuntu1 amd64 [installed,automatic]
 netpbm/focal,now 2:10.0-15.3build1 amd64 [installed,automatic]
 netplan.io/focal-updates,now 0.103-0ubuntu5~20.04.5 amd64 [installed,automatic]
@@ -85,8 +124,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.update_interfaces_names()
@@ -100,8 +137,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.update_interfaces_names()
@@ -115,8 +150,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.update_interfaces_names()
@@ -126,7 +159,7 @@ ondemand.service                               enabled         enabled
     @patch("magma_access_gateway_installer.agw_network_configurator.yaml.dump")
     @patch(
         "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
-        return_value=copy.deepcopy(CLOUD_INIT_CONTENT),
+        return_value=copy.deepcopy(CLOUD_INIT_CONTENT_2_INTERFACES_ONLY),
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open)
     @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
@@ -136,8 +169,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.INCORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
         expected_cloud_init_content = {
             "network": {
@@ -147,6 +178,66 @@ ondemand.service                               enabled         enabled
                         "dhcp6": False,
                         "match": {"macaddress": "02:45:b8:e6:23:c6"},
                         "set-name": "eth0",
+                    },
+                    "eth1": {
+                        "dhcp4": True,
+                        "dhcp6": False,
+                        "match": {"macaddress": "02:45:b8:e6:c6:23"},
+                        "set-name": "eth1",
+                    },
+                },
+                "version": 2,
+            }
+        }
+
+        agw_network_configurator.update_interfaces_names()
+
+        args, kwargs = mock_yaml_dump.call_args
+        self.assertEqual(args[0], expected_cloud_init_content)
+        self.assertEqual(mock_yaml_dump.call_count, 1)
+
+    @patch("magma_access_gateway_installer.agw_network_configurator.yaml.dump")
+    @patch(
+        "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
+        return_value=copy.deepcopy(CLOUD_INIT_CONTENT_MORE_INTERFACES),
+    )
+    @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open)
+    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
+    def test_given_custom_sgi_and_s1_interfaces_names_when_update_interfaces_names_then_grub_configuration_file_is_updated(  # noqa: E501
+        self, _, __, ___, mock_yaml_dump
+    ):
+        agw_network_configurator = AGWInstallerNetworkConfigurator(
+            self.INCORRECT_NETWORK_INTERFACES,
+            self.TEST_DNS_LIST,
+            sgi_interface=self.TEST_SGi_INTERFACE,
+            s1_interface=self.TEST_S1_INTERFACE,
+        )
+        expected_cloud_init_content = {
+            "network": {
+                "ethernets": {
+                    "test_if_name": {
+                        "dhcp4": True,
+                        "dhcp6": False,
+                        "match": {"macaddress": "02:45:b8:e6:23:c6"},
+                        "set-name": "test_if_name",
+                    },
+                    "eth0": {
+                        "dhcp4": True,
+                        "dhcp6": False,
+                        "match": {"macaddress": "02:45:b8:e6:c6:23"},
+                        "set-name": "eth0",
+                    },
+                    "test_if_name_3": {
+                        "dhcp4": True,
+                        "dhcp6": False,
+                        "match": {"macaddress": "02:45:23:e6:c6:b8"},
+                        "set-name": "test_if_name_3",
+                    },
+                    "eth1": {
+                        "dhcp4": True,
+                        "dhcp6": False,
+                        "match": {"macaddress": "02:23:b8:e6:c6:45"},
+                        "set-name": "eth1",
                     },
                 },
                 "version": 2,
@@ -161,7 +252,7 @@ ondemand.service                               enabled         enabled
 
     @patch(
         "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
-        return_value=copy.deepcopy(CLOUD_INIT_CONTENT),
+        return_value=copy.deepcopy(CLOUD_INIT_CONTENT_2_INTERFACES_ONLY),
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.open")
     @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
@@ -171,8 +262,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.INCORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.update_interfaces_names()
@@ -181,7 +270,7 @@ ondemand.service                               enabled         enabled
 
     @patch(
         "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
-        return_value=CLOUD_INIT_CONTENT,
+        return_value=CLOUD_INIT_CONTENT_2_INTERFACES_ONLY,
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.open")
     @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
@@ -191,8 +280,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.INCORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.update_interfaces_names()
@@ -212,8 +299,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.configure_dns()
@@ -234,8 +319,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.configure_dns()
@@ -258,8 +341,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.configure_dns()
@@ -278,8 +359,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.create_interfaces_config_files()
@@ -298,8 +377,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.create_interfaces_config_files()
@@ -318,8 +395,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.create_interfaces_config_files()
@@ -338,8 +413,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.create_interfaces_config_files()
@@ -362,8 +435,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.create_interfaces_config_files()
@@ -419,8 +490,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.create_interfaces_config_files()
@@ -440,8 +509,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.create_interfaces_config_files()
@@ -459,8 +526,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.remove_netplan()
@@ -478,8 +543,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.remove_netplan()
@@ -497,8 +560,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.enable_networking_service()
@@ -520,8 +581,6 @@ ondemand.service                               enabled         enabled
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.CORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
-            None,
-            None,
         )
 
         agw_network_configurator.enable_networking_service()

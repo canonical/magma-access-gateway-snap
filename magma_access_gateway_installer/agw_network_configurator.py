@@ -26,13 +26,17 @@ class AGWInstallerNetworkConfigurator:
         self,
         network_interfaces: list,
         dns_ip_addresses: list,
-        eth0_address: Optional[str],
-        eth0_gw_ip_address: Optional[str],
+        eth0_address: Optional[str] = None,
+        eth0_gw_ip_address: Optional[str] = None,
+        sgi_interface: Optional[str] = None,
+        s1_interface: Optional[str] = None,
     ):
         self.dns_ips_list = " ".join(dns_ip_addresses)
         self.eth0_address = eth0_address
         self.eth0_gw_ip_address = eth0_gw_ip_address
         self.network_interfaces = network_interfaces
+        self.sgi_interface = sgi_interface
+        self.s1_interface = s1_interface
         self.reboot_needed = False
 
     def update_interfaces_names(self):
@@ -69,23 +73,34 @@ class AGWInstallerNetworkConfigurator:
 
         cloud_init_interfaces = list(initial_cloud_init_content["network"]["ethernets"].keys())
         modified_cloud_init_content = deepcopy(initial_cloud_init_content)
-        for network_interface in cloud_init_interfaces:
-            network_interface_index = cloud_init_interfaces.index(network_interface)
-            logger.info(
-                f"Changing interface name in {self.CLOUD_INIT_YAML_PATH}. "
-                f"Old interface name: {network_interface} "
-                f"New interface name: eth{network_interface_index}."
-            )
-            modified_cloud_init_content["network"]["ethernets"][
-                f"eth{network_interface_index}"
-            ] = modified_cloud_init_content["network"]["ethernets"][network_interface]
-            del modified_cloud_init_content["network"]["ethernets"][network_interface]
-            modified_cloud_init_content["network"]["ethernets"][f"eth{network_interface_index}"][
-                "set-name"
-            ] = f"eth{network_interface_index}"
+        if self.sgi_interface and self.s1_interface:
+            self._rename_interface(modified_cloud_init_content, self.sgi_interface, "eth0")
+            self._rename_interface(modified_cloud_init_content, self.s1_interface, "eth1")
+        else:
+            for network_interface in cloud_init_interfaces:
+                network_interface_index = cloud_init_interfaces.index(network_interface)
+                self._rename_interface(
+                    modified_cloud_init_content,
+                    network_interface,
+                    f"eth{network_interface_index}",
+                )
 
         with open(self.CLOUD_INIT_YAML_PATH, "w") as cloud_init_file:
             yaml.dump(modified_cloud_init_content, cloud_init_file)
+
+    def _rename_interface(self, cloud_init_content, old_interface_name, new_interface_name):
+        logger.info(
+            f"Changing interface name in {self.CLOUD_INIT_YAML_PATH}. "
+            f"Old interface name: {old_interface_name} "
+            f"New interface name: {new_interface_name}."
+        )
+        cloud_init_content["network"]["ethernets"][new_interface_name] = cloud_init_content[
+            "network"
+        ]["ethernets"][old_interface_name]
+        del cloud_init_content["network"]["ethernets"][old_interface_name]
+        cloud_init_content["network"]["ethernets"][new_interface_name][
+            "set-name"
+        ] = new_interface_name
 
     def _configure_grub(self):
         """Adds required configuration to /etc/default/grub"""
