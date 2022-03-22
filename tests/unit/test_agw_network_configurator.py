@@ -14,7 +14,7 @@ from magma_access_gateway_installer.agw_network_configurator import (
 class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
     TEST_DNS_LIST = ["1.2.3.4", "5.6.7.8"]
     CORRECT_NETWORK_INTERFACES = ["eth0", "eth1"]
-    INCORRECT_NETWORK_INTERFACES = ["abc", "def"]
+    INCORRECT_NETWORK_INTERFACES = ["test_if_name", "test_if_name_2"]
     GOOD_DNS_CONFIG = """[Resolve]
 DNS=1.2.3.4 5.6.7.8
 #FallbackDNS=

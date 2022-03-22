@@ -41,7 +41,7 @@ def main():
     preinstall_checks.preinstall_checks()
     preinstall_checks.install_required_system_packages()
 
-    if not args.maas_networking:
+    if not args.skip_networking:
         network_configurator.update_interfaces_names()
         network_configurator.configure_dns()
         network_configurator.create_interfaces_config_files()
@@ -79,12 +79,12 @@ def cli_arguments_parser(cli_arguments):
         help="Upstream router IP for SGi interface. Example: 1.1.1.200.",
     )
     cli_options.add_argument(
-        "--maas-networking",
-        dest="maas_networking",
+        "--skip-networking",
+        dest="skip_networking",
         action="store_true",
         required=False,
-        help="Use network configuration provided by MAAS. If used, network configuration part of "
-        "the installation process will be skipped.",
+        help="If used, network configuration part of the installation process will be skipped. "
+        "In this case operator is responsible for providing expected network configuration.",
     )
     cli_options.add_argument(
         "--dns",
