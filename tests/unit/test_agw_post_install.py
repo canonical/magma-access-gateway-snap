@@ -27,7 +27,7 @@ class TestAGWPostInstallChecks(unittest.TestCase):
     TEST_REQUIRED_PACKAGES = ["package1", "package2", "package3"]
 
     def setUp(self) -> None:
-        self.agw_post_install = AGWPostInstallChecks("/test/root/ca/pem/path")
+        self.agw_post_install = AGWPostInstallChecks()
 
     @patch("magma_access_gateway_post_install.agw_post_install.os.path.exists")
     @patch(

@@ -57,9 +57,6 @@ class AGWPostInstallChecks:
     TIMEOUT_WAITING_FOR_SERVICE = 60
     WAIT_FOR_SERVICE_INTERVAL = 10
 
-    def __init__(self, root_ca_pem_path: str):
-        self.root_ca_pem_path = root_ca_pem_path
-
     def check_whether_required_interfaces_are_configured(self):
         """Checks whether Magma AGW interfaces are configured or not.
 
@@ -120,14 +117,15 @@ class AGWPostInstallChecks:
         ]:
             raise AGWPackagesMissingError(missing_packages)
 
-    def check_whether_root_certificate_exists(self):
+    @staticmethod
+    def check_whether_root_certificate_exists():
         """Checks whether rootCA.pem certificate exists under /var/opt/magma/tmp/certs/.
 
         :raises:
             AGWRootCertificateMissingError: if the certificate is missing
         """
         logger.info("Checking whether Root Certificate exists...")
-        if not os.path.exists(os.path.join("/var/opt/magma/tmp/certs", self.root_ca_pem_path)):
+        if not os.path.exists("/var/opt/magma/tmp/certs/rootCA.pem"):
             raise AGWRootCertificateMissingError()
 
     def check_control_proxy(self):

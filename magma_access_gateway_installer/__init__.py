@@ -13,6 +13,7 @@ import netifaces  # type: ignore[import]
 from systemd.journal import JournalHandler  # type: ignore[import]
 
 from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
+from .agw_installer import AGWInstaller
 from .agw_network_configurator import AGWInstallerNetworkConfigurator
 from .agw_preinstall_checks import AGWInstallerPreinstallChecks
 from .agw_service_user_creator import AGWInstallerServiceUserCreator
@@ -45,23 +46,24 @@ def main():
         network_configurator.update_interfaces_names()
         network_configurator.configure_dns()
         network_configurator.create_interfaces_config_files()
-        network_configurator.remove_netplan()
-        network_configurator.enable_networking_service()
+    network_configurator.remove_netplan()
+    network_configurator.enable_networking_service()
 
     service_user_creator.create_magma_user()
     service_user_creator.add_magma_user_to_sudo_group()
     service_user_creator.add_magma_user_to_sudoers_file()
 
-    installation_service_creator.create_magma_agw_installation_service()
-    installation_service_creator.create_magma_agw_installation_service_link()
-
     if network_configurator.reboot_needed:
+        installation_service_creator.create_magma_agw_installation_service()
+        installation_service_creator.create_magma_agw_installation_service_link()
         logger.info(
             "Rebooting system to apply pre-installation changes...\n"
             "Magma AGW installation process will be resumed automatically once machine is back up."
         )
         time.sleep(5)
         os.system("reboot")
+    else:
+        AGWInstaller().install()
 
 
 def cli_arguments_parser(cli_arguments):

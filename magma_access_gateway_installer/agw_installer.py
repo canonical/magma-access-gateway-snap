@@ -136,7 +136,7 @@ class AGWInstaller:
                 "apt-key",
                 "adv",
                 "--fetch-keys",
-                "https://artifactory.magmacore.org:443/artifactory/api/gpg/key/public",
+                "https://artifactory.magmacore.org/artifactory/api/gpg/key/public",
             ]
         )
         self._ignore_magma_apt_repositorys_ssl_cert()

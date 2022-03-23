@@ -9,8 +9,6 @@
 """
 
 import logging
-import sys
-from argparse import ArgumentParser
 
 from systemd.journal import JournalHandler  # type: ignore[import]
 
@@ -24,9 +22,7 @@ logger.setLevel(logging.INFO)
 
 
 def main():
-    args = cli_arguments_parser(sys.argv[1:])
-
-    agw_post_install_checks = AGWPostInstallChecks(args.root_ca_path)
+    agw_post_install_checks = AGWPostInstallChecks()
 
     logger.info("Starting Magma AGW post-installation checks...")
     agw_post_install_checks.check_whether_required_interfaces_are_configured()
@@ -37,14 +33,3 @@ def main():
     agw_post_install_checks.check_control_proxy()
     agw_post_install_checks.check_cloud_check_in()
     logger.info("Magma AGW post-installation checks finished successfully.")
-
-
-def cli_arguments_parser(cli_arguments):
-    cli_options = ArgumentParser()
-    cli_options.add_argument(
-        "--root-ca-pem-path",
-        dest="root_ca_path",
-        required=True,
-        help="Path to Root CA PEM used during Orc8r deployment. Example: /home/magma/rootCA.pem",
-    )
-    return cli_options.parse_args(cli_arguments)

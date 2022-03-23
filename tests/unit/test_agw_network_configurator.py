@@ -163,7 +163,7 @@ ondemand.service                               enabled         enabled
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open)
     @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_interfaces_dont_have_correct_names_when_update_interfaces_names_then_grub_configuration_file_is_updated(  # noqa: E501
+    def test_given_interfaces_dont_have_correct_names_when_update_interfaces_names_then_netplan_config_file_is_updated(  # noqa: E501
         self, _, __, ___, mock_yaml_dump
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(
@@ -203,7 +203,7 @@ ondemand.service                               enabled         enabled
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open)
     @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_custom_sgi_and_s1_interfaces_names_when_update_interfaces_names_then_grub_configuration_file_is_updated(  # noqa: E501
+    def test_given_custom_sgi_and_s1_interfaces_names_when_update_interfaces_names_then_netplan_config_file_is_updated(  # noqa: E501
         self, _, __, ___, mock_yaml_dump
     ):
         agw_network_configurator = AGWInstallerNetworkConfigurator(

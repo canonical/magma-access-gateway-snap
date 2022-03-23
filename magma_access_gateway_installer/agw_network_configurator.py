@@ -41,6 +41,17 @@ class AGWInstallerNetworkConfigurator:
             os.path.join(self.NETPLAN_CONFIG_DIR, config_file)
             for config_file in os.listdir(self.NETPLAN_CONFIG_DIR)
         ]
+        self.interfaces_names_mapping = (
+            {
+                self.sgi_interface: "eth0",
+                self.s1_interface: "eth1",
+            }
+            if self.sgi_interface and self.s1_interface
+            else {
+                old_name: f"eth{self.network_interfaces.index(old_name)}"
+                for old_name in self.network_interfaces
+            }
+        )
         self.reboot_needed = False
 
     def update_interfaces_names(self):
@@ -81,39 +92,21 @@ class AGWInstallerNetworkConfigurator:
         with open(config_file, "r") as netplan_config_file:
             initial_netplan_config_content = yaml.safe_load(netplan_config_file)
         modified_netplan_config_content = deepcopy(initial_netplan_config_content)
-        if self.sgi_interface and self.s1_interface:
-            self._rename_statically_configured_interfaces(modified_netplan_config_content)
-        else:
-            interfaces_names_mapping = self._generate_interfaces_names_mapping()
-            self._rename_interfaces_automatically(
-                modified_netplan_config_content, interfaces_names_mapping
-            )
+        self._rename_interfaces(modified_netplan_config_content)
         with open(config_file, "w") as netplan_config_file:
             yaml.dump(modified_netplan_config_content, netplan_config_file)
 
-    def _rename_statically_configured_interfaces(self, modified_cloud_init_content):
-        """Renames interfaces in netplan config file based on operator's input."""
-        self._rename_interface(modified_cloud_init_content, self.sgi_interface, "eth0")
-        self._rename_interface(modified_cloud_init_content, self.s1_interface, "eth1")
-
-    def _generate_interfaces_names_mapping(self):
-        """Generates new names for available network interfaces for the needs of automatic
-        interfaces renaming. First available interface becomes eth0, second becomes eth1 and so on.
-        """
-        return {
-            old_name: f"eth{self.network_interfaces.index(old_name)}"
-            for old_name in self.network_interfaces
-        }
-
-    def _rename_interfaces_automatically(self, netplan_config, interfaces_names_mapping):
+    def _rename_interfaces(self, netplan_config):
         """Automatically renames interfaces based on previously generated names mapping."""
-        interfaces_in_file = list(netplan_config["network"]["ethernets"].keys())
-        for network_interface in interfaces_in_file:
-            self._rename_interface(
-                netplan_config,
-                network_interface,
-                interfaces_names_mapping[network_interface],
-            )
+        for network_interface in self.interfaces_names_mapping.keys():
+            try:
+                self._rename_interface(
+                    netplan_config,
+                    network_interface,
+                    self.interfaces_names_mapping[network_interface],
+                )
+            except KeyError:
+                pass
 
     @staticmethod
     def _rename_interface(cloud_init_content, old_interface_name, new_interface_name):

@@ -167,7 +167,7 @@ Verify-Host "false";
                     "apt-key",
                     "adv",
                     "--fetch-keys",
-                    "https://artifactory.magmacore.org:443/artifactory/api/gpg/key/public",
+                    "https://artifactory.magmacore.org/artifactory/api/gpg/key/public",
                 ]
             )
             in mock_check_call.mock_calls
