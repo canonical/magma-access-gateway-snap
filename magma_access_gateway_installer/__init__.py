@@ -102,9 +102,5 @@ def validate_args(args):
 
     if not args.dns:
         raise ValueError("--dns flag specified, but no addresses given! Exiting...")
-    else:
-        for dns_ip in args.dns:
-            try:
-                ip_address(dns_ip)
-            except Exception as e:
-                raise e
+    for dns_ip in args.dns:
+        ip_address(dns_ip)
