@@ -33,7 +33,7 @@ def main():
 
     preinstall_checks = AGWInstallerPreinstallChecks(network_interfaces)
     network_configurator = AGWInstallerNetworkConfigurator(
-        network_interfaces, args.ip_address, args.gw_ip_address
+        network_interfaces, args.dns, args.ip_address, args.gw_ip_address
     )
     service_user_creator = AGWInstallerServiceUserCreator()
     installation_service_creator = AGWInstallerInstallationServiceCreator()
@@ -69,13 +69,21 @@ def cli_arguments_parser(cli_arguments):
         "--ip-address",
         dest="ip_address",
         required=False,
-        help="Statically allocated SGi interface IP address. Example: 1.1.1.1/24",
+        help="Statically allocated SGi interface IP address. Example: 1.1.1.1/24.",
     )
     cli_options.add_argument(
         "--gw-ip-address",
         dest="gw_ip_address",
         required=False,
-        help="Upstream router IP for SGi interface. Example: 1.1.1.200",
+        help="Upstream router IP for SGi interface. Example: 1.1.1.200.",
+    )
+    cli_options.add_argument(
+        "--dns",
+        dest="dns",
+        nargs="+",
+        required=False,
+        default=["8.8.8.8", "208.67.222.222"],
+        help="Space separated list of DNS IP addresses. Example: --dns 1.2.3.4 5.6.7.8",
     )
     return cli_options.parse_args(cli_arguments)
 
@@ -91,3 +99,8 @@ def validate_args(args):
             ip_address(args.gw_ip_address)
         except Exception as e:
             raise e
+
+    if not args.dns:
+        raise ValueError("--dns flag specified, but no addresses given! Exiting...")
+    for dns_ip in args.dns:
+        ip_address(dns_ip)

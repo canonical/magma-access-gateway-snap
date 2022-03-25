@@ -16,7 +16,6 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 class AGWInstallerNetworkConfigurator:
 
-    DNS_ADDRESSES = "8.8.8.8 208.67.222.222"
     BOOT_GRUB_GRUB_CFG_PATH = "/boot/grub/grub.cfg"
     CLOUD_INIT_YAML_PATH = "/etc/netplan/50-cloud-init.yaml"
     ETC_DEFAULT_GRUB_PATH = "/etc/default/grub"
@@ -26,9 +25,11 @@ class AGWInstallerNetworkConfigurator:
     def __init__(
         self,
         network_interfaces: list,
+        dns_ip_addresses: list,
         eth0_address: Optional[str],
         eth0_gw_ip_address: Optional[str],
     ):
+        self.dns_ips_list = " ".join(dns_ip_addresses)
         self.eth0_address = eth0_address
         self.eth0_gw_ip_address = eth0_gw_ip_address
         self.network_interfaces = network_interfaces
@@ -110,11 +111,18 @@ class AGWInstallerNetworkConfigurator:
     @property
     def _dns_configured(self) -> bool:
         """Checks whether DNS has already been configured."""
-        with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r") as dns_config:
-            for line in dns_config.readlines():
-                if f"DNS={self.DNS_ADDRESSES}" in line:
-                    return True
-        return False
+        with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r") as dns_config_file:
+            dns_config = dns_config_file.readlines()
+        return all(
+            [
+                any(
+                    dns_ip in line
+                    for line in dns_config
+                    if line.startswith("DNS=") or line.startswith("FallbackDNS=")
+                )
+                for dns_ip in self.dns_ips_list
+            ]
+        )
 
     def _configure_dns(self):
         """Configures Ubuntu's DNS."""
@@ -127,7 +135,7 @@ class AGWInstallerNetworkConfigurator:
         with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r") as original_resolved_conf_file:
             original_resolved_conf_file_content = original_resolved_conf_file.readlines()
         updated_resolved_conf_file_content = [
-            line.replace(line, f"DNS={self.DNS_ADDRESSES}\n")
+            line.replace(line, f"DNS={self.dns_ips_list}\n")
             if line.startswith("#DNS=") or line.startswith("DNS=")
             else line
             for line in original_resolved_conf_file_content
