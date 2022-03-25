@@ -128,12 +128,8 @@ def validate_custom_sgi_and_s1_interfaces(args, network_interfaces: List[str]):
 def validate_arbitrary_dns(args):
     if not args.dns:
         raise ValueError("--dns flag specified, but no addresses given! Exiting...")
-    else:
-        for dns_ip in args.dns:
-            try:
-                ip_address(dns_ip)
-            except Exception as e:
-                raise e
+    for dns_ip in args.dns:
+        ip_address(dns_ip)
 
 
 def validate_static_ip_allocation(args):

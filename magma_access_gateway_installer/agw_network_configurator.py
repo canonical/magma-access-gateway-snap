@@ -150,11 +150,18 @@ class AGWInstallerNetworkConfigurator:
     @property
     def _dns_configured(self) -> bool:
         """Checks whether DNS has already been configured."""
-        with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r") as dns_config:
-            for line in dns_config.readlines():
-                if f"DNS={self.dns_ips_list}" in line:
-                    return True
-        return False
+        with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r") as dns_config_file:
+            dns_config = dns_config_file.readlines()
+        return all(
+            [
+                any(
+                    dns_ip in line
+                    for line in dns_config
+                    if line.startswith("DNS=") or line.startswith("FallbackDNS=")
+                )
+                for dns_ip in self.dns_ips_list
+            ]
+        )
 
     def _configure_dns(self):
         """Configures Ubuntu's DNS."""
