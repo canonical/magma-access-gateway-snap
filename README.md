@@ -51,7 +51,7 @@ This Snap is currently delivered as a [classic](https://snapcraft.io/docs/snap-c
      using statically configured SGi interface
 
    Magma AGW uses **Google (8.8.8.8)** and **OpenDNS (208.67.222.222)** DNS servers by default. 
-   Default DNS servers can be changed by using `--dns` flag along with `magma-access-gateway` 
+   DNS servers can be changed by using `--dns` flag along with `magma-access-gateway` 
    command. Custom DNS servers should be specified as space separated list of IP addresses.
 
 **Configuring Magma Access Gateway:**
