@@ -5,8 +5,9 @@
 import logging
 import os
 from copy import deepcopy
+from pathlib import Path
 from subprocess import check_call, check_output
-from typing import Optional
+from typing import List, Optional, Union
 
 import ipcalc  # type: ignore[import]
 import yaml
@@ -24,8 +25,8 @@ class AGWInstallerNetworkConfigurator:
 
     def __init__(
         self,
-        network_interfaces: list,
-        dns_ip_addresses: list,
+        network_interfaces: List[str],
+        dns_ip_addresses: List[str],
         eth0_address: Optional[str] = None,
         eth0_gw_ip_address: Optional[str] = None,
         sgi_interface: Optional[str] = None,
@@ -87,7 +88,7 @@ class AGWInstallerNetworkConfigurator:
             logger.info(f"Changing interface name in {netplan_config_file}.")
             self._rename_interfaces_in_netplan_config_file(netplan_config_file)
 
-    def _rename_interfaces_in_netplan_config_file(self, config_file):
+    def _rename_interfaces_in_netplan_config_file(self, config_file: Union[str, Path]):
         """Renames interfaces names in given netplan config file."""
         with open(config_file, "r") as netplan_config_file:
             initial_netplan_config_content = yaml.safe_load(netplan_config_file)
@@ -96,7 +97,7 @@ class AGWInstallerNetworkConfigurator:
         with open(config_file, "w") as netplan_config_file:
             yaml.dump(modified_netplan_config_content, netplan_config_file)
 
-    def _rename_interfaces(self, netplan_config):
+    def _rename_interfaces(self, netplan_config: dict):
         """Automatically renames interfaces based on previously generated names mapping."""
         for network_interface in self.interfaces_names_mapping.keys():
             try:
@@ -109,7 +110,9 @@ class AGWInstallerNetworkConfigurator:
                 pass
 
     @staticmethod
-    def _rename_interface(cloud_init_content, old_interface_name, new_interface_name):
+    def _rename_interface(
+        cloud_init_content: dict, old_interface_name: str, new_interface_name: str
+    ):
         """Renames given interface in netplan config."""
         logger.info(
             f"Old interface name: {old_interface_name} "

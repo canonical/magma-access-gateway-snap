@@ -39,21 +39,49 @@ DNS=1.2.3.4 5.6.7.8
 #DNSStubListener=yes
 #ReadEtcHosts=yes
 """
+    TEST_INTERFACES_CONFIGS = {
+        "test_if_name": {
+            "dhcp4": True,
+            "dhcp6": False,
+            "match": {"macaddress": "02:45:b8:e6:23:c6"},
+            "set-name": "test_if_name",
+        },
+        "test_if_name_2": {
+            "dhcp4": True,
+            "dhcp6": False,
+            "match": {"macaddress": "02:45:b8:e6:c6:23"},
+            "set-name": "test_if_name_2",
+        },
+        "test_if_name_3": {
+            "dhcp4": True,
+            "dhcp6": False,
+            "match": {"macaddress": "02:45:23:e6:c6:b8"},
+            "set-name": "test_if_name_3",
+        },
+        "test_if_name_4": {
+            "dhcp4": True,
+            "dhcp6": False,
+            "match": {"macaddress": "02:23:b8:e6:c6:45"},
+            "set-name": "test_if_name_4",
+        },
+        "eth0": {
+            "dhcp4": True,
+            "dhcp6": False,
+            "match": {"macaddress": "02:45:b8:e6:23:c6"},
+            "set-name": "eth0",
+        },
+        "eth1": {
+            "dhcp4": True,
+            "dhcp6": False,
+            "match": {"macaddress": "02:45:b8:e6:c6:23"},
+            "set-name": "eth1",
+        },
+    }
     CLOUD_INIT_CONTENT_2_INTERFACES_ONLY = {
         "network": {
             "ethernets": {
-                "test_if_name": {
-                    "dhcp4": True,
-                    "dhcp6": False,
-                    "match": {"macaddress": "02:45:b8:e6:23:c6"},
-                    "set-name": "test_if_name",
-                },
-                "test_if_name_2": {
-                    "dhcp4": True,
-                    "dhcp6": False,
-                    "match": {"macaddress": "02:45:b8:e6:c6:23"},
-                    "set-name": "test_if_name_2",
-                },
+                "test_if_name": TEST_INTERFACES_CONFIGS["test_if_name"],
+                "test_if_name_2": TEST_INTERFACES_CONFIGS["test_if_name_2"],
             },
             "version": 2,
         }
@@ -61,36 +89,16 @@ DNS=1.2.3.4 5.6.7.8
     CLOUD_INIT_CONTENT_MORE_INTERFACES = {
         "network": {
             "ethernets": {
-                "test_if_name": {
-                    "dhcp4": True,
-                    "dhcp6": False,
-                    "match": {"macaddress": "02:45:b8:e6:23:c6"},
-                    "set-name": "test_if_name",
-                },
-                "test_if_name_2": {
-                    "dhcp4": True,
-                    "dhcp6": False,
-                    "match": {"macaddress": "02:45:b8:e6:c6:23"},
-                    "set-name": "test_if_name_2",
-                },
-                "test_if_name_3": {
-                    "dhcp4": True,
-                    "dhcp6": False,
-                    "match": {"macaddress": "02:45:23:e6:c6:b8"},
-                    "set-name": "test_if_name_3",
-                },
-                "test_if_name_4": {
-                    "dhcp4": True,
-                    "dhcp6": False,
-                    "match": {"macaddress": "02:23:b8:e6:c6:45"},
-                    "set-name": "test_if_name_4",
-                },
+                "test_if_name": TEST_INTERFACES_CONFIGS["test_if_name"],
+                "test_if_name_2": TEST_INTERFACES_CONFIGS["test_if_name_2"],
+                "test_if_name_3": TEST_INTERFACES_CONFIGS["test_if_name_3"],
+                "test_if_name_4": TEST_INTERFACES_CONFIGS["test_if_name_4"],
             },
             "version": 2,
         }
     }
-    TEST_SGi_INTERFACE = "test_if_name_2"
-    TEST_S1_INTERFACE = "test_if_name_4"
+    TEST_SGi_INTERFACE = "test_if_name"
+    TEST_S1_INTERFACE = "test_if_name_2"
     APT_LIST_WITH_NETPLAN = """netcat-openbsd/focal,now 1.206-1ubuntu1 amd64 [installed,automatic]
 netpbm/focal,now 2:10.0-15.3build1 amd64 [installed,automatic]
 netplan.io/focal-updates,now 0.103-0ubuntu5~20.04.5 amd64 [installed,automatic]
@@ -173,18 +181,8 @@ ondemand.service                               enabled         enabled
         expected_cloud_init_content = {
             "network": {
                 "ethernets": {
-                    "eth0": {
-                        "dhcp4": True,
-                        "dhcp6": False,
-                        "match": {"macaddress": "02:45:b8:e6:23:c6"},
-                        "set-name": "eth0",
-                    },
-                    "eth1": {
-                        "dhcp4": True,
-                        "dhcp6": False,
-                        "match": {"macaddress": "02:45:b8:e6:c6:23"},
-                        "set-name": "eth1",
-                    },
+                    "eth0": self.TEST_INTERFACES_CONFIGS["eth0"],
+                    "eth1": self.TEST_INTERFACES_CONFIGS["eth1"],
                 },
                 "version": 2,
             }
@@ -206,6 +204,7 @@ ondemand.service                               enabled         enabled
     def test_given_custom_sgi_and_s1_interfaces_names_when_update_interfaces_names_then_netplan_config_file_is_updated(  # noqa: E501
         self, _, __, ___, mock_yaml_dump
     ):
+        self.maxDiff = None
         agw_network_configurator = AGWInstallerNetworkConfigurator(
             self.INCORRECT_NETWORK_INTERFACES,
             self.TEST_DNS_LIST,
@@ -215,30 +214,10 @@ ondemand.service                               enabled         enabled
         expected_cloud_init_content = {
             "network": {
                 "ethernets": {
-                    "test_if_name": {
-                        "dhcp4": True,
-                        "dhcp6": False,
-                        "match": {"macaddress": "02:45:b8:e6:23:c6"},
-                        "set-name": "test_if_name",
-                    },
-                    "eth0": {
-                        "dhcp4": True,
-                        "dhcp6": False,
-                        "match": {"macaddress": "02:45:b8:e6:c6:23"},
-                        "set-name": "eth0",
-                    },
-                    "test_if_name_3": {
-                        "dhcp4": True,
-                        "dhcp6": False,
-                        "match": {"macaddress": "02:45:23:e6:c6:b8"},
-                        "set-name": "test_if_name_3",
-                    },
-                    "eth1": {
-                        "dhcp4": True,
-                        "dhcp6": False,
-                        "match": {"macaddress": "02:23:b8:e6:c6:45"},
-                        "set-name": "eth1",
-                    },
+                    "eth0": self.TEST_INTERFACES_CONFIGS["eth0"],
+                    "eth1": self.TEST_INTERFACES_CONFIGS["eth1"],
+                    "test_if_name_3": self.TEST_INTERFACES_CONFIGS["test_if_name_3"],
+                    "test_if_name_4": self.TEST_INTERFACES_CONFIGS["test_if_name_4"],
                 },
                 "version": 2,
             }

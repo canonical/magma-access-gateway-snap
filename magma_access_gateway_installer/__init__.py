@@ -8,6 +8,7 @@ import sys
 import time
 from argparse import ArgumentParser
 from ipaddress import ip_address, ip_network
+from typing import List
 
 import netifaces  # type: ignore[import]
 from systemd.journal import JournalHandler  # type: ignore[import]
@@ -111,20 +112,17 @@ def cli_arguments_parser(cli_arguments):
     return cli_options.parse_args(cli_arguments)
 
 
-def validate_args(args, network_interfaces):
+def validate_args(args, network_interfaces: List[str]):
     validate_static_ip_allocation(args)
     validate_arbitrary_dns(args)
     validate_custom_sgi_and_s1_interfaces(args, network_interfaces)
 
 
-def validate_custom_sgi_and_s1_interfaces(args, network_interfaces):
-    if args.sgi and not args.s1:
-        raise ValueError("S1 interface not specified! Exiting...")
-    elif not args.sgi and args.s1:
-        raise ValueError("SGi interface not specified! Exiting...")
-    elif args.sgi and args.s1:
-        if not all([interface in network_interfaces for interface in [args.sgi, args.s1]]):
-            raise ValueError("One or both specified SGi/S1 interfaces do not exist! Exiting...")
+def validate_custom_sgi_and_s1_interfaces(args, network_interfaces: List[str]):
+    if not args.sgi or args.sgi not in network_interfaces:
+        raise ValueError("Invalid or empty SGi interface specified! Exiting...")
+    if not args.s1 or args.s1 not in network_interfaces:
+        raise ValueError("Invalid or empty S1 interface specified! Exiting...")
 
 
 def validate_arbitrary_dns(args):
