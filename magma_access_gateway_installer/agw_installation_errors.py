@@ -28,7 +28,7 @@ class InvalidNumberOfInterfacesError(AGWInstallationError):
 
     ERROR_MESSAGE = (
         "Invalid number of network interfaces! \n"
-        "Magma AGW needs two network interfaces - SGi and S1! Exiting..."
+        "Magma AGW needs at least two network interfaces available - SGi and S1! Exiting..."
     )
 
     def __init__(self):

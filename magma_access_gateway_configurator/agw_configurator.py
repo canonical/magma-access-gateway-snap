@@ -7,7 +7,6 @@ import os
 import shutil
 from subprocess import check_call
 
-import yaml
 from jinja2 import Environment, FileSystemLoader
 
 logger = logging.getLogger("magma_access_gateway_configurator")
@@ -39,6 +38,7 @@ class AGWConfigurator:
 
     def configure_control_proxy(self):
         """Creates Control Proxy's configuration file."""
+        logger.info("Configuring Control Proxy...")
         if not os.path.exists(self.MAGMA_CONTROL_PROXY_CONFIG_DIR):
             os.makedirs(self.MAGMA_CONTROL_PROXY_CONFIG_DIR)
         if not os.path.exists(
@@ -60,13 +60,12 @@ class AGWConfigurator:
                 ),
                 "w",
             ) as control_proxy_file:
-                yaml.dump(
+                control_proxy_file.write(
                     template.render(
                         domain=self.domain,
                         root_ca_pem_path=self.ROOT_CA_PEM_DESTINATION_DIR,
                         root_ca_pem_file_name=self.ROOT_CA_PEM_FILE_NAME,
                     ),
-                    control_proxy_file,
                 )
 
     def restart_magma_services(self):

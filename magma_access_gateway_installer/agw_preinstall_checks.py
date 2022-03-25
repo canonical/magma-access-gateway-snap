@@ -52,4 +52,4 @@ class AGWInstallerPreinstallChecks:
     @property
     def _required_amount_of_network_interfaces_is_available(self) -> bool:
         """Checks whether required amount of network interfaces has been attached."""
-        return len(self.network_interfaces) == self.REQUIRED_NUMBER_OF_NICS
+        return len(self.network_interfaces) >= self.REQUIRED_NUMBER_OF_NICS

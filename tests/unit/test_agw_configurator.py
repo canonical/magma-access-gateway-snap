@@ -4,7 +4,7 @@
 
 import os
 import unittest
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import Mock, PropertyMock, call, mock_open, patch
 
 from magma_access_gateway_configurator.agw_configurator import AGWConfigurator
 
@@ -111,11 +111,10 @@ class TestAGWConfigurator(unittest.TestCase):
 
         mocked_makedirs.assert_not_called()
 
-    @patch("magma_access_gateway_installer.agw_network_configurator.yaml.dump")
     @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
-    @patch("magma_access_gateway_configurator.agw_configurator.open")
+    @patch("magma_access_gateway_configurator.agw_configurator.open", new_callable=mock_open)
     def test_given_non_existent_control_proxy_config_file_when_configure_control_proxy_then_control_proxy_config_file_is_created_with_correct_content(  # noqa: E501
-        self, mocked_open, mocked_path_exists, mocked_yaml_dump
+        self, mocked_open, mocked_path_exists
     ):
         expected_control_proxy_config = f"""cloud_address: controller.{self.TEST_DOMAIN}
 cloud_port: 443
@@ -137,7 +136,6 @@ rootca_cert: {self.TEST_ROOT_CA_PEM_DESTINATION_DIR}/{self.TEST_ROOT_CA_PEM_FILE
             self.agw_configurator.configure_control_proxy()
         # fmt: on
 
-        args, kwargs = mocked_yaml_dump.call_args
         mocked_open.assert_called_once_with(
             os.path.join(
                 self.TEST_MAGMA_CONTROL_PROXY_CONFIG_DIR,
@@ -145,8 +143,7 @@ rootca_cert: {self.TEST_ROOT_CA_PEM_DESTINATION_DIR}/{self.TEST_ROOT_CA_PEM_FILE
             ),
             "w",
         )
-        self.assertEqual(args[0], expected_control_proxy_config)
-        self.assertEqual(mocked_yaml_dump.call_count, 1)
+        mocked_open().write.assert_called_once_with(expected_control_proxy_config)
 
     @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
     @patch("magma_access_gateway_configurator.agw_configurator.open")
