@@ -55,7 +55,7 @@ jobs:
         shell: bash
         run: echo "##[set-output name=branch_name;]$(echo ${GITHUB_REF#refs/heads/})"
         id: get_branch_name
-      - uses: actions/upload-artifact@v2
+      - uses: snapcore/action-publish@v1
         with:
           store_login: ${{ secrets.SNAPSTORE_LOGIN }}
           snap: ${{ steps.build.outputs.snap }}
