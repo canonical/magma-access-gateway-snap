@@ -1,10 +1,9 @@
-
-name: main-branch
+name: push-to-branch
 on:
   push:
-  pull_request:
     branches:
-      - main
+      - "**"
+      - "!master"
 
 jobs:
   agw-lint-report:
@@ -44,3 +43,25 @@ jobs:
           sudo apt install libsystemd-dev
           set -eux
           tox -e unit
+
+  build-snap:
+    name: Build Magma AGW snap
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: snapcore/action-build@v1
+        id: build
+
+  publish-snap:
+    name: Publish Magma AGW snap to SnapStore
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch name
+        shell: bash
+        run: echo "##[set-output name=branch_name;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: get_branch_name
+      - uses: actions/upload-artifact@v2
+        with:
+          store_login: ${{ secrets.SNAPSTORE_LOGIN }}
+          snap: ${{ steps.build.outputs.snap }}
+          release: ${{ steps.get_branch_name.outputs.branch_name }}/edge

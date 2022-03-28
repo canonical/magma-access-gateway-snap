@@ -1,0 +1,62 @@
+name: main-branch-pull-request-created
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  agw-lint-report:
+    name: Lint report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install tox
+        run: pip install tox
+      - name: Run tests using tox
+        run: |
+          set -eux
+          tox -e lint
+
+  agw-static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install tox
+        run: pip install tox
+      - name: Run tests using tox
+        run: |
+          sudo apt install libsystemd-dev
+          set -eux
+          tox -e static
+
+  agw-unit-tests-with-coverage:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install tox
+        run: pip install tox
+      - name: Run tests using tox
+        run: |
+          sudo apt install libsystemd-dev
+          set -eux
+          tox -e unit
+
+  build-snap:
+    name: Build Magma AGW snap
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: snapcore/action-build@v1
+        id: build
+
+  publish-snap:
+    name: Publish Magma AGW snap to SnapStore
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/upload-artifact@v2
+        with:
+          store_login: ${{ secrets.SNAPSTORE_LOGIN }}
+          snap: ${{ steps.build.outputs.snap }}
+          release: edge
