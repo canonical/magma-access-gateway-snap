@@ -43,18 +43,13 @@ jobs:
           set -eux
           tox -e unit
 
-  build-snap:
-    name: Build Magma AGW snap
+  build-and-publish-snap:
+    name: Build and publish Magma AGW snap
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1
         id: build
-
-  publish-snap:
-    name: Publish Magma AGW snap to SnapStore
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/upload-artifact@v2
         with:
           store_login: ${{ secrets.SNAPSTORE_LOGIN }}
