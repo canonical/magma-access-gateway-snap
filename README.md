@@ -29,21 +29,35 @@ This Snap is currently delivered as a [classic](https://snapcraft.io/docs/snap-c
 
 **Installing Magma AGW snap:**
 
-To install [magma-access-gateway](https://snapcraft.io/magma-access-gateway) execute:<br>
-`snap install magma-access-gateway --classic`<br>
+To install [magma-access-gateway](https://snapcraft.io/magma-access-gateway) execute:
+
+```bash
+snap install magma-access-gateway --classic
+```
+
 Once Snap is installed (it will be indicated by the `magma-access-gateway 1.6.0 installed`
-message printed to the console), start AGW deployment by executing:<br>
-`magma-access-gateway.install`<br>
+message printed to the console), start AGW deployment by executing:
+
+```bash
+magma-access-gateway.install
+```
+
 [magma-access-gateway](https://snapcraft.io/magma-access-gateway) installer exposes various
 deployment configuration parameters. To see the list of currently supported parameters along with
-their descriptions, execute:<br>
-`magma-access-gateway.install --help`
+their descriptions, execute:
+
+```bash
+magma-access-gateway.install --help
+```
 
 **Configuring Magma Access Gateway:**
 
-Magma Access Gateway can be configured by executing:<br>
-`magma-access-gateway.configure --domain <your domain> --root-ca-pem-path <path to Root CA PEM>`
-<br>
+Magma Access Gateway can be configured by executing:
+
+```bash
+magma-access-gateway.configure --domain <your domain> --root-ca-pem-path <path to Root CA PEM>
+```
+
 For more details about Magma Access Gateway configuration, visit 
 [Magma documentation](https://docs.magmacore.org/docs/next/lte/deploy_config_agw).
 
@@ -51,8 +65,11 @@ For more details about Magma Access Gateway configuration, visit
 
 Once Magma Access Gateway is installed and configured, post-installation checks can be run to 
 make sure everything has been configured correctly.<br>
-Post-installation checks can be executed by issuing:<br>
-`magma-access-gateway.post-install`
+Post-installation checks can be executed by issuing:
+
+```bash
+magma-access-gateway.post-install
+```
 
 ## Contributing
 

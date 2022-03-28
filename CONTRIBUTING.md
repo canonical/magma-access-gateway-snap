@@ -16,16 +16,23 @@ The Snap in this repository is specifically developed for the
 **Building Magma AGW snap:**
 
 1. Install required software listed above
-2. From the repository's main directory execute:<br>
-   `snapcraft`<br>
+2. From the repository's main directory execute:
+
+   ```bash
+   snapcraft
+   ```
+   
    To see what's happening during Snap's building process, `-d` can be used along with above
    command.
 
 **Installing locally built Magma AGW snap:**
 
 1. Copy snap to AGW host machine.
-2. On AGW host machine, as `root` execute<br>
-   `snap install ${PATH_TO_THE_SNAP_FILE} --dangerous --classic`<br>
+2. On AGW host machine, as `root` execute:
+
+   ```bash
+   snap install <PATH_TO_THE_SNAP_FILE> --dangerous --classic
+   ```
    Since Snap has been built locally, `--dangerous` flag is required to deploy it. <br>
 
 To learn more about [magma-access-gateway](https://snapcraft.io/magma-access-gateway) deployment, 
