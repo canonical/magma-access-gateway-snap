@@ -21,7 +21,7 @@ environment:
   PYTHONPATH: "$SNAP/lib/python3.8/site-packages"
 
 apps:
-  magma-access-gateway:
+  install:
     command: bin/install-agw
   configure:
     command: bin/configure-agw
