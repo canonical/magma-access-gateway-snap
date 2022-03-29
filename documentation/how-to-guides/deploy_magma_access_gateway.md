@@ -9,7 +9,10 @@ Unless specified otherwise, all actions in this guide are executed using `root` 
 
 - 64bit-X86 machine
 - Baremetal strongly recommended
-- Two ethernet interfaces (SGi and S1)
+  - AMD64 dual-core processor around 2GHz clock speed or faster
+  - 4GB RAM
+  - 32GB or greater SSD storage
+- At least two ethernet interfaces (SGi and S1)
 - Internet connectivity from SGi interface
 - Ubuntu 20.04 LTS installed
   ([Ubuntu installation guide](https://help.ubuntu.com/lts/installation-guide/amd64/index.html))
