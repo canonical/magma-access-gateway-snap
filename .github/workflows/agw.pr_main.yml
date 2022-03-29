@@ -45,7 +45,7 @@ jobs:
 
   build-snap:
     name: Build Magma AGW snap
-    runs-on: ubuntu-latest
+    runs-on: werner
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1
