@@ -101,12 +101,14 @@ def cli_arguments_parser(cli_arguments):
         "--sgi",
         dest="sgi",
         required=False,
+        default="eth0",
         help="Defines which interface should be used as SGi interface.",
     )
     cli_options.add_argument(
         "--s1",
         dest="s1",
         required=False,
+        default="eth1",
         help="Defines which interface should be used as S1 interface.",
     )
     return cli_options.parse_args(cli_arguments)
