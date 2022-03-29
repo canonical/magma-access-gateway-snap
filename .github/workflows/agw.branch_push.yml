@@ -50,13 +50,3 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1
-        id: build
-      - name: Get branch name
-        shell: bash
-        run: echo "##[set-output name=branch_name;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: get_branch_name
-      - uses: snapcore/action-publish@v1
-        with:
-          store_login: ${{ secrets.SNAPSTORE_LOGIN }}
-          snap: ${{ steps.build.outputs.snap }}
-          release: ${{ steps.get_branch_name.outputs.branch_name }}/edge
