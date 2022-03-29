@@ -101,14 +101,12 @@ def cli_arguments_parser(cli_arguments):
         "--sgi",
         dest="sgi",
         required=False,
-        default="eth0",
         help="Defines which interface should be used as SGi interface.",
     )
     cli_options.add_argument(
         "--s1",
         dest="s1",
         required=False,
-        default="eth1",
         help="Defines which interface should be used as S1 interface.",
     )
     return cli_options.parse_args(cli_arguments)
@@ -121,10 +119,11 @@ def validate_args(args, network_interfaces: List[str]):
 
 
 def validate_custom_sgi_and_s1_interfaces(args, network_interfaces: List[str]):
-    if not args.sgi or args.sgi not in network_interfaces:
-        raise ValueError("Invalid or empty SGi interface specified! Exiting...")
-    if not args.s1 or args.s1 not in network_interfaces:
-        raise ValueError("Invalid or empty S1 interface specified! Exiting...")
+    if args.sgi or args.s1:
+        if not args.sgi or args.sgi not in network_interfaces:
+            raise ValueError("Invalid or empty SGi interface specified! Exiting...")
+        if not args.s1 or args.s1 not in network_interfaces:
+            raise ValueError("Invalid or empty S1 interface specified! Exiting...")
 
 
 def validate_arbitrary_dns(args):
