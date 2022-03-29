@@ -26,8 +26,8 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
         "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._user_is_root",  # noqa: E501
         new_callable=PropertyMock,
     )
-    def test_given_os_is_not_ubuntu_when_preinstall_checks_then_unsupported_os_error_is_raised(
-            self, mock_user_is_root
+    def test_given_installation_user_is_not_root_when_preinstall_checks_then_invalid_user_error_is_raised(  # noqa: E501
+        self, mock_user_is_root
     ):
         mock_user_is_root.return_value = False
 

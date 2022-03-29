@@ -16,8 +16,10 @@ class AGWInstallationError(Exception):
 class InvalidUserError(AGWInstallationError):
     """Exception raised when installation has been started by user different than root."""
 
-    ERROR_MESSAGE = "Invalid user used! \n" \
-                    "Magma AGW installation should be performed by the root user! Exiting..."
+    ERROR_MESSAGE = (
+        "Invalid user used! \n"
+        "Magma AGW installation should be performed by the root user! Exiting..."
+    )
 
     def __init__(self):
         logger.error(self.ERROR_MESSAGE)
