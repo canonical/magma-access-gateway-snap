@@ -7,6 +7,7 @@ from unittest.mock import PropertyMock, call, patch
 
 from magma_access_gateway_installer.agw_installation_errors import (
     InvalidNumberOfInterfacesError,
+    InvalidUserError,
     UnsupportedOSError,
 )
 from magma_access_gateway_installer.agw_preinstall_checks import (
@@ -22,20 +23,15 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
         self.agw_preinstall_checks = AGWInstallerPreinstallChecks(self.TEST_NETWORK_INTERFACES)
 
     @patch(
-        "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._ubuntu_is_installed",  # noqa: E501
-        new_callable=PropertyMock,
-    )
-    @patch(
-        "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._required_amount_of_network_interfaces_is_available",  # noqa: E501
+        "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._user_is_root",  # noqa: E501
         new_callable=PropertyMock,
     )
     def test_given_os_is_not_ubuntu_when_preinstall_checks_then_unsupported_os_error_is_raised(
-        self, mock_required_amount_of_network_interfaces_is_available, mock_ubuntu_is_installed
+            self, mock_user_is_root
     ):
-        mock_ubuntu_is_installed.return_value = False
-        mock_required_amount_of_network_interfaces_is_available.return_value = True
+        mock_user_is_root.return_value = False
 
-        with self.assertRaises(UnsupportedOSError):
+        with self.assertRaises(InvalidUserError):
             self.agw_preinstall_checks.preinstall_checks()
 
     @patch(
@@ -43,13 +39,32 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
         new_callable=PropertyMock,
     )
     @patch(
+        "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._user_is_root",  # noqa: E501
+        new_callable=PropertyMock,
+    )
+    def test_given_os_is_not_ubuntu_when_preinstall_checks_then_unsupported_os_error_is_raised(
+        self, _, mock_ubuntu_is_installed
+    ):
+        mock_ubuntu_is_installed.return_value = False
+
+        with self.assertRaises(UnsupportedOSError):
+            self.agw_preinstall_checks.preinstall_checks()
+
+    @patch(
         "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._required_amount_of_network_interfaces_is_available",  # noqa: E501
         new_callable=PropertyMock,
     )
+    @patch(
+        "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._user_is_root",  # noqa: E501
+        new_callable=PropertyMock,
+    )
+    @patch(
+        "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._ubuntu_is_installed",  # noqa: E501
+        new_callable=PropertyMock,
+    )
     def test_given_insufficient_number_of_network_interfaces_when_preinstall_checks_then_invalid_number_of_interfaces_error_is_raised(  # noqa: E501
-        self, mock_required_amount_of_network_interfaces_is_available, mock_ubuntu_is_installed
+        self, _, __, mock_required_amount_of_network_interfaces_is_available
     ):
-        mock_ubuntu_is_installed.return_value = True
         mock_required_amount_of_network_interfaces_is_available.return_value = False
 
         with self.assertRaises(InvalidNumberOfInterfacesError):

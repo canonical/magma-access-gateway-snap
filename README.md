@@ -32,6 +32,8 @@ This Snap is currently delivered as a [classic](https://snapcraft.io/docs/snap-c
 
 **Installing Magma AGW snap:**
 
+Installation progress can be monitored at all times using `journalctl`.
+
 To install [magma-access-gateway](https://snapcraft.io/magma-access-gateway) execute:
 
 ```bash

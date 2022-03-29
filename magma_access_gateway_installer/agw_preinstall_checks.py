@@ -4,9 +4,13 @@
 
 import logging
 import platform
-from subprocess import check_call
+from subprocess import check_call, check_output
 
-from .agw_installation_errors import InvalidNumberOfInterfacesError, UnsupportedOSError
+from .agw_installation_errors import (
+    InvalidNumberOfInterfacesError,
+    InvalidUserError,
+    UnsupportedOSError,
+)
 
 logger = logging.getLogger("magma_access_gateway_installer")
 
@@ -24,11 +28,14 @@ class AGWInstallerPreinstallChecks:
         logged and installation is cancelled.
 
         :raises:
+            InvalidUserError: if installation wasn't started using root user
             UnsupportedOSException: if OS is not Ubuntu
             InvalidNumberOfInterfaces: if number of available network interfaces is different from
                 expected
         """
-        if not self._ubuntu_is_installed:
+        if not self._user_is_root:
+            raise InvalidUserError()
+        elif not self._ubuntu_is_installed:
             raise UnsupportedOSError()
         elif not self._required_amount_of_network_interfaces_is_available:
             raise InvalidNumberOfInterfacesError()
@@ -43,6 +50,11 @@ class AGWInstallerPreinstallChecks:
         for required_package in self.REQUIRED_SYSTEM_PACKAGES:
             logger.info(f"Installing {required_package}")
             check_call(["apt", "install", "-y", required_package])
+
+    @property
+    def _user_is_root(self) -> bool:
+        """Check whether root user is used."""
+        return check_output(["whoami"]).decode("utf-8").rstrip() == "root"
 
     @property
     def _ubuntu_is_installed(self) -> bool:
