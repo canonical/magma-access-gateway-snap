@@ -46,7 +46,7 @@ jobs:
 
   build-snap:
     name: Build Magma AGW snap
-    runs-on: werner
+    runs-on: telco-maas-host
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1
