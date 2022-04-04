@@ -1,8 +1,8 @@
 name: magma-access-gateway
 base: core20
-version: '1.6.0'
+version: '1.6.1'
 summary: Snap for Magma Access Gateway
-description: |
+description: |-
   The Access Gateway (AGW) provides network services and policy enforcement. In an LTE network, 
   the AGW implements an evolved packet core (EPC), and a combination of an AAA and a PGW. It works 
   with existing, unmodified commercial radio hardware.

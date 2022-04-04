@@ -12,6 +12,8 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 class AGWInstaller:
 
+    MAGMA_VERSION = "focal-1.6.1"
+    MAGMA_ARTIFACTORY = "artifactory.magmacore.org/artifactory"
     MAGMA_AGW_RUNTIME_DEPENDENCIES = [
         "graphviz",
         "python-all",
@@ -21,7 +23,6 @@ class AGWInstaller:
         "uuid-runtime",
         "ca-certificates",
     ]
-
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
 
     def install(self):
@@ -119,13 +120,12 @@ class AGWInstaller:
         self._configure_private_apt_repository_to_install_magma_agw_from()
         self._add_unvalidated_apt_signing_key()
 
-    @staticmethod
-    def _configure_private_apt_repository_to_install_magma_agw_from():
+    def _configure_private_apt_repository_to_install_magma_agw_from(self):
         """Creates an apt repository configuration to allow Magma AGW deb package installation."""
         logger.info("Configuring private apt repository for install Magma AGW from...")
         with open("/etc/apt/sources.list.d/magma.list", "w") as magma_private_apt_repo:
             magma_private_apt_repo.write(
-                "deb https://artifactory.magmacore.org/artifactory/debian focal-1.6.1 main"
+                f"deb https://{self.MAGMA_ARTIFACTORY}/debian {self.MAGMA_VERSION} main"
             )
 
     def _add_unvalidated_apt_signing_key(self):
@@ -136,19 +136,18 @@ class AGWInstaller:
                 "apt-key",
                 "adv",
                 "--fetch-keys",
-                "https://artifactory.magmacore.org/artifactory/api/gpg/key/public",
+                f"https://{self.MAGMA_ARTIFACTORY}/api/gpg/key/public",
             ]
         )
         self._ignore_magma_apt_repositorys_ssl_cert()
 
-    @staticmethod
-    def _ignore_magma_apt_repositorys_ssl_cert():
+    def _ignore_magma_apt_repositorys_ssl_cert(self):
         """Ignores Magma apt repository's SSL certificate."""
         logger.info("Ignoring Magma apt repository's SSL certificate...")
-        ignore_cert = """Acquire::https::artifactory.magmacore.org/artifactory/debian {
+        ignore_cert = f"""Acquire::https::{self.MAGMA_ARTIFACTORY}/debian {{
 Verify-Peer "false";
 Verify-Host "false";
-};
+}};
 """
         with open("/etc/apt/apt.conf.d/99insecurehttpsrepo", "w") as insecured_repo_host:
             insecured_repo_host.write(ignore_cert)
