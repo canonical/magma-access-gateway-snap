@@ -1,8 +1,7 @@
 # How-to: Deploy Magma Access Gateway using snap
 
 The goal of this document is to guide the Operator through the process of deploying 
-Magma Access Gateway to a [compliant](#System-requirements) piece of hardware using 
-[magma-access-gateway](https://snapcraft.io/magma-access-gateway) snap.<br>
+Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-access-gateway) snap.
 
 > **NOTES**<br>
 > 1. Unless specified otherwise, all actions in this guide are executed using `root` account.<br>
