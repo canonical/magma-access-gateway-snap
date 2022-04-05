@@ -55,8 +55,7 @@ magma-access-gateway.configure --domain <Orc8r domain> --root-ca-pem-path <path 
 
 ## 3. Verify the deployment
 
-Once Access Gateway has been successfully attached to the network, deployment can be verified 
-by running below command from the AGW host:
+Run the following command:
 
 ```bash
 magma-access-gateway.post-install
