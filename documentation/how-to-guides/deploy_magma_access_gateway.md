@@ -37,13 +37,10 @@ snap install magma-access-gateway --classic
 magma-access-gateway.install
 ```
 
-[magma-access-gateway](https://snapcraft.io/magma-access-gateway) installer supports various 
-configuration options which can be used in the form of flags added to the main installation 
-command. To see the list of currently supported configuration options, execute:
-
-```bash
-magma-access-gateway.install --help
-```
+> **NOTE**: To see the list of currently supported configuration options, execute:
+> ```bash
+> magma-access-gateway.install --help
+> ```
 
 ## 2. Configure
 
