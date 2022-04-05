@@ -1,4 +1,4 @@
-# How-to: Deploy Magma Access Gateway using magma-access-gateway snap
+# How-to: Deploy Magma Access Gateway using snap
 
 The goal of this document is to guide the Operator through the process of deploying 
 Magma Access Gateway to a [compliant](#System requirements) piece of hardware using 
