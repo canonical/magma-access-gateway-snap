@@ -28,7 +28,7 @@ snap install magma-access-gateway --classic
 
 ## 2. Install magma-access-gateway
 
-From your Magma AGW host machine execute:
+Execute:
 
 ```bash
 magma-access-gateway.install
