@@ -8,11 +8,27 @@ description: |-
   with existing, unmodified commercial radio hardware.
   For detailed description visit https://docs.magmacore.org/docs/next/lte/architecture_overview.
   
-  System requirements:
-  - Ubuntu 20.04 LTS installed (other OSs are not supported right now)
-  - 64bit-X86 machine
-  - baremetal strongly recommended
-  - two ethernet interfaces (SGi and S1)
+  **System requirements:**
+  
+  Hardware (baremetal strongly recommended)
+
+  - Processor: x86-64 dual-core processor (around 2GHz clock speed or faster)
+  - Memory: 4GB RAM
+  - Storage: 32GB or greater SSD
+  
+  Networking
+  
+  - At least two ethernet interfaces (SGi and S1)
+  - Internet connectivity from SGi interface
+  
+  **WARNING:** **magma-access-gateway** snap will affect your computer's networking configuration. 
+  Make sure it is installed on designated hardware (personal computers are strongly discouraged).
+  
+  Operating System
+
+  - Ubuntu 20.04 LTS
+    ([Ubuntu installation guide](https://help.ubuntu.com/lts/installation-guide/amd64/index.html))
+
 
 grade: devel
 confinement: classic

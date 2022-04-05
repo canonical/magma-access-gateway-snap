@@ -33,10 +33,6 @@ The Snap in this repository is specifically developed for the
    ```bash
    snap install <PATH_TO_THE_SNAP_FILE> --dangerous --classic
    ```
-   Since Snap has been built locally, `--dangerous` flag is required to deploy it. <br>
-
-To learn more about [magma-access-gateway](https://snapcraft.io/magma-access-gateway) deployment, 
-please see `README.md`.
 
 **Unit tests and static code analysis**
 
@@ -61,7 +57,3 @@ tox creates virtual environment for every tox environment defined in
 ```bash
 source .tox/unit/bin/activate
 ```
-
-**Integration tests**
-
-TBD
