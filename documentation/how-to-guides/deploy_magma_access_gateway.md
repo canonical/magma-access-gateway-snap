@@ -6,14 +6,6 @@ Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-acc
 > **WARNING:** **magma-access-gateway** snap will affect your computer's networking configuration.
 > Make sure it is installed on designated hardware (personal computers are strongly discouraged).
 
-> **NOTES:**<br>
-> 1. To see the list of currently supported configuration options, execute:
-> ```bash
-> magma-access-gateway.install --help
-> ```
-> 2. Unless specified otherwise, all actions in this guide are executed using `root` account.<br>
-> 3. Installation progress can be monitored at all times using `journalctl`.
-
 ### System requirements
 
 **Hardware (baremetal strongly recommended)**
@@ -33,6 +25,14 @@ Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-acc
   ([Ubuntu installation guide](https://help.ubuntu.com/lts/installation-guide/amd64/index.html))
 
 ## 1. Install
+
+> **NOTES:**<br>
+> 1. To see the list of currently supported configuration options, execute:
+> ```bash
+> magma-access-gateway.install --help
+> ```
+> 2. Unless specified otherwise, all actions in this guide are executed using `root` account.<br>
+> 3. Installation progress can be monitored at all times using `journalctl`.
 
 Connect to the machine where you want to install Magma Access Gateway and execute the following command as root:
 
