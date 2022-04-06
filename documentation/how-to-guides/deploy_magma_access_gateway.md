@@ -34,7 +34,7 @@ Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-acc
 > 2. Unless specified otherwise, all actions in this guide are executed using `root` account.<br>
 > 3. Installation progress can be monitored at all times using `journalctl`.
 
-Connect to the machine where you want to install Magma Access Gateway and execute the following command as root:
+Connect to the machine where you want to install Magma Access Gateway and execute the following command:
 
 ```bash
 snap install magma-access-gateway --classic
