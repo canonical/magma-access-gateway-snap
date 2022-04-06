@@ -1,7 +1,5 @@
-
-name: main-branch
+name: main-branch-pull-request-created
 on:
-  push:
   pull_request:
     branches:
       - main
@@ -44,3 +42,10 @@ jobs:
           sudo apt install libsystemd-dev
           set -eux
           tox -e unit
+
+  build-snap:
+    name: Build Magma AGW snap
+    runs-on: telco-maas-host
+    steps:
+      - uses: actions/checkout@v2
+      - uses: snapcore/action-build@v1
