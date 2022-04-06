@@ -22,7 +22,7 @@ The Snap in this repository is specifically developed for the
    snapcraft
    ```
    
-   To see what's happening during Snap's building process, `-d` can be used along with above
+   To see what's happening during hte snap building process, `-d` can be used along with above
    command.
 
 **Installing locally built Magma AGW snap:**

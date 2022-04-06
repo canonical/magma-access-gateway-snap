@@ -41,11 +41,6 @@ snap install magma-access-gateway --classic
 magma-access-gateway.install
 ```
 
-> **NOTE**: To see the list of currently supported configuration options, execute:
-> ```bash
-> magma-access-gateway.install --help
-> ```
-
 ## 2. Configure
 
 Fetch `rootCA.pem` certificate from Orchestrator, upload it to the Access Gateway host and execute:

@@ -6,7 +6,10 @@ description: |-
   The Access Gateway (AGW) provides network services and policy enforcement. In an LTE network, 
   the AGW implements an evolved packet core (EPC), and a combination of an AAA and a PGW. It works 
   with existing, unmodified commercial radio hardware.
-  For more information on Magma please visit the official website -https://magmacore.org/.
+  For more information on Magma please visit the official website - https://magmacore.org/.
+  
+  **WARNING:** Installing this snap will affect your computer's networking configuration. 
+  Make sure it is installed on designated hardware (personal computers are strongly discouraged).
   
   **System requirements:**
   
@@ -20,9 +23,6 @@ description: |-
   
   - At least two ethernet interfaces (SGi and S1)
   - Internet connectivity from SGi interface
-  
-  **WARNING:** **magma-access-gateway** snap will affect your computer's networking configuration. 
-  Make sure it is installed on designated hardware (personal computers are strongly discouraged).
   
   Operating System
 
