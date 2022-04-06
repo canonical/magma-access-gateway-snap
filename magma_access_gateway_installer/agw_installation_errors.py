@@ -17,7 +17,7 @@ class InvalidUserError(AGWInstallationError):
     """Exception raised when installation has been started by user different than root."""
 
     ERROR_MESSAGE = (
-        "Invalid user used! \n"
+        "Invalid user! \n"
         "Magma AGW installation should be performed by the root user! Exiting..."
     )
 
