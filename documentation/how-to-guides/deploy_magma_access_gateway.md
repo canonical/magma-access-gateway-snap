@@ -3,9 +3,16 @@
 The goal of this document is to guide the operator through the process of deploying 
 Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-access-gateway) snap.
 
-> **NOTES**<br>
-> 1. Unless specified otherwise, all actions in this guide are executed using `root` account.<br>
-> 2. Installation progress can be monitored at all times using `journalctl`.
+> **WARNING:** **magma-access-gateway** snap will affect your computer's networking configuration.
+> Make sure it is installed on designated hardware (personal computers are strongly discouraged).
+
+> **NOTES:**<br>
+> 1. To see the list of currently supported configuration options, execute:
+> ```bash
+> magma-access-gateway.install --help
+> ```
+> 2. Unless specified otherwise, all actions in this guide are executed using `root` account.<br>
+> 3. Installation progress can be monitored at all times using `journalctl`.
 
 ### System requirements
 
@@ -19,9 +26,6 @@ Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-acc
 
 - At least two ethernet interfaces (SGi and S1)
 - Internet connectivity from SGi interface
-
-> **WARNING:** **magma-access-gateway** snap will affect your computer's networking configuration. 
-> Make sure it is installed on designated hardware (personal computers are strongly discouraged).
 
 **Operating System**
 
