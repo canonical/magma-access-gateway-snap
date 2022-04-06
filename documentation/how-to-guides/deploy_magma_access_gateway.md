@@ -3,7 +3,7 @@
 The goal of this document is to guide the operator through the process of deploying 
 Magma Access Gateway using [snap](https://snapcraft.io/magma-access-gateway).
 
-> **WARNING:** **magma-access-gateway** snap will affect your computer's networking configuration.
+> **WARNING:** Installing this snap will affect your computer's networking configuration.
 > Make sure it is installed on designated hardware (personal computers are strongly discouraged).
 
 ### System requirements
