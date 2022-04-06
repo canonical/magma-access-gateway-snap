@@ -48,7 +48,7 @@ magma-access-gateway.install
 
 ## 2. Configure
 
-Fetch `rootCA.pem` certificate from Orchestrator, upload it to AGW host and execute:
+Fetch `rootCA.pem` certificate from Orchestrator, upload it to the Access Gateway host and execute:
 
 ```bash
 magma-access-gateway.configure --domain <Orc8r domain> --root-ca-pem-path <path to Root CA PEM>
