@@ -1,6 +1,6 @@
 # How-to: Deploy Magma Access Gateway using snap
 
-The goal of this document is to guide the Operator through the process of deploying 
+The goal of this document is to guide the operator through the process of deploying 
 Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-access-gateway) snap.
 
 > **NOTES**<br>
