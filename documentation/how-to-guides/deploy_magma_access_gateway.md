@@ -30,7 +30,7 @@ Magma Access Gateway using [magma-access-gateway](https://snapcraft.io/magma-acc
 
 ## 1. Install
 
-Connect to the machine where you want to install Magma Access Gateway and execute:
+Connect to the machine where you want to install Magma Access Gateway and execute the following command as root:
 
 ```bash
 snap install magma-access-gateway --classic
