@@ -45,7 +45,7 @@ jobs:
 
   build-and-publish-snap:
     name: Build and publish Magma AGW snap
-    runs-on: telco-maas-host
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1
