@@ -1,18 +1,34 @@
 name: magma-access-gateway
 base: core20
-version: '1.6.0'
+version: '1.6.1'
 summary: Snap for Magma Access Gateway
-description: |
+description: |-
   The Access Gateway (AGW) provides network services and policy enforcement. In an LTE network, 
   the AGW implements an evolved packet core (EPC), and a combination of an AAA and a PGW. It works 
   with existing, unmodified commercial radio hardware.
-  For detailed description visit https://docs.magmacore.org/docs/next/lte/architecture_overview.
+  For more information on Magma please visit the official website - https://magmacore.org/.
   
-  System requirements:
-  - Ubuntu 20.04 LTS installed (other OSs are not supported right now)
-  - 64bit-X86 machine
-  - baremetal strongly recommended
-  - two ethernet interfaces (SGi and S1)
+  **WARNING:** Installing this snap will affect your computer's networking configuration. 
+  Make sure it is installed on designated hardware (personal computers are strongly discouraged).
+  
+  **System requirements:**
+  
+  Hardware (baremetal strongly recommended)
+
+  - Processor: x86-64 dual-core processor (around 2GHz clock speed or faster)
+  - Memory: 4GB RAM
+  - Storage: 32GB or greater SSD
+  
+  Networking
+  
+  - At least two ethernet interfaces (SGi and S1)
+  - Internet connectivity from SGi interface
+  
+  Operating System
+
+  - Ubuntu 20.04 LTS
+    ([Ubuntu installation guide](https://help.ubuntu.com/lts/installation-guide/amd64/index.html))
+
 
 grade: devel
 confinement: classic
@@ -21,7 +37,7 @@ environment:
   PYTHONPATH: "$SNAP/lib/python3.8/site-packages"
 
 apps:
-  magma-access-gateway:
+  install:
     command: bin/install-agw
   configure:
     command: bin/configure-agw

@@ -119,10 +119,11 @@ def validate_args(args, network_interfaces: List[str]):
 
 
 def validate_custom_sgi_and_s1_interfaces(args, network_interfaces: List[str]):
-    if not args.sgi or args.sgi not in network_interfaces:
-        raise ValueError("Invalid or empty SGi interface specified! Exiting...")
-    if not args.s1 or args.s1 not in network_interfaces:
-        raise ValueError("Invalid or empty S1 interface specified! Exiting...")
+    if args.sgi or args.s1:
+        if not args.sgi or args.sgi not in network_interfaces:
+            raise ValueError("Invalid or empty SGi interface specified! Exiting...")
+        if not args.s1 or args.s1 not in network_interfaces:
+            raise ValueError("Invalid or empty S1 interface specified! Exiting...")
 
 
 def validate_arbitrary_dns(args):
