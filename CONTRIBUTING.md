@@ -36,7 +36,7 @@ The Snap in this repository is specifically developed for the
 
 **Unit tests and static code analysis**
 
-Testing of the Snap is done using `tox`. To run tests, from this repository's main directory
+Testing of the snap is done using `tox`. To run tests, from this repository's main directory
 execute one of the following commands:
 
 ```shell
