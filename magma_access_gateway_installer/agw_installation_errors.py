@@ -47,3 +47,10 @@ class InvalidNumberOfInterfacesError(AGWInstallationError):
 
     def __init__(self):
         super().__init__(self.ERROR_MESSAGE)
+
+
+class ArgumentError(AGWInstallationError):
+    """Exception raised if argument provided by operator is invalid."""
+
+    def __init__(self, message):
+        super().__init__(f"Invalid argument. {message}")

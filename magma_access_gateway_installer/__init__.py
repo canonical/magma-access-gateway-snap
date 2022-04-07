@@ -13,7 +13,7 @@ from typing import List
 import netifaces  # type: ignore[import]
 from systemd.journal import JournalHandler  # type: ignore[import]
 
-from .agw_installation_errors import AGWInstallationError
+from .agw_installation_errors import AGWInstallationError, ArgumentError
 from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
 from .agw_installer import AGWInstaller
 from .agw_network_configurator import AGWInstallerNetworkConfigurator
@@ -25,16 +25,6 @@ handler = JournalHandler()
 handler.setFormatter(logging.Formatter("Magma AGW Installer: %(message)s"))
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
-
-
-class ArgumentError(Exception):
-    def __init__(self, message):
-        self._message = f"ERROR: {message} Exiting installation!"
-        logger.info(self._message)
-
-    @property
-    def message(self):
-        return self._message
 
 
 def main():
@@ -133,6 +123,7 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
 
 
 def validate_args(args: argparse.Namespace, network_interfaces: List[str]):
+    """Validates operator provided arguments and raises when invalid."""
     validate_static_ip_allocation(args)
     validate_arbitrary_dns(args)
     validate_custom_sgi_and_s1_interfaces(args, network_interfaces)
@@ -153,20 +144,22 @@ def validate_arbitrary_dns(args: argparse.Namespace):
         try:
             ip_address(dns_ip)
         except ValueError:
-            raise ArgumentError("Invalid IP address in DNS list.")
+            raise ArgumentError(f"Invalid IP address provided in dns list ({dns_ip}).")
 
 
 def validate_static_ip_allocation(args: argparse.Namespace):
     if args.ip_address and not args.gw_ip_address:
-        raise ArgumentError("Upstream router IP for SGi interface is missing.")
+        raise ArgumentError("--gw-ip-address is missing.")
     elif not args.ip_address and args.gw_ip_address:
-        raise ArgumentError("SGi interface IP address is missing.")
+        raise ArgumentError("--ip-address is missing.")
     elif args.ip_address and args.gw_ip_address:
         try:
             ip_network(args.ip_address, False)
+        except ValueError:
+            raise ArgumentError(f"Invalid IP address provided for ip-address ({args.ip_address}).")
+        try:
             ip_address(args.gw_ip_address)
         except ValueError:
             raise ArgumentError(
-                "Invalid IP address. "
-                "A valid IP address must be usef for ip_address or gw_ip_address."
+                f"Invalid IP address provided for gw-ip-address ({args.gw_ip_address})."
             )
