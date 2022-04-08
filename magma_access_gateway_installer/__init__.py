@@ -156,7 +156,7 @@ def validate_static_ip_allocation(args: argparse.Namespace):
         try:
             ip_network(args.ip_address, False)
         except ValueError:
-            raise ArgumentError(f"Invalid IP address provided for ip-address ({args.ip_address}).")
+            raise ArgumentError(f"Invalid IP address provided for --ip-address ({args.ip_address}).")
         try:
             ip_address(args.gw_ip_address)
         except ValueError:
