@@ -24,6 +24,9 @@ Magma Access Gateway using [snap](https://snapcraft.io/magma-access-gateway).
 - Ubuntu 20.04 LTS
   ([Ubuntu installation guide](https://help.ubuntu.com/lts/installation-guide/amd64/index.html))
 
+> **NOTE**: Unless specified otherwise, all actions in this guide are executed using `root` 
+> account.
+
 ## 1. Install
 
 > **NOTES:**<br>
@@ -31,8 +34,10 @@ Magma Access Gateway using [snap](https://snapcraft.io/magma-access-gateway).
 > ```bash
 > magma-access-gateway.install --help
 > ```
-> 2. Unless specified otherwise, all actions in this guide are executed using `root` account.<br>
-> 3. Installation progress can be monitored at all times using `journalctl`.
+> 2. Installation progress can be monitored at all times using `journalctl`.
+> 3. Installation process requires **at least one** system restart at the end of the process. 
+> Depending on given installation options/initial system state, another restart may be required 
+> after network configuration. When it happens, reconnect to the server once it's back online.
 
 Connect to the machine where you want to install Magma Access Gateway and execute the following command:
 
