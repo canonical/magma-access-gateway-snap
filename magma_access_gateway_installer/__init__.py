@@ -134,7 +134,7 @@ def validate_custom_sgi_and_s1_interfaces(args: argparse.Namespace, network_inte
         if not args.sgi or args.sgi not in network_interfaces:
             raise ArgumentError("Invalid or empty --sgi argument. It must match an interface name.")
         if not args.s1 or args.s1 not in network_interfaces:
-            raise ArgumentError("Invalid or empty s1 argument. It must match an interface name.")
+            raise ArgumentError("Invalid or empty --s1 argument. It must match an interface name.")
 
 
 def validate_arbitrary_dns(args: argparse.Namespace):
