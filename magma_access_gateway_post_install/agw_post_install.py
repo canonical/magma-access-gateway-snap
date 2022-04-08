@@ -11,6 +11,16 @@ import yaml
 from ping3 import ping  # type: ignore[import]
 from systemd import journal  # type: ignore[import]
 
+from .agw_post_install_errors import (
+    AGWCloudCheckinError,
+    AGWConfigurationError,
+    AGWControlProxyConfigFileMissingError,
+    AGWControlProxyConfigurationError,
+    AGWPackagesMissingError,
+    AGWRootCertificateMissingError,
+    AGWServicesNotRunningError,
+)
+
 logger = logging.getLogger("magma_access_gateway_post_install")
 
 
@@ -203,89 +213,3 @@ class AGWPostInstallChecks:
     def _package_is_installed(package_name) -> bool:
         """Checks whether specified system package is installed."""
         return call(["dpkg-query", "-W", "-f='${Status}'", package_name], stdout=DEVNULL) == 0
-
-
-class AGWConfigurationError(Exception):
-    def __init__(self, message):
-        logger.error(message)
-        super().__init__(message)
-
-
-class AGWServicesNotRunningError(Exception):
-    def __init__(self, not_running_services: list):
-        logger.error(
-            f'Following services are not running: {" ".join(not_running_services)}\n'
-            "Please check Magma FAQ at https://docs.magmacore.org/docs/next/faq/faq_magma."
-        )
-        super().__init__(
-            f'Following services are not running: {" ".join(not_running_services)}\n'
-            "Please check Magma FAQ at https://docs.magmacore.org/docs/next/faq/faq_magma."
-        )
-
-
-class AGWPackagesMissingError(Exception):
-    def __init__(self, missing_packages: list):
-        logger.error(
-            f'Following Magma AGW packages are not installed: {" ".join(missing_packages)}\n'
-            "Please try running Magma AGW installation again."
-        )
-        super().__init__(
-            f'Following Magma AGW packages are not installed: {" ".join(missing_packages)}\n'
-            "Please try running Magma AGW installation again."
-        )
-
-
-class AGWRootCertificateMissingError(Exception):
-    def __init__(self):
-        logger.error(
-            "Root Certificate not found under /var/opt/magma/tmp/certs/.\n"
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
-        super().__init__(
-            "Root Certificate not found under /var/opt/magma/tmp/certs/.\n"
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
-
-
-class AGWControlProxyConfigFileMissingError(Exception):
-    def __init__(self):
-        logger.error(
-            "Control Proxy configuration file missing!\n"
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
-        super().__init__(
-            "Control Proxy configuration file missing!\n"
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
-
-
-class AGWControlProxyConfigurationError(Exception):
-    def __init__(self, missing_keys: list):
-        logger.error(
-            f'Following Control Proxy parameters are not configured: {" ".join(missing_keys)}\n'
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
-        super().__init__(
-            f'Following Control Proxy parameters are not configured: {" ".join(missing_keys)}\n'
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
-
-
-class AGWCloudCheckinError(Exception):
-    def __init__(self):
-        logger.error(
-            "Cloud checkin failed!"
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
-        super().__init__(
-            "Cloud checkin failed!"
-            "Please follow Access Gateway Configuration section of Magma AGW documentation "
-            "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
-        )
