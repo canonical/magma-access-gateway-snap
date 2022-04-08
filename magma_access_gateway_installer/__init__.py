@@ -144,7 +144,7 @@ def validate_arbitrary_dns(args: argparse.Namespace):
         try:
             ip_address(dns_ip)
         except ValueError:
-            raise ArgumentError(f"Invalid IP address provided in dns list ({dns_ip}).")
+            raise ArgumentError(f"Invalid IP address provided for --dns ({dns_ip}).")
 
 
 def validate_static_ip_allocation(args: argparse.Namespace):
