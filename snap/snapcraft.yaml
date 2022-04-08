@@ -1,6 +1,6 @@
 name: magma-access-gateway
 base: core20
-version: '1.6.1'
+version: '1.7.0'
 summary: Snap for Magma Access Gateway
 description: |-
   The Access Gateway (AGW) provides network services and policy enforcement. In an LTE network, 
@@ -27,8 +27,6 @@ description: |-
   Operating System
 
   - Ubuntu 20.04 LTS
-    ([Ubuntu installation guide](https://help.ubuntu.com/lts/installation-guide/amd64/index.html))
-
 
 grade: devel
 confinement: classic
