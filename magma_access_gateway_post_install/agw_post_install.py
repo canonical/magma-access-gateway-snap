@@ -11,14 +11,15 @@ import yaml
 from ping3 import ping  # type: ignore[import]
 from systemd import journal  # type: ignore[import]
 
-from .agw_post_install_errors import \
-    AGWConfigurationError, \
-    AGWServicesNotRunningError, \
-    AGWPackagesMissingError, \
-    AGWRootCertificateMissingError, \
-    AGWControlProxyConfigFileMissingError, \
-    AGWCloudCheckinError, \
-    AGWControlProxyConfigurationError
+from .agw_post_install_errors import (
+    AGWCloudCheckinError,
+    AGWConfigurationError,
+    AGWControlProxyConfigFileMissingError,
+    AGWControlProxyConfigurationError,
+    AGWPackagesMissingError,
+    AGWRootCertificateMissingError,
+    AGWServicesNotRunningError,
+)
 
 logger = logging.getLogger("magma_access_gateway_post_install")
 
