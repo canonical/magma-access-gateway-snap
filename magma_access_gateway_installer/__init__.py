@@ -25,6 +25,7 @@ handler = JournalHandler()
 handler.setFormatter(logging.Formatter("Magma AGW Installer: %(message)s"))
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def main():
@@ -34,8 +35,7 @@ def main():
     args = cli_arguments_parser(sys.argv[1:])
     try:
         validate_args(args, network_interfaces)
-    except ArgumentError as e:
-        print(e.message)
+    except ArgumentError:
         return
 
     try:
@@ -72,8 +72,7 @@ def main():
             os.system("reboot")
         else:
             AGWInstaller().install()
-    except AGWInstallationError as e:
-        print(e.message)
+    except AGWInstallationError:
         return
 
 
@@ -132,7 +131,9 @@ def validate_args(args: argparse.Namespace, network_interfaces: List[str]):
 def validate_custom_sgi_and_s1_interfaces(args: argparse.Namespace, network_interfaces: List[str]):
     if args.sgi or args.s1:
         if not args.sgi or args.sgi not in network_interfaces:
-            raise ArgumentError("Invalid or empty --sgi argument. It must match an interface name.")
+            raise ArgumentError(
+                "Invalid or empty --sgi argument. It must match an interface name."
+            )
         if not args.s1 or args.s1 not in network_interfaces:
             raise ArgumentError("Invalid or empty --s1 argument. It must match an interface name.")
 
@@ -156,7 +157,9 @@ def validate_static_ip_allocation(args: argparse.Namespace):
         try:
             ip_network(args.ip_address, False)
         except ValueError:
-            raise ArgumentError(f"Invalid IP address provided for --ip-address ({args.ip_address}).")
+            raise ArgumentError(
+                f"Invalid IP address provided for --ip-address ({args.ip_address})."
+            )
         try:
             ip_address(args.gw_ip_address)
         except ValueError:
