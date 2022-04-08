@@ -9,27 +9,32 @@
 """
 
 import logging
+import sys
 
 from systemd.journal import JournalHandler  # type: ignore[import]
 
 from .agw_post_install import AGWPostInstallChecks
+from .agw_post_install_errors import PostInstallError
 
 logger = logging.getLogger(__name__)
 handler = JournalHandler()
 handler.setFormatter(logging.Formatter("Magma AGW Post-Install: %(message)s"))
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def main():
-    agw_post_install_checks = AGWPostInstallChecks()
-
     logger.info("Starting Magma AGW post-installation checks...")
-    agw_post_install_checks.check_whether_required_interfaces_are_configured()
-    agw_post_install_checks.check_eth0_internet_connectivity()
-    agw_post_install_checks.check_whether_required_services_are_running()
-    agw_post_install_checks.check_whether_required_packages_are_installed()
-    agw_post_install_checks.check_whether_root_certificate_exists()
-    agw_post_install_checks.check_control_proxy()
-    agw_post_install_checks.check_cloud_check_in()
+    try:
+        agw_post_install_checks = AGWPostInstallChecks()
+        agw_post_install_checks.check_whether_required_interfaces_are_configured()
+        agw_post_install_checks.check_eth0_internet_connectivity()
+        agw_post_install_checks.check_whether_required_services_are_running()
+        agw_post_install_checks.check_whether_required_packages_are_installed()
+        agw_post_install_checks.check_whether_root_certificate_exists()
+        agw_post_install_checks.check_control_proxy()
+        agw_post_install_checks.check_cloud_check_in()
+    except PostInstallError:
+        return
     logger.info("Magma AGW post-installation checks finished successfully.")
