@@ -19,11 +19,13 @@ from .agw_preinstall_checks import AGWInstallerPreinstallChecks
 from .agw_service_user_creator import AGWInstallerServiceUserCreator
 
 logger = logging.getLogger(__name__)
-handler = JournalHandler()
-handler.setFormatter(logging.Formatter("Magma AGW Installer: %(message)s"))
-logger.addHandler(handler)
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler(sys.stdout))
+journal_handler = JournalHandler()
+journal_handler.setFormatter(logging.Formatter("Magma AGW Installer: %(message)s"))
+logger.addHandler(journal_handler)
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(logging.Formatter("Magma AGW Installer: %(message)s"))
+logger.addHandler(stdout_handler)
 
 network_interfaces = netifaces.interfaces()
 network_interfaces.remove("lo")
