@@ -2,22 +2,27 @@
 network:
   ethernets:
     eth0:
+    {%- if sgi_ipv4_address != None +%}
       dhcp4: false
       dhcp6: false
       addresses:
         - {{ sgi_ipv4_address }}
-      {% if sgi_ipv6_address is defined %}
+      {%- if sgi_ipv6_address != None +%}
         - {{ sgi_ipv6_address }}
-      {% endif %}
+      {%- endif +%}
       routes:
         - to: default
           via: {{ sgi_ipv4_gateway }}
-        {% if sgi_ipv6_address is defined  %}
-          retric: 200
+        {%- if sgi_ipv6_address != None +%}
+          metric: 200
         - to: default
           via: {{ sgi_ipv6_gateway }}
-          retric: 300
-        {% endif %}
+          metric: 300
+        {%- endif +%}
+    {%- else +%}
+      dhcp4: true
+      dhcp6: true
+    {%- endif +%}
       match:
         macaddress: {{ sgi_mac_address }}
       set-name: eth0

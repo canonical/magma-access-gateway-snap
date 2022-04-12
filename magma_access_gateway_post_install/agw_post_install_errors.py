@@ -2,10 +2,11 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-
 import logging
+import sys
 
 logger = logging.getLogger("magma_access_gateway_post_install")
+sys.tracebacklimit = 0
 
 
 class PostInstallError(Exception):

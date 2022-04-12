@@ -3,8 +3,10 @@
 # See LICENSE file for licensing details.
 
 import logging
+import sys
 
 logger = logging.getLogger("magma_access_gateway_installer")
+sys.tracebacklimit = 0
 
 
 class AGWInstallationError(Exception):
@@ -13,10 +15,6 @@ class AGWInstallationError(Exception):
     def __init__(self, message):
         self._message = f"ERROR: {message} Exiting installation!"
         logger.error(self._message)
-
-    @property
-    def message(self):
-        return self._message
 
 
 class InvalidUserError(AGWInstallationError):

@@ -27,7 +27,10 @@ setup(
         "magma_access_gateway_configurator": [
             "resources/control_proxy.yml.j2",
             "resources/control_proxy.yml.j2",
-        ]
+        ],
+        "magma_access_gateway_installer": [
+            "resources/netplan_config.yaml.j2",
+        ],
     },
     packages=[
         "magma_access_gateway_installer",

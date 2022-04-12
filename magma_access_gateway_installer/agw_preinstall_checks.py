@@ -33,6 +33,7 @@ class AGWInstallerPreinstallChecks:
             InvalidNumberOfInterfaces: if number of available network interfaces is different from
                 expected
         """
+        logger.info("Starting pre-install checks...")
         if not self._user_is_root:
             raise InvalidUserError()
         elif not self._ubuntu_is_installed:
@@ -45,11 +46,11 @@ class AGWInstallerPreinstallChecks:
     def install_required_system_packages(self):
         """Installs required system packages using apt."""
         logger.info("Updating apt cache...")
-        check_call(["apt", "update"])
+        check_call(["apt", "-qq", "update"])
         logger.info("Installing required system packages...")
         for required_package in self.REQUIRED_SYSTEM_PACKAGES:
             logger.info(f"Installing {required_package}")
-            check_call(["apt", "install", "-y", required_package])
+            check_call(["apt", "-qq", "install", "-y", required_package])
 
     @property
     def _user_is_root(self) -> bool:

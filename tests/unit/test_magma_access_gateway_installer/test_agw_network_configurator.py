@@ -2,9 +2,8 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import copy
 import unittest
-from unittest.mock import Mock, call, mock_open, patch
+from unittest.mock import Mock, PropertyMock, mock_open, patch
 
 from magma_access_gateway_installer.agw_network_configurator import (
     AGWInstallerNetworkConfigurator,
@@ -12,9 +11,46 @@ from magma_access_gateway_installer.agw_network_configurator import (
 
 
 class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
-    TEST_DNS_LIST = ["1.2.3.4", "5.6.7.8"]
-    CORRECT_NETWORK_INTERFACES = ["eth0", "eth1"]
-    INCORRECT_NETWORK_INTERFACES = ["test_if_name", "test_if_name_2"]
+    TEST_MAGMA_NETPLAN_CONFIG_FILE = "/this/is/test/netplan/config"
+    DNS_TEST_NETWORK_CONFIG = {
+        "dns_address": "1.2.3.4 5.6.7.8",
+    }
+    EMPTY_NETWORK_CONFIG = {
+        "sgi_ipv4_address": None,
+        "sgi_ipv4_gateway": None,
+        "sgi_ipv6_address": None,
+        "sgi_ipv6_gateway": None,
+        "sgi_mac_address": None,
+        "s1_mac_address": None,
+        "dns_address": None,
+    }
+    DHCP_BASED_NETWORK_CONFIG = {
+        "sgi_ipv4_address": None,
+        "sgi_ipv4_gateway": None,
+        "sgi_ipv6_address": None,
+        "sgi_ipv6_gateway": None,
+        "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
+        "s1_mac_address": "ff:ee:dd:cc:bb:aa",
+        "dns_address": None,
+    }
+    STATIC_IPv4_NETWORK_CONFIG = {
+        "sgi_ipv4_address": "1.2.3.4/24",
+        "sgi_ipv4_gateway": "5.6.7.8",
+        "sgi_ipv6_address": None,
+        "sgi_ipv6_gateway": None,
+        "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
+        "s1_mac_address": "ff:ee:dd:cc:bb:aa",
+        "dns_address": None,
+    }
+    STATIC_DUALSTACK_NETWORK_CONFIG = {
+        "sgi_ipv4_address": "1.2.3.4/24",
+        "sgi_ipv4_gateway": "5.6.7.8",
+        "sgi_ipv6_address": "aaaa:bbbb:cccc:dddd:1:2:3:4/64",
+        "sgi_ipv6_gateway": "dddd:cccc:bbbb:aaaa:5:6:7:8",
+        "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
+        "s1_mac_address": "ff:ee:dd:cc:bb:aa",
+        "dns_address": None,
+    }
     GOOD_DNS_CONFIG = """[Resolve]
 DNS=1.2.3.4 5.6.7.8
 #FallbackDNS=
@@ -39,233 +75,141 @@ DNS=1.2.3.4 5.6.7.8
 #DNSStubListener=yes
 #ReadEtcHosts=yes
 """
-    TEST_INTERFACES_CONFIGS = {
-        "test_if_name": {
-            "dhcp4": True,
-            "dhcp6": False,
-            "match": {"macaddress": "02:45:b8:e6:23:c6"},
-            "set-name": "test_if_name",
-        },
-        "test_if_name_2": {
-            "dhcp4": True,
-            "dhcp6": False,
-            "match": {"macaddress": "02:45:b8:e6:c6:23"},
-            "set-name": "test_if_name_2",
-        },
-        "test_if_name_3": {
-            "dhcp4": True,
-            "dhcp6": False,
-            "match": {"macaddress": "02:45:23:e6:c6:b8"},
-            "set-name": "test_if_name_3",
-        },
-        "test_if_name_4": {
-            "dhcp4": True,
-            "dhcp6": False,
-            "match": {"macaddress": "02:23:b8:e6:c6:45"},
-            "set-name": "test_if_name_4",
-        },
-        "eth0": {
-            "dhcp4": True,
-            "dhcp6": False,
-            "match": {"macaddress": "02:45:b8:e6:23:c6"},
-            "set-name": "eth0",
-        },
-        "eth1": {
-            "dhcp4": True,
-            "dhcp6": False,
-            "match": {"macaddress": "02:45:b8:e6:c6:23"},
-            "set-name": "eth1",
-        },
-    }
-    CLOUD_INIT_CONTENT_2_INTERFACES_ONLY = {
-        "network": {
-            "ethernets": {
-                "test_if_name": TEST_INTERFACES_CONFIGS["test_if_name"],
-                "test_if_name_2": TEST_INTERFACES_CONFIGS["test_if_name_2"],
-            },
-            "version": 2,
-        }
-    }
-    CLOUD_INIT_CONTENT_MORE_INTERFACES = {
-        "network": {
-            "ethernets": {
-                "test_if_name": TEST_INTERFACES_CONFIGS["test_if_name"],
-                "test_if_name_2": TEST_INTERFACES_CONFIGS["test_if_name_2"],
-                "test_if_name_3": TEST_INTERFACES_CONFIGS["test_if_name_3"],
-                "test_if_name_4": TEST_INTERFACES_CONFIGS["test_if_name_4"],
-            },
-            "version": 2,
-        }
-    }
-    TEST_SGi_INTERFACE = "test_if_name"
-    TEST_S1_INTERFACE = "test_if_name_2"
-    APT_LIST_WITH_NETPLAN = """netcat-openbsd/focal,now 1.206-1ubuntu1 amd64 [installed,automatic]
-netpbm/focal,now 2:10.0-15.3build1 amd64 [installed,automatic]
-netplan.io/focal-updates,now 0.103-0ubuntu5~20.04.5 amd64 [installed,automatic]
-network-manager-gnome/focal-updates,now 1.8.24-1ubuntu3 amd64 [installed,automatic]
-network-manager-openvpn-gnome/focal,now 1.8.12-1 amd64 [installed]
-"""
-    APT_LIST_WITHOUT_NETPLAN = """netcat-openbsd/focal,now 1.206-1ubuntu1 amd64 [installed,automatic]
-netpbm/focal,now 2:10.0-15.3build1 amd64 [installed,automatic]
-network-manager-gnome/focal-updates,now 1.8.24-1ubuntu3 amd64 [installed,automatic]
-network-manager-openvpn-gnome/focal,now 1.8.12-1 amd64 [installed]
-"""
-    NETWORKING_SERVICE_ENABLED = b"""multipath-tools.service                        enabled         enabled
-multipathd.service                             enabled         enabled
-networkd-dispatcher.service                    enabled         enabled
-networking.service                             enabled         enabled
-nghttpx.service                                enabled         enabled
-ondemand.service                               enabled         enabled
-"""  # noqa: E501
-    NETWORKING_SERVICE_DISABLED = b"""multipath-tools.service                        enabled         enabled
-multipathd.service                             enabled         enabled
-networkd-dispatcher.service                    enabled         enabled
-networking.service                             disabled        disabled
-nghttpx.service                                enabled         enabled
-ondemand.service                               enabled         enabled
-"""  # noqa: E501
 
-    @patch("magma_access_gateway_installer.agw_network_configurator.open")
-    def test_given_interfaces_have_correct_names_when_update_interfaces_names_then_no_config_is_written(  # noqa: E501
-        self, mocked_open_file
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.update_interfaces_names()
-
-        mocked_open_file.assert_not_called()
-
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_interfaces_have_correct_names_when_update_interfaces_names_then_grub_mkconfig_is_not_called(  # noqa: E501
-        self, mock_check_call
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.update_interfaces_names()
-
-        mock_check_call.assert_not_called()
-
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_interfaces_have_correct_names_when_update_interfaces_names_then_reboot_is_not_needed(  # noqa: E501
-        self, _
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.update_interfaces_names()
-
-        self.assertFalse(agw_network_configurator.reboot_needed)
-
-    @patch("magma_access_gateway_installer.agw_network_configurator.yaml.dump")
     @patch(
-        "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
-        return_value=copy.deepcopy(CLOUD_INIT_CONTENT_2_INTERFACES_ONLY),
+        "magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator.MAGMA_NETPLAN_CONFIG_FILE",  # noqa: E501
+        new_callable=PropertyMock,
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open)
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_interfaces_dont_have_correct_names_when_update_interfaces_names_then_netplan_config_file_is_updated(  # noqa: E501
-        self, _, __, ___, mock_yaml_dump
+    @patch("magma_access_gateway_installer.agw_network_configurator.check_call", Mock())
+    def test_given_dhcp_based_network_config_when_configure_network_interfaces_then_correct_netplan_config_is_created(  # noqa: E501
+        self, mocked_open_file, mocked_magma_netplan_config_file
     ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.INCORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-        expected_cloud_init_content = {
-            "network": {
-                "ethernets": {
-                    "eth0": self.TEST_INTERFACES_CONFIGS["eth0"],
-                    "eth1": self.TEST_INTERFACES_CONFIGS["eth1"],
-                },
-                "version": 2,
-            }
-        }
+        exepected_magma_netplan_config = """# This is the network config written by magma-access-gateway snap
+network:
+  ethernets:
+    eth0:
+      dhcp4: true
+      dhcp6: true
+      match:
+        macaddress: aa:bb:cc:dd:ee:ff
+      set-name: eth0
+    eth1:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - 10.0.2.1/24
+      match:
+        macaddress: ff:ee:dd:cc:bb:aa
+      set-name: eth1
+  version: 2"""  # noqa: E501
+        mocked_magma_netplan_config_file.return_value = self.TEST_MAGMA_NETPLAN_CONFIG_FILE
+        agw_network_configurator = AGWInstallerNetworkConfigurator(self.DHCP_BASED_NETWORK_CONFIG)
 
-        agw_network_configurator.update_interfaces_names()
+        agw_network_configurator.configure_network_interfaces()
 
-        args, kwargs = mock_yaml_dump.call_args
-        self.assertEqual(args[0], expected_cloud_init_content)
-        self.assertEqual(mock_yaml_dump.call_count, 1)
+        mocked_open_file.assert_called_once_with(self.TEST_MAGMA_NETPLAN_CONFIG_FILE, "w")
+        mocked_open_file().write.assert_called_once_with(exepected_magma_netplan_config)
 
-    @patch("magma_access_gateway_installer.agw_network_configurator.yaml.dump")
     @patch(
-        "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
-        return_value=copy.deepcopy(CLOUD_INIT_CONTENT_MORE_INTERFACES),
+        "magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator.MAGMA_NETPLAN_CONFIG_FILE",  # noqa: E501
+        new_callable=PropertyMock,
     )
     @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open)
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_custom_sgi_and_s1_interfaces_names_when_update_interfaces_names_then_netplan_config_file_is_updated(  # noqa: E501
-        self, _, __, ___, mock_yaml_dump
+    @patch("magma_access_gateway_installer.agw_network_configurator.check_call", Mock())
+    def test_given_static_ipv4_network_config_when_configure_network_interfaces_then_correct_netplan_config_is_created(  # noqa: E501
+        self, mocked_open_file, mocked_magma_netplan_config_file
     ):
-        self.maxDiff = None
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.INCORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-            sgi_interface=self.TEST_SGi_INTERFACE,
-            s1_interface=self.TEST_S1_INTERFACE,
-        )
-        expected_cloud_init_content = {
-            "network": {
-                "ethernets": {
-                    "eth0": self.TEST_INTERFACES_CONFIGS["eth0"],
-                    "eth1": self.TEST_INTERFACES_CONFIGS["eth1"],
-                    "test_if_name_3": self.TEST_INTERFACES_CONFIGS["test_if_name_3"],
-                    "test_if_name_4": self.TEST_INTERFACES_CONFIGS["test_if_name_4"],
-                },
-                "version": 2,
-            }
-        }
+        exepected_magma_netplan_config = """# This is the network config written by magma-access-gateway snap
+network:
+  ethernets:
+    eth0:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - 1.2.3.4/24
+      routes:
+        - to: default
+          via: 5.6.7.8
+      match:
+        macaddress: aa:bb:cc:dd:ee:ff
+      set-name: eth0
+    eth1:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - 10.0.2.1/24
+      match:
+        macaddress: ff:ee:dd:cc:bb:aa
+      set-name: eth1
+  version: 2"""  # noqa: E501
+        mocked_magma_netplan_config_file.return_value = self.TEST_MAGMA_NETPLAN_CONFIG_FILE
+        agw_network_configurator = AGWInstallerNetworkConfigurator(self.STATIC_IPv4_NETWORK_CONFIG)
 
-        agw_network_configurator.update_interfaces_names()
+        agw_network_configurator.configure_network_interfaces()
 
-        args, kwargs = mock_yaml_dump.call_args
-        self.assertEqual(args[0], expected_cloud_init_content)
-        self.assertEqual(mock_yaml_dump.call_count, 1)
+        mocked_open_file.assert_called_once_with(self.TEST_MAGMA_NETPLAN_CONFIG_FILE, "w")
+        mocked_open_file().write.assert_called_once_with(exepected_magma_netplan_config)
 
     @patch(
-        "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
-        return_value=copy.deepcopy(CLOUD_INIT_CONTENT_2_INTERFACES_ONLY),
+        "magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator.MAGMA_NETPLAN_CONFIG_FILE",  # noqa: E501
+        new_callable=PropertyMock,
     )
-    @patch("magma_access_gateway_installer.agw_network_configurator.open")
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_interfaces_dont_have_correct_names_when_update_interfaces_names_then_reboot_is_needed(  # noqa: E501
-        self, _, __, ___
+    @patch("magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open)
+    @patch("magma_access_gateway_installer.agw_network_configurator.check_call", Mock())
+    def test_given_static_dualstack_network_config_when_configure_network_interfaces_then_correct_netplan_config_is_created(  # noqa: E501
+        self, mocked_open_file, mocked_magma_netplan_config_file
     ):
+        exepected_magma_netplan_config = """# This is the network config written by magma-access-gateway snap
+network:
+  ethernets:
+    eth0:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - 1.2.3.4/24
+        - aaaa:bbbb:cccc:dddd:1:2:3:4/64
+      routes:
+        - to: default
+          via: 5.6.7.8
+          metric: 200
+        - to: default
+          via: dddd:cccc:bbbb:aaaa:5:6:7:8
+          metric: 300
+      match:
+        macaddress: aa:bb:cc:dd:ee:ff
+      set-name: eth0
+    eth1:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - 10.0.2.1/24
+      match:
+        macaddress: ff:ee:dd:cc:bb:aa
+      set-name: eth1
+  version: 2"""  # noqa: E501
+        mocked_magma_netplan_config_file.return_value = self.TEST_MAGMA_NETPLAN_CONFIG_FILE
         agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.INCORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
+            self.STATIC_DUALSTACK_NETWORK_CONFIG
         )
 
-        agw_network_configurator.update_interfaces_names()
+        agw_network_configurator.configure_network_interfaces()
 
-        self.assertTrue(agw_network_configurator.reboot_needed)
+        mocked_open_file.assert_called_once_with(self.TEST_MAGMA_NETPLAN_CONFIG_FILE, "w")
+        mocked_open_file().write.assert_called_once_with(exepected_magma_netplan_config)
 
+    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
     @patch(
-        "magma_access_gateway_installer.agw_network_configurator.yaml.safe_load",
-        return_value=CLOUD_INIT_CONTENT_2_INTERFACES_ONLY,
+        "magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open()
     )
-    @patch("magma_access_gateway_installer.agw_network_configurator.open")
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_interfaces_dont_have_correct_names_when_update_interfaces_names_then_mkconfig_is_called(  # noqa: E501
-        self, mock_check_call, _, __
+    def test_given_netplan_config_created_when_configure_network_interfaces_then_netplan_config_is_applied(  # noqa: E501
+        self, _, mocked_check_call
     ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.INCORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
+        agw_network_configurator = AGWInstallerNetworkConfigurator(self.EMPTY_NETWORK_CONFIG)
 
-        agw_network_configurator.update_interfaces_names()
+        agw_network_configurator.configure_network_interfaces()
 
-        mock_check_call.assert_called_once_with(
-            ["grub-mkconfig", "-o", agw_network_configurator.BOOT_GRUB_GRUB_CFG_PATH]
-        )
+        mocked_check_call.assert_called_once_with(["netplan", "apply"])
 
     @patch(
         "magma_access_gateway_installer.agw_network_configurator.open",
@@ -275,10 +219,7 @@ ondemand.service                               enabled         enabled
     def test_given_dns_is_already_configured_when_configure_dns_then_no_config_is_written(
         self, mocked_open_file
     ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
+        agw_network_configurator = AGWInstallerNetworkConfigurator(self.DNS_TEST_NETWORK_CONFIG)
 
         agw_network_configurator.configure_dns()
 
@@ -295,10 +236,7 @@ ondemand.service                               enabled         enabled
         self, patch_symlink, mocked_open_file, _
     ):
         patch_symlink.return_value = True
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
+        agw_network_configurator = AGWInstallerNetworkConfigurator(self.DNS_TEST_NETWORK_CONFIG)
 
         agw_network_configurator.configure_dns()
 
@@ -317,251 +255,8 @@ ondemand.service                               enabled         enabled
         self, patch_symlink, _, mock_check_call
     ):
         patch_symlink.return_value = True
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
+        agw_network_configurator = AGWInstallerNetworkConfigurator(self.DNS_TEST_NETWORK_CONFIG)
 
         agw_network_configurator.configure_dns()
 
         mock_check_call.assert_called_once_with(["service", "systemd-resolved", "restart"])
-
-    @patch("os.path.exists", Mock(return_value=True))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_exist_when_create_interfaces_config_files_then_configuration_dir_is_not_being_created(  # noqa: E501
-        self, _, mock_makedirs
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        mock_makedirs.assert_not_called()
-
-    @patch("os.path.exists", Mock(return_value=True))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_exist_when_create_interfaces_config_files_then_no_configurations_are_written_to_any_file(  # noqa: E501
-        self, mock_open_file, _
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        mock_open_file.assert_not_called()
-
-    @patch("os.path.exists", Mock(return_value=True))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_exist_when_create_interfaces_config_files_then_reboot_is_not_needed(  # noqa: E501
-        self, _, __
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        self.assertFalse(agw_network_configurator.reboot_needed)
-
-    @patch("os.path.exists", Mock(return_value=False))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_dont_exist_when_create_interfaces_config_files_then_configuration_dir_created(  # noqa: E501
-        self, _, mock_makedirs
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        mock_makedirs.assert_called_once_with(agw_network_configurator.INTERFACES_DIR)
-
-    @patch("os.path.exists", Mock(return_value=False))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_dont_exist_and_dhcp_is_used_when_create_interfaces_config_files_then_eth0_is_configured_correctly(  # noqa: E501
-        self, mock_open_file, _
-    ):
-        expected_config = [
-            "auto eth0\n",
-            "iface eth0 inet dhcp\n",
-        ]
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        self.assertTrue(call("/etc/network/interfaces.d/eth0", "w") in mock_open_file.mock_calls)
-        self.assertTrue(call.writelines(expected_config) in mock_open_file().mock_calls)
-
-    @patch("os.path.exists", Mock(return_value=False))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_dont_exist_and_static_addressing_is_used_when_create_interfaces_config_files_then_eth0_is_configured_correctly(  # noqa: E501
-        self, mock_open_file, _
-    ):
-        test_static_ip_address = "1.2.3.4/24"
-        test_static_gw_ip_address = "4.3.2.1"
-        expected_config = [
-            "auto eth0\n",
-            "iface eth0 inet static\n",
-            "address 1.2.3.4\n",
-            "netmask 255.255.255.0\n",
-            "gateway 4.3.2.1\n",
-        ]
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-            test_static_ip_address,
-            test_static_gw_ip_address,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        self.assertTrue(call("/etc/network/interfaces.d/eth0", "w") in mock_open_file.mock_calls)
-        self.assertTrue(call.writelines(expected_config) in mock_open_file().mock_calls)
-
-    @patch("os.path.exists", Mock(return_value=False))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_dont_exist_when_create_interfaces_config_files_then_eth1_is_configured_correctly(  # noqa: E501
-        self, mock_open_file, _
-    ):
-        expected_config = [
-            "auto eth1\n",
-            "iface eth1 inet static\n",
-            "address 10.0.2.1\n",
-            "netmask 255.255.255.0\n",
-        ]
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        self.assertTrue(call("/etc/network/interfaces.d/eth1", "w") in mock_open_file.mock_calls)
-        self.assertTrue(call.writelines(expected_config) in mock_open_file().mock_calls)
-
-    @patch("os.path.exists", Mock(return_value=False))
-    @patch("os.makedirs", new_callable=Mock)
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open",
-        new_callable=mock_open,
-    )
-    def test_given_network_interfaces_config_files_dont_exist_when_create_interfaces_config_files_then_reboot_is_needed(  # noqa: E501
-        self, _, __
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.create_interfaces_config_files()
-
-        self.assertTrue(agw_network_configurator.reboot_needed)
-
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.check_output",
-        return_value=APT_LIST_WITHOUT_NETPLAN,
-    )
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_netplan_is_not_installed_when_remove_netplan_then_no_commands_are_executed(
-        self, mock_check_call, _
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.remove_netplan()
-
-        mock_check_call.assert_not_called()
-
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.check_output",
-        return_value=APT_LIST_WITH_NETPLAN,
-    )
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_netplan_is_installed_when_remove_netplan_then_apt_remove_command_is_executed(
-        self, mock_check_call, _
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.remove_netplan()
-
-        mock_check_call.assert_called_once_with(["apt", "remove", "-y", "--purge", "netplan.io"])
-
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.check_output",
-        return_value=NETWORKING_SERVICE_ENABLED,
-    )
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_networking_service_enabled_when_enable_networking_service_then_no_commands_are_executed(  # noqa: E501
-        self, mock_check_call, _
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.enable_networking_service()
-
-        mock_check_call.assert_not_called()
-
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.check_output",
-        return_value=NETWORKING_SERVICE_DISABLED,
-    )
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    def test_given_networking_service_disabled_when_enable_networking_service_then_relevant_systemctl_commands_are_executed(  # noqa: E501
-        self, mock_check_call, _
-    ):
-        expected_calls = [
-            call(["systemctl", "unmask", "networking"]),
-            call(["systemctl", "enable", "networking"]),
-        ]
-        agw_network_configurator = AGWInstallerNetworkConfigurator(
-            self.CORRECT_NETWORK_INTERFACES,
-            self.TEST_DNS_LIST,
-        )
-
-        agw_network_configurator.enable_networking_service()
-
-        mock_check_call.assert_has_calls(expected_calls)

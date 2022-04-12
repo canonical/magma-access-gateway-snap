@@ -74,9 +74,9 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
     def test_given_system_meeting_installation_requirements_when_install_required_system_packages_then_apt_installs_required_packages(  # noqa: E501
         self, mock_check_call
     ):
-        expected_apt_calls = [call(["apt", "update"])]
+        expected_apt_calls = [call(["apt", "-qq", "update"])]
         for required_package in self.agw_preinstall_checks.REQUIRED_SYSTEM_PACKAGES:
-            expected_apt_calls.append(call(["apt", "install", "-y", required_package]))
+            expected_apt_calls.append(call(["apt", "-qq", "install", "-y", required_package]))
 
         self.agw_preinstall_checks.install_required_system_packages()
 

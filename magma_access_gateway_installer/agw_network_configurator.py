@@ -5,7 +5,6 @@
 import logging
 import os
 from subprocess import check_call
-from typing import List
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -15,22 +14,14 @@ logger = logging.getLogger("magma_access_gateway_installer")
 class AGWInstallerNetworkConfigurator:
 
     MAGMA_NETPLAN_CONFIG_FILE = "/etc/netplan/99-magma-config.yaml"
+    MAGMA_NETPLAN_CONFIG_TEMPLATE = "netplan_config.yaml.j2"
     ETC_SYSTEMD_RESOLVED_CONF_PATH = "/etc/systemd/resolved.conf"
 
     def __init__(
         self,
-        network_interfaces: List[str],
-        dns_ip_addresses: List[str],
         network_config: dict,
     ):
-        self.network_interfaces = network_interfaces
-        self.dns_ips_list = " ".join(dns_ip_addresses)
         self.network_config = network_config
-        self.netplan_config_template = (
-            "dhcp_based_netplan_config.yaml.j2"
-            if self.network_config['configuration_type'] == "dhcp"
-            else "static_netplan_config.yaml.j2"
-        )
 
     def configure_network_interfaces(self):
         """Creates and applies network configuration required by Magma AGW."""
@@ -48,12 +39,12 @@ class AGWInstallerNetworkConfigurator:
         with open(self.MAGMA_NETPLAN_CONFIG_FILE, "w") as magma_netplan_config:
             magma_netplan_config.write(
                 netplan_config_template.render(
-                    sgi_ipv4_address=self.network_config['sgi_ipv4_address'],
-                    sgi_ipv4_gateway=self.network_config['sgi_ipv4_gateway'],
-                    sgi_ipv6_address=self.network_config['sgi_ipv6_address'],
-                    sgi_ipv6_gateway=self.network_config['sgi_ipv6_gateway'],
-                    sgi_mac_address=self.network_config['sgi_mac_address'],
-                    s1_mac_address=self.network_config['s1_mac_address'],
+                    sgi_ipv4_address=self.network_config["sgi_ipv4_address"],
+                    sgi_ipv4_gateway=self.network_config["sgi_ipv4_gateway"],
+                    sgi_ipv6_address=self.network_config["sgi_ipv6_address"],
+                    sgi_ipv6_gateway=self.network_config["sgi_ipv6_gateway"],
+                    sgi_mac_address=self.network_config["sgi_mac_address"],
+                    s1_mac_address=self.network_config["s1_mac_address"],
                 ),
             )
 
@@ -68,7 +59,7 @@ class AGWInstallerNetworkConfigurator:
             os.path.join(os.path.abspath(os.path.dirname(__file__)), "resources")
         )
         env = Environment(loader=file_loader)
-        return env.get_template(self.netplan_config_template)
+        return env.get_template(self.MAGMA_NETPLAN_CONFIG_TEMPLATE)
 
     @property
     def _dns_configured(self) -> bool:
@@ -82,7 +73,7 @@ class AGWInstallerNetworkConfigurator:
                     for line in dns_config
                     if line.startswith("DNS=") or line.startswith("FallbackDNS=")
                 )
-                for dns_ip in self.dns_ips_list
+                for dns_ip in self.network_config["dns_address"]
             ]
         )
 
@@ -97,7 +88,7 @@ class AGWInstallerNetworkConfigurator:
         with open(self.ETC_SYSTEMD_RESOLVED_CONF_PATH, "r") as original_resolved_conf_file:
             original_resolved_conf_file_content = original_resolved_conf_file.readlines()
         updated_resolved_conf_file_content = [
-            line.replace(line, f"DNS={self.dns_ips_list}\n")
+            line.replace(line, f"DNS={self.network_config['dns_address']}\n")
             if line.startswith("#DNS=") or line.startswith("DNS=")
             else line
             for line in original_resolved_conf_file_content
