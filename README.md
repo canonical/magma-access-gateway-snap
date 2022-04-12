@@ -38,16 +38,15 @@ For more information on Magma please visit the [official website](https://magmac
 
 ## Usage
 
-Unless specified otherwise, all actions in this guide are executed using `root` account.
+All actions in this guide are executed using `root` account.
 
 ### 1. Install
 
-> **NOTES:**<br>
-> 1. Installation progress can be monitored at all times using `journalctl`.
-> 2. Installation process will perform **at least one** system restart at the end of the process.
-Depending on given installation options/initial system state, another restart may be required
-to apply network configuration changes. All restarts will be carried out by the installer. All
-restarts will be reported in the journal.
+> **NOTE:**<br>
+> Installation process will perform **at least one** system restart at the end of the process.
+> Depending on given installation options/initial system state, another restart may be required
+> to apply network configuration changes. All restarts will be carried out by the installer. All
+> restarts will be reported in the journal.
 
 Connect to the machine where you want to install Magma Access Gateway and execute the following 
 commands:
@@ -74,8 +73,8 @@ Fetch `rootCA.pem` certificate from Orchestrator, upload it to the Access Gatewa
 magma-access-gateway.configure --domain <Orc8r domain> --root-ca-pem-path <path to Root CA PEM>
 ```
 
-Successful Magma AGW configuration will be indicated by the `Magma AGW configuration done!` message
-printed to the journal.
+Successful Magma AGW configuration will be indicated by the `Magma AGW configuration done!` 
+message.
 
 ### 3. Verify the deployment
 
@@ -86,7 +85,7 @@ magma-access-gateway.post-install
 ```
 
 Successful Magma AGW deployment check will be indicated by the `Magma AGW post-installation checks 
-finished successfully.` message printed to the journal.
+finished successfully.` message.
 
 ## Contributing
 
