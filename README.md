@@ -38,18 +38,13 @@ For more information on Magma please visit the [official website](https://magmac
 
 ## Usage
 
-> **NOTE**: Unless specified otherwise, all actions in this guide are executed using `root`
-> account.
+Unless specified otherwise, all actions in this guide are executed using `root` account.
 
 ### 1. Install
 
 > **NOTES:**<br>
-> 1. To see the list of currently supported configuration options, execute:
-> ```bash
-> magma-access-gateway.install --help
-> ```
-> 2. Installation progress can be monitored at all times using `journalctl`.
-> 3. Installation process will perform **at least one** system restart at the end of the process.
+> 1. Installation progress can be monitored at all times using `journalctl`.
+> 2. Installation process will perform **at least one** system restart at the end of the process.
 Depending on given installation options/initial system state, another restart may be required
 to apply network configuration changes. All restarts will be carried out by the installer. All
 restarts will be reported in the journal.
@@ -62,11 +57,14 @@ snap install magma-access-gateway --classic
 magma-access-gateway.install
 ```
 
-When system restart happens, reconnect to the server to continue monitoring of the installation 
-process.
+> **NOTE:** To see the list of currently supported configuration options, execute:
+> ```bash
+> magma-access-gateway.install --help
+> ```
 
-Successful Magma AGW installation will be indicated by the `Magma AGW deployment completed 
-successfully!` message printed to the journal.
+After the system restarts, reconnect to the system and use `journalctl` to continue monitoring the 
+installation process. A successful installation will be indicated by the `Magma AGW deployment 
+completed successfully!` message.
 
 ### 2. Configure
 
