@@ -12,7 +12,7 @@ from ipaddress import ip_address, ip_network
 import netifaces  # type: ignore[import]
 from systemd.journal import JournalHandler  # type: ignore[import]
 
-from .agw_installation_errors import ArgumentError
+from .agw_installation_errors import AGWInstallationError, ArgumentError
 from .agw_installer import AGWInstaller
 from .agw_network_configurator import AGWInstallerNetworkConfigurator
 from .agw_preinstall_checks import AGWInstallerPreinstallChecks
@@ -32,38 +32,32 @@ network_interfaces.remove("lo")
 
 
 def main():
+    preinstall_checks = AGWInstallerPreinstallChecks(network_interfaces)
+    try:
+        preinstall_checks.preinstall_checks()
+    except AGWInstallationError:
+        return
+
     args = cli_arguments_parser(sys.argv[1:])
     try:
         validate_args(args)
     except ArgumentError:
         return
 
-    network_config = {
-        "sgi_ipv4_address": args.ipv4_address,
-        "sgi_ipv4_gateway": args.gw_ipv4_address,
-        "sgi_ipv6_address": args.ipv6_address,
-        "sgi_ipv6_gateway": args.gw_ipv6_address,
-        "sgi_mac_address": get_mac_address(args.sgi),
-        "s1_mac_address": get_mac_address(args.s1),
-        "dns_address": " ".join(args.dns),
-    }
-
-    preinstall_checks = AGWInstallerPreinstallChecks(network_interfaces)
-    network_configurator = AGWInstallerNetworkConfigurator(network_config)
-    service_user_creator = AGWInstallerServiceUserCreator()
-    installer = AGWInstaller()
-
-    preinstall_checks.preinstall_checks()
     preinstall_checks.install_required_system_packages()
 
+    network_config = generate_network_config(args)
+    network_configurator = AGWInstallerNetworkConfigurator(network_config)
     if not args.skip_networking:
         network_configurator.configure_network_interfaces()
         network_configurator.configure_dns()
 
+    service_user_creator = AGWInstallerServiceUserCreator()
     service_user_creator.create_magma_user()
     service_user_creator.add_magma_user_to_sudo_group()
     service_user_creator.add_magma_user_to_sudoers_file()
 
+    installer = AGWInstaller()
     if installer.magma_agw_installed:
         logger.info("Magma Access Gateway already installed. Exiting...")
         return
@@ -157,10 +151,13 @@ def validate_args(args: argparse.Namespace):
 
 
 def validate_custom_sgi_and_s1_interfaces(args: argparse.Namespace):
-    if args.sgi not in network_interfaces:
-        raise ArgumentError("Invalid --sgi argument. It must match an interface name.")
-    if args.s1 not in network_interfaces:
-        raise ArgumentError("Invalid --s1 argument. It must match an interface name.")
+    if args.sgi or args.s1:
+        if not args.sgi or args.sgi not in network_interfaces:
+            raise ArgumentError(
+                "Invalid or empty --sgi argument. It must match an interface name."
+            )
+        if not args.s1 or args.s1 not in network_interfaces:
+            raise ArgumentError("Invalid or empty --s1 argument. It must match an interface name.")
 
 
 def validate_arbitrary_dns(args: argparse.Namespace):
@@ -203,6 +200,18 @@ def validate_addressing(sgi_ip_address: str, sgi_gw_ip_address: str):
             ip_address(sgi_gw_ip_address)
         except ValueError:
             raise ArgumentError(f"Invalid SGi gateway IP address provided ({sgi_gw_ip_address}).")
+
+
+def generate_network_config(args: argparse.Namespace):
+    return {
+        "sgi_ipv4_address": args.ipv4_address,
+        "sgi_ipv4_gateway": args.gw_ipv4_address,
+        "sgi_ipv6_address": args.ipv6_address,
+        "sgi_ipv6_gateway": args.gw_ipv6_address,
+        "sgi_mac_address": get_mac_address(args.sgi),
+        "s1_mac_address": get_mac_address(args.s1),
+        "dns_address": " ".join(args.dns),
+    }
 
 
 def get_mac_address(interface_name: str):

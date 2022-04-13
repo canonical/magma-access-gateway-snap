@@ -24,6 +24,17 @@ class TestAGWInstallerInit(unittest.TestCase):
     INVALID_TEST_SGi_INTERFACE_NAME = "wolf"
     VALID_TEST_S1_INTERFACE_NAME = "moose"
     INVALID_TEST_S1_INTERFACE_NAME = "snake"
+    TEST_SGi_MAC = "aa:bb:cc:dd:ee:ff"
+    TEST_S1_MAC = "ff:ee:dd:cc:bb:aa"
+    VALID_CLI_ARGUMENTS = Namespace(
+        ipv4_address=VALID_TEST_IPv4_ADDRESS,
+        gw_ipv4_address=VALID_TEST_GW_IPv4_ADDRESS,
+        ipv6_address=VALID_TEST_IPv6_ADDRESS,
+        gw_ipv6_address=VALID_TEST_GW_IPv6_ADDRESS,
+        dns=DNS_LIST_WITH_VALID_ADDRESS,
+        sgi=VALID_TEST_SGi_INTERFACE_NAME,
+        s1=VALID_TEST_S1_INTERFACE_NAME,
+    )
     APT_LIST_WITH_MAGMA = b"""lua-cjson/focal,now 2.1.0+dfsg-2.1 amd64 [installed,automatic]\n
 lvm2/focal,now 2.03.07-1ubuntu1 amd64 [installed,automatic]\n
 lxd-agent-loader/focal,now 0.4 all [installed,automatic]\n
@@ -185,6 +196,26 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
+
+    @patch("magma_access_gateway_installer.get_mac_address")
+    def test_given_valid_cli_arguments_when_generate_network_config_then_correct_network_config_is_created(  # noqa: E501
+        self, mocked_get_mac_address
+    ):
+        mocked_get_mac_address.side_effect = [self.TEST_SGi_MAC, self.TEST_S1_MAC]
+        expected_network_config = {
+            "sgi_ipv4_address": self.VALID_TEST_IPv4_ADDRESS,
+            "sgi_ipv4_gateway": self.VALID_TEST_GW_IPv4_ADDRESS,
+            "sgi_ipv6_address": self.VALID_TEST_IPv6_ADDRESS,
+            "sgi_ipv6_gateway": self.VALID_TEST_GW_IPv6_ADDRESS,
+            "sgi_mac_address": self.TEST_SGi_MAC,
+            "s1_mac_address": self.TEST_S1_MAC,
+            "dns_address": " ".join(self.DNS_LIST_WITH_VALID_ADDRESS),
+        }
+
+        self.assertEqual(
+            magma_access_gateway_installer.generate_network_config(self.VALID_CLI_ARGUMENTS),
+            expected_network_config,
+        )
 
     @patch("magma_access_gateway_installer.sys.argv", return_value=[])
     @patch(

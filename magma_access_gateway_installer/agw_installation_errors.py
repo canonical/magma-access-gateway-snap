@@ -3,10 +3,8 @@
 # See LICENSE file for licensing details.
 
 import logging
-import sys
 
 logger = logging.getLogger("magma_access_gateway_installer")
-sys.tracebacklimit = 0
 
 
 class AGWInstallationError(Exception):
