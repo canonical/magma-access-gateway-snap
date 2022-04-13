@@ -3,7 +3,6 @@
 # See LICENSE file for licensing details.
 
 import logging
-import platform
 from subprocess import check_call, check_output
 
 from .agw_installation_errors import (
