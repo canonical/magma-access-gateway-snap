@@ -74,8 +74,8 @@ def main():
         installer.start_magma()
         logger.info(
             "Magma AGW deployment completed successfully!\n"
-            "System will now go down for the reboot to apply all changes.\n"
-            "After configuring Magma AGW run magma-access-gateway.post-install to verify "
+            "\t\tSystem will now go down for the reboot to apply all changes.\n"
+            "\t\tAfter configuring Magma AGW run magma-access-gateway.post-install to verify "
             "configuration."
         )
         time.sleep(5)

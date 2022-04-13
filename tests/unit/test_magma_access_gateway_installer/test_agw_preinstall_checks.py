@@ -3,7 +3,7 @@
 # See LICENSE file for licensing details.
 
 import unittest
-from unittest.mock import PropertyMock, call, patch
+from unittest.mock import PropertyMock, call, mock_open, patch
 
 from magma_access_gateway_installer.agw_installation_errors import (
     InvalidNumberOfInterfacesError,
@@ -20,9 +20,25 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
     TEST_NETWORK_INTERFACES = ["eth0", "eth1"]
     VALID_TEST_USER = b"root"
     INVALID_TEST_USER = b"test_user"
-    INVALID_SYSTEM = "#1 SMP Thu Apr 29 08:54:30 EDT 2021"
-    INVALID_UBUNTU_VERSION = "#23~21.10.1-Ubuntu SMP Mon Nov 15 14:03:19 UTC 2021"
-    VALID_UBUNTU_VERSION = "#23~20.04.1-Ubuntu SMP Mon Nov 15 14:03:19 UTC 2021"
+    INVALID_OS = """NAME="Red Hat Enterprise Linux"
+VERSION="8.4 (Ootpa)"
+ID="rhel"
+ID_LIKE="fedora"
+VERSION_ID="8.4"
+"""
+    INVALID_UBUNTU_VERSION = """NAME="Ubuntu"
+VERSION="21.04 (Hirsute Hippo)"
+ID=ubuntu
+ID_LIKE=debian
+VERSION_ID="21.04"
+"""
+    VALID_UBUNTU_VERSION = """NAME="Ubuntu"
+VERSION="20.04.4 LTS (Focal Fossa)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 20.04.4 LTS"
+VERSION_ID="20.04"
+"""
     INVALID_TEST_NETWORK_INTERFACES = ["test1"]
 
     def setUp(self) -> None:
@@ -39,8 +55,9 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
             self.agw_preinstall_checks.preinstall_checks()
 
     @patch(
-        "magma_access_gateway_installer.agw_preinstall_checks.platform.version",
-        return_value=INVALID_SYSTEM,
+        "magma_access_gateway_installer.agw_preinstall_checks.open",
+        new_callable=mock_open,
+        read_data=INVALID_OS,
     )
     @patch(
         "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._user_is_root",  # noqa: E501
@@ -53,8 +70,9 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
             self.agw_preinstall_checks.preinstall_checks()
 
     @patch(
-        "magma_access_gateway_installer.agw_preinstall_checks.platform.version",
-        return_value=INVALID_UBUNTU_VERSION,
+        "magma_access_gateway_installer.agw_preinstall_checks.open",
+        new_callable=mock_open,
+        read_data=INVALID_UBUNTU_VERSION,
     )
     @patch(
         "magma_access_gateway_installer.agw_preinstall_checks.AGWInstallerPreinstallChecks._user_is_root",  # noqa: E501
@@ -94,8 +112,9 @@ class TestAGWInstallerPreinstallChecks(unittest.TestCase):
         mock_check_call.assert_has_calls(expected_apt_calls)
 
     @patch(
-        "magma_access_gateway_installer.agw_preinstall_checks.platform.version",
-        return_value=VALID_UBUNTU_VERSION,
+        "magma_access_gateway_installer.agw_preinstall_checks.open",
+        new_callable=mock_open,
+        read_data=VALID_UBUNTU_VERSION,
     )
     @patch(
         "magma_access_gateway_installer.agw_preinstall_checks.check_output",
