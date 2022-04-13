@@ -140,11 +140,9 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
 
-    @patch(
-        "magma_access_gateway_installer.netifaces.interfaces", return_value=TEST_INTERFACES_LIST
-    )
+    @patch("magma_access_gateway_installer.network_interfaces", TEST_INTERFACES_LIST)
     def test_given_invalid_sgi_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
-        self, _
+        self,
     ):
         test_args = Namespace(
             ipv4_address=None,
@@ -159,11 +157,9 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
 
-    @patch(
-        "magma_access_gateway_installer.netifaces.interfaces", return_value=TEST_INTERFACES_LIST
-    )
+    @patch("magma_access_gateway_installer.network_interfaces", TEST_INTERFACES_LIST)
     def test_given_invalid_s1_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(
-        self, _
+        self,
     ):
         test_args = Namespace(
             ipv4_address=None,
@@ -174,15 +170,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             sgi=self.VALID_TEST_SGi_INTERFACE_NAME,
             s1=self.INVALID_TEST_S1_INTERFACE_NAME,
         )
-
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
 
-    @patch(
-        "magma_access_gateway_installer.netifaces.interfaces", return_value=TEST_INTERFACES_LIST
-    )
+    @patch("magma_access_gateway_installer.network_interfaces", TEST_INTERFACES_LIST)
     def test_given_invalid_sgi_and_s1_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
-        self, _
+        self,
     ):
         test_args = Namespace(
             ipv4_address=None,
@@ -196,6 +189,22 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
+
+    @patch("magma_access_gateway_installer.network_interfaces", TEST_INTERFACES_LIST)
+    def test_given_valid_sgi_and_s1_cli_argument_is_passed_when_validate_args_then_no_errors_are_raised(  # noqa: E501
+        self,
+    ):
+        test_args = Namespace(
+            ipv4_address=None,
+            gw_ipv4_address=None,
+            ipv6_address=None,
+            gw_ipv6_address=None,
+            dns=self.DNS_LIST_WITH_VALID_ADDRESS,
+            sgi=self.VALID_TEST_SGi_INTERFACE_NAME,
+            s1=self.VALID_TEST_S1_INTERFACE_NAME,
+        )
+
+        self.assertEqual(magma_access_gateway_installer.validate_args(test_args), None)
 
     @patch("magma_access_gateway_installer.get_mac_address")
     def test_given_valid_cli_arguments_when_generate_network_config_then_correct_network_config_is_created(  # noqa: E501

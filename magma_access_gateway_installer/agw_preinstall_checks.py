@@ -59,8 +59,8 @@ class AGWInstallerPreinstallChecks:
 
     @property
     def _ubuntu_is_installed(self) -> bool:
-        """Checks whether installed OS is Ubuntu."""
-        return "Ubuntu" in platform.version()
+        """Checks whether installed OS is Ubuntu 20.04."""
+        return all(condition in platform.version() for condition in ["Ubuntu" and "20.04"])
 
     @property
     def _required_amount_of_network_interfaces_is_available(self) -> bool:

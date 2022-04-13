@@ -46,9 +46,9 @@ def main():
 
     preinstall_checks.install_required_system_packages()
 
-    network_config = generate_network_config(args)
-    network_configurator = AGWInstallerNetworkConfigurator(network_config)
     if not args.skip_networking:
+        network_config = generate_network_config(args)
+        network_configurator = AGWInstallerNetworkConfigurator(network_config)
         network_configurator.configure_network_interfaces()
         network_configurator.configure_dns()
 
@@ -151,13 +151,10 @@ def validate_args(args: argparse.Namespace):
 
 
 def validate_custom_sgi_and_s1_interfaces(args: argparse.Namespace):
-    if args.sgi or args.s1:
-        if not args.sgi or args.sgi not in network_interfaces:
-            raise ArgumentError(
-                "Invalid or empty --sgi argument. It must match an interface name."
-            )
-        if not args.s1 or args.s1 not in network_interfaces:
-            raise ArgumentError("Invalid or empty --s1 argument. It must match an interface name.")
+    if args.sgi not in network_interfaces:
+        raise ArgumentError("Invalid --sgi argument. It must match an interface name.")
+    if args.s1 not in network_interfaces:
+        raise ArgumentError("Invalid --s1 argument. It must match an interface name.")
 
 
 def validate_arbitrary_dns(args: argparse.Namespace):
