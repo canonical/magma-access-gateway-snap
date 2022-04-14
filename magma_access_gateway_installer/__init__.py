@@ -106,14 +106,14 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         "--sgi",
         dest="sgi",
         required=False,
-        default=network_interfaces[0],
+        default=set_default_sgi_interface(),
         help="Defines which interface should be used as SGi interface.",
     )
     cli_options.add_argument(
         "--s1",
         dest="s1",
         required=False,
-        default=network_interfaces[1],
+        default=set_default_s1_interface(),
         help="Defines which interface should be used as S1 interface.",
     )
     return cli_options.parse_args(cli_arguments)
@@ -209,3 +209,11 @@ def generate_network_config(args: argparse.Namespace):
 
 def get_mac_address(interface_name: str):
     return netifaces.ifaddresses(interface_name)[netifaces.AF_LINK][0]["addr"]
+
+
+def set_default_sgi_interface():
+    return "eth0" if "eth0" in network_interfaces else network_interfaces[0]
+
+
+def set_default_s1_interface():
+    return "eth1" if "eth1" in network_interfaces else network_interfaces[1]

@@ -284,3 +284,21 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         magma_access_gateway_installer.main()
 
         self.assertTrue(mocked_configure_network.called)
+
+    @patch("magma_access_gateway_installer.network_interfaces", TEST_INTERFACES_LIST)
+    def test_given_not_specified_sgi_and_s1_and_no_eth_and_eth1_in_the_system_when_cli_arguments_parser_then_first_two_interfaces_are_assigned_as_sgi_and_s1(  # noqa: E501
+        self,
+    ):
+        parsed_args = magma_access_gateway_installer.cli_arguments_parser([])
+
+        self.assertEqual(parsed_args.sgi, self.TEST_INTERFACES_LIST[0])
+        self.assertEqual(parsed_args.s1, self.TEST_INTERFACES_LIST[1])
+
+    @patch("magma_access_gateway_installer.network_interfaces", ["abc", "eth0", "def", "eth1"])
+    def test_given_not_specified_sgi_and_s1_and_eth_and_eth1_in_the_system_when_cli_arguments_parser_then_eth0_assigned_to_sgi_and_eth1_assigned_to_s1(  # noqa: E501
+        self,
+    ):
+        parsed_args = magma_access_gateway_installer.cli_arguments_parser([])
+
+        self.assertEqual(parsed_args.sgi, "eth0")
+        self.assertEqual(parsed_args.s1, "eth1")
