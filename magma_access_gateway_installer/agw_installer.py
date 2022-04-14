@@ -4,6 +4,7 @@
 
 import logging
 import os
+import time
 from subprocess import check_call, check_output
 
 logger = logging.getLogger("magma_access_gateway_installer")
@@ -24,8 +25,32 @@ class AGWInstaller:
     ]
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
 
+    def install(self):
+        if self._magma_agw_installed:
+            logger.info("Magma Access Gateway already installed. Exiting...")
+            return
+        else:
+            logger.info("Starting Magma AGW deployment...")
+            self.update_apt_cache()
+            self.update_ca_certificates_package()
+            self.forbid_usage_of_expired_dst_root_ca_x3_certificate()
+            self.configure_apt_for_magma_agw_deb_package_installation()
+            self.install_runtime_dependencies()
+            self.preconfigure_wireshark_suid_property()
+            self.install_magma_agw()
+            self.start_open_vswitch()
+            self.start_magma()
+            logger.info(
+                "Magma AGW deployment completed successfully!\n"
+                "\t\tSystem will now go down for the reboot to apply all changes.\n"
+                "\t\tAfter configuring Magma AGW run magma-access-gateway.post-install to verify "
+                "configuration."
+            )
+            time.sleep(5)
+            os.system("reboot")
+
     @property
-    def magma_agw_installed(self) -> bool:
+    def _magma_agw_installed(self) -> bool:
         """Checks whether Magma Access Gateway is already installed or not."""
         return "magma" in check_output(["apt", "-qq", "list", "--installed"]).decode()
 

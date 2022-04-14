@@ -13,6 +13,7 @@ import netifaces  # type: ignore[import]
 from systemd.journal import JournalHandler  # type: ignore[import]
 
 from .agw_installation_errors import AGWInstallationError, ArgumentError
+from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
 from .agw_installer import AGWInstaller
 from .agw_network_configurator import AGWInstallerNetworkConfigurator
 from .agw_preinstall_checks import AGWInstallerPreinstallChecks
@@ -46,40 +47,15 @@ def main():
 
     preinstall_checks.install_required_system_packages()
 
-    if not args.skip_networking:
-        network_config = generate_network_config(args)
-        network_configurator = AGWInstallerNetworkConfigurator(network_config)
-        network_configurator.configure_network_interfaces()
-        network_configurator.configure_dns()
-
     service_user_creator = AGWInstallerServiceUserCreator()
     service_user_creator.create_magma_user()
     service_user_creator.add_magma_user_to_sudo_group()
     service_user_creator.add_magma_user_to_sudoers_file()
 
-    installer = AGWInstaller()
-    if installer.magma_agw_installed:
-        logger.info("Magma Access Gateway already installed. Exiting...")
-        return
-    else:
-        logger.info("Starting Magma AGW deployment...")
-        installer.update_apt_cache()
-        installer.update_ca_certificates_package()
-        installer.forbid_usage_of_expired_dst_root_ca_x3_certificate()
-        installer.configure_apt_for_magma_agw_deb_package_installation()
-        installer.install_runtime_dependencies()
-        installer.preconfigure_wireshark_suid_property()
-        installer.install_magma_agw()
-        installer.start_open_vswitch()
-        installer.start_magma()
-        logger.info(
-            "Magma AGW deployment completed successfully!\n"
-            "\t\tSystem will now go down for the reboot to apply all changes.\n"
-            "\t\tAfter configuring Magma AGW run magma-access-gateway.post-install to verify "
-            "configuration."
-        )
-        time.sleep(5)
-        os.system("reboot")
+    if not args.skip_networking:
+        configure_network(args)
+
+    AGWInstaller().install()
 
 
 def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
@@ -197,6 +173,26 @@ def validate_addressing(sgi_ip_address: str, sgi_gw_ip_address: str):
             ip_address(sgi_gw_ip_address)
         except ValueError:
             raise ArgumentError(f"Invalid SGi gateway IP address provided ({sgi_gw_ip_address}).")
+
+
+def configure_network(args: argparse.Namespace):
+    network_config = generate_network_config(args)
+    network_configurator = AGWInstallerNetworkConfigurator(network_config)
+    network_configurator.configure_dns()
+    network_configurator.configure_network_interfaces()
+    if any([args.ipv4_address, args.gw_ipv4_address, args.ipv6_address, args.gw_ipv6_address]):
+        installation_service_creator = AGWInstallerInstallationServiceCreator()
+        installation_service_creator.create_magma_agw_installation_service()
+        installation_service_creator.create_magma_agw_installation_service_link()
+        logger.info(
+            "Rebooting system to apply new network configuration...\n"
+            "\t\tMagma AGW installation process will be resumed automatically once machine is "
+            "back up."
+        )
+        time.sleep(5)
+        os.system("reboot")
+    else:
+        network_configurator.apply_netplan_configuration()
 
 
 def generate_network_config(args: argparse.Namespace):

@@ -198,19 +198,6 @@ network:
         mocked_open_file.assert_called_once_with(self.TEST_MAGMA_NETPLAN_CONFIG_FILE, "w")
         mocked_open_file().write.assert_called_once_with(exepected_magma_netplan_config)
 
-    @patch("magma_access_gateway_installer.agw_network_configurator.check_call")
-    @patch(
-        "magma_access_gateway_installer.agw_network_configurator.open", new_callable=mock_open()
-    )
-    def test_given_netplan_config_created_when_configure_network_interfaces_then_netplan_config_is_applied(  # noqa: E501
-        self, _, mocked_check_call
-    ):
-        agw_network_configurator = AGWInstallerNetworkConfigurator(self.EMPTY_NETWORK_CONFIG)
-
-        agw_network_configurator.configure_network_interfaces()
-
-        mocked_check_call.assert_called_once_with(["netplan", "apply"])
-
     @patch(
         "magma_access_gateway_installer.agw_network_configurator.open",
         new_callable=mock_open,

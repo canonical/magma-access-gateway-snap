@@ -23,15 +23,20 @@ class AGWInstallerNetworkConfigurator:
     ):
         self.network_config = network_config
 
-    def configure_network_interfaces(self):
-        """Creates and applies network configuration required by Magma AGW."""
-        self._create_netplan_config()
-        self._apply_netplan_configuration()
-
     def configure_dns(self):
         """Configures specified DNS servers if needed."""
         if not self._dns_configured:
             self._configure_dns()
+
+    def configure_network_interfaces(self):
+        """Creates and applies network configuration required by Magma AGW."""
+        self._create_netplan_config()
+
+    @staticmethod
+    def apply_netplan_configuration():
+        """Applies newly created netplan configuration."""
+        logger.info("Applying new netplan configuration...")
+        check_call(["netplan", "apply"])
 
     def _create_netplan_config(self):
         """Creates netplan configuration file reflecting required network configuration."""
@@ -47,12 +52,6 @@ class AGWInstallerNetworkConfigurator:
                     s1_mac_address=self.network_config["s1_mac_address"],
                 ),
             )
-
-    @staticmethod
-    def _apply_netplan_configuration():
-        """Applies newly created netplan configuration."""
-        logger.info("Applying new netplan configuration...")
-        check_call(["netplan", "apply"])
 
     def _load_netplan_config_template(self):
         file_loader = FileSystemLoader(

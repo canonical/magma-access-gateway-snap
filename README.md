@@ -55,11 +55,15 @@ magma-access-gateway.install
 > magma-access-gateway.install --help
 > ```
 
+> **NOTE:** If statically allocated IPs have been used, installer will perform automatic system 
+> restart to apply new network configuration. Once the server is restarted, reconnect to the system 
+> and use `journalctl` to continue monitoring the installation process.
+
 Successful installation will be indicated by the `Magma AGW deployment
 completed successfully!` message.
 
 After successful Access Gateway installation, installer will perform automatic system restart. Once 
-the server is restarted, reconnect to it to perform AGW configuration.
+the server is restarted, reconnect to the system to perform AGW configuration.
 
 ### 2. Configure
 

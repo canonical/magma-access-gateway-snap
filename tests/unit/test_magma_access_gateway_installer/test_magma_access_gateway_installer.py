@@ -4,7 +4,7 @@
 
 import unittest
 from argparse import Namespace
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import magma_access_gateway_installer
 
@@ -35,18 +35,6 @@ class TestAGWInstallerInit(unittest.TestCase):
         sgi=VALID_TEST_SGi_INTERFACE_NAME,
         s1=VALID_TEST_S1_INTERFACE_NAME,
     )
-    APT_LIST_WITH_MAGMA = b"""lua-cjson/focal,now 2.1.0+dfsg-2.1 amd64 [installed,automatic]\n
-lvm2/focal,now 2.03.07-1ubuntu1 amd64 [installed,automatic]\n
-lxd-agent-loader/focal,now 0.4 all [installed,automatic]\n
-lz4/focal-updates,focal-security,now 1.9.2-2ubuntu0.20.04.1 amd64 [installed,automatic]\n
-magma-cpp-redis/focal-1.6.1,now 4.3.1.1-2 amd64 [installed,automatic]\n
-magma-libfluid/focal-1.6.1,now 0.1.0.6-1 amd64 [installed,automatic]\n
-magma-libtacopie/focal-1.6.1,now 3.2.0.1-1 amd64 [installed,automatic]\n
-magma-sctpd/focal-1.6.1,now 1.6.1-1636529012-5d886707 amd64 [installed,automatic]\n
-magma/focal-1.6.1,now 1.6.1-1636529012-5d886707 amd64 [installed]\n
-make/focal,now 4.2.1-1.2 amd64 [installed,automatic]\n
-man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
-"""
     APT_LIST_WITHOUT_MAGMA = b"""lua-cjson/focal,now 2.1.0+dfsg-2.1 amd64 [installed,automatic]\n
 lvm2/focal,now 2.03.07-1ubuntu1 amd64 [installed,automatic]\n
 lxd-agent-loader/focal,now 0.4 all [installed,automatic]\n
@@ -226,39 +214,73 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             expected_network_config,
         )
 
-    @patch("magma_access_gateway_installer.sys.argv", return_value=[])
-    @patch(
-        "magma_access_gateway_installer.agw_installer.check_output",
-        return_value=APT_LIST_WITH_MAGMA,
-    )
-    @patch("magma_access_gateway_installer.netifaces", MagicMock())
-    @patch("magma_access_gateway_installer.validate_args", MagicMock())
+    @patch("magma_access_gateway_installer.os.system")
+    @patch("magma_access_gateway_installer.generate_network_config", Mock())
     @patch("magma_access_gateway_installer.AGWInstallerNetworkConfigurator", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerPreinstallChecks", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerServiceUserCreator", Mock())
-    def test_given_magma_agw_installed_when_agw_installer_then_installer_exits_without_executing_any_commands(  # noqa: E501
-        self, _, __
-    ):
-        self.assertEqual(magma_access_gateway_installer.main(), None)
-
-    @patch("magma_access_gateway_installer.agw_installer.os.system")
-    @patch("magma_access_gateway_installer.sys.argv", return_value=[])
-    @patch(
-        "magma_access_gateway_installer.agw_installer.check_output",
-        return_value=APT_LIST_WITHOUT_MAGMA,
-    )
-    @patch("magma_access_gateway_installer.netifaces", MagicMock())
-    @patch("magma_access_gateway_installer.validate_args", MagicMock())
-    @patch("magma_access_gateway_installer.AGWInstallerNetworkConfigurator", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerPreinstallChecks", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerServiceUserCreator", Mock())
-    @patch("magma_access_gateway_installer.agw_installer.check_call", Mock())
-    @patch("magma_access_gateway_installer.agw_installer.check_output", MagicMock())
-    @patch("magma_access_gateway_installer.agw_installer.open", mock_open())
+    @patch("magma_access_gateway_installer.AGWInstallerInstallationServiceCreator", Mock())
     @patch("magma_access_gateway_installer.time.sleep", Mock())
-    def test_given_magma_not_installed_when_install_then_system_goes_for_reboot_once_installation_is_done(  # noqa: E501
-        self, _, __, mock_os_system
+    def test_given_static_ip_configuration_when_configure_network_then_system_goes_for_reboot_once_network_config_is_done(  # noqa: E501
+        self, mock_os_system
+    ):
+        test_args = Namespace(
+            ipv4_address=self.VALID_TEST_IPv4_ADDRESS,
+            gw_ipv4_address=self.VALID_TEST_GW_IPv4_ADDRESS,
+            ipv6_address=None,
+            gw_ipv6_address=None,
+        )
+
+        magma_access_gateway_installer.configure_network(test_args)
+
+        mock_os_system.assert_called_once_with("reboot")
+
+    @patch("magma_access_gateway_installer.os.system")
+    @patch.object(
+        magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator,
+        "apply_netplan_configuration",
+    )
+    @patch("magma_access_gateway_installer.generate_network_config", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerNetworkConfigurator.configure_dns", Mock())
+    @patch(
+        "magma_access_gateway_installer.AGWInstallerNetworkConfigurator.configure_network_interfaces",  # noqa: E501
+        Mock(),
+    )
+    def test_given_dhcp_ip_configuration_when_configure_network_then_system_is_not_rebooted_and_netplan_config_is_applied_once_network_config_is_done(  # noqa: E501
+        self, mocked_apply_netplan_configuration, mock_os_system
+    ):
+        test_args = Namespace(
+            ipv4_address=None,
+            gw_ipv4_address=None,
+            ipv6_address=None,
+            gw_ipv6_address=None,
+        )
+
+        magma_access_gateway_installer.configure_network(test_args)
+
+        mock_os_system.assert_not_called()
+        self.assertTrue(mocked_apply_netplan_configuration.called)
+
+    @patch.object(magma_access_gateway_installer, "configure_network")
+    @patch("sys.argv", ["test.py", "--skip-networking"])
+    @patch("magma_access_gateway_installer.validate_args", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerPreinstallChecks", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerServiceUserCreator", Mock())
+    @patch("magma_access_gateway_installer.AGWInstaller", Mock())
+    def test_given_skip_networking_cli_argument_passed_when_main_then_configure_network_is_not_run(
+        self, mocked_configure_network
     ):
         magma_access_gateway_installer.main()
 
-        mock_os_system.assert_called_once_with("reboot")
+        self.assertFalse(mocked_configure_network.called)
+
+    @patch.object(magma_access_gateway_installer, "configure_network")
+    @patch("sys.argv", ["test.py", "--sgi", "eth0", "--s1", "eth1"])
+    @patch("magma_access_gateway_installer.validate_args", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerPreinstallChecks", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerServiceUserCreator", Mock())
+    @patch("magma_access_gateway_installer.AGWInstaller", Mock())
+    def test_given_skip_networking_cli_argument_not_passed_when_main_then_configure_network_is_run(
+        self, mocked_configure_network
+    ):
+        magma_access_gateway_installer.main()
+
+        self.assertTrue(mocked_configure_network.called)
