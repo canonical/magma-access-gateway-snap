@@ -139,9 +139,9 @@ class AGWInstaller:
                 f"https://{self.MAGMA_ARTIFACTORY}/api/gpg/key/public",
             ]
         )
-        self._ignore_magma_apt_repositorys_ssl_cert()
+        self._ignore_magma_apt_repository_ssl_cert()
 
-    def _ignore_magma_apt_repositorys_ssl_cert(self):
+    def _ignore_magma_apt_repository_ssl_cert(self):
         """Ignores Magma apt repository's SSL certificate."""
         logger.info("Ignoring Magma apt repository's SSL certificate...")
         ignore_cert = f"""Acquire::https::{self.MAGMA_ARTIFACTORY}/debian {{

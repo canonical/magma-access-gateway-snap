@@ -16,7 +16,7 @@ from .agw_installation_errors import AGWInstallationError, ArgumentError
 from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
 from .agw_installer import AGWInstaller
 from .agw_network_configurator import AGWInstallerNetworkConfigurator
-from .agw_preinstall_checks import AGWInstallerPreinstallChecks
+from .agw_preinstall import AGWInstallerPreinstall
 from .agw_service_user_creator import AGWInstallerServiceUserCreator
 
 logger = logging.getLogger(__name__)
@@ -33,9 +33,9 @@ network_interfaces.remove("lo")
 
 
 def main():
-    preinstall_checks = AGWInstallerPreinstallChecks(network_interfaces)
+    preinstall = AGWInstallerPreinstall(network_interfaces)
     try:
-        preinstall_checks.preinstall_checks()
+        preinstall.preinstall_checks()
     except AGWInstallationError:
         return
 
@@ -45,7 +45,7 @@ def main():
     except ArgumentError:
         return
 
-    preinstall_checks.install_required_system_packages()
+    preinstall.install_required_system_packages()
 
     service_user_creator = AGWInstallerServiceUserCreator()
     service_user_creator.create_magma_user()

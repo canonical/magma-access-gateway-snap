@@ -14,7 +14,7 @@ from .agw_installation_errors import (
 logger = logging.getLogger("magma_access_gateway_installer")
 
 
-class AGWInstallerPreinstallChecks:
+class AGWInstallerPreinstall:
 
     REQUIRED_NUMBER_OF_NICS = 2
     REQUIRED_SYSTEM_PACKAGES = ["ifupdown", "net-tools", "sudo"]

@@ -262,7 +262,7 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
     @patch.object(magma_access_gateway_installer, "configure_network")
     @patch("sys.argv", ["test.py", "--skip-networking"])
     @patch("magma_access_gateway_installer.validate_args", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerPreinstallChecks", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerPreinstall", Mock())
     @patch("magma_access_gateway_installer.AGWInstallerServiceUserCreator", Mock())
     @patch("magma_access_gateway_installer.AGWInstaller", Mock())
     def test_given_skip_networking_cli_argument_passed_when_main_then_configure_network_is_not_run(
@@ -275,7 +275,7 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
     @patch.object(magma_access_gateway_installer, "configure_network")
     @patch("sys.argv", ["test.py", "--sgi", "eth0", "--s1", "eth1"])
     @patch("magma_access_gateway_installer.validate_args", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerPreinstallChecks", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerPreinstall", Mock())
     @patch("magma_access_gateway_installer.AGWInstallerServiceUserCreator", Mock())
     @patch("magma_access_gateway_installer.AGWInstaller", Mock())
     def test_given_skip_networking_cli_argument_not_passed_when_main_then_configure_network_is_run(
