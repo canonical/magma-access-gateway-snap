@@ -109,6 +109,7 @@ VERSION_ID="20.04"
 
         mock_check_call.assert_has_calls(expected_apt_calls)
 
+    @patch("magma_access_gateway_installer.agw_preinstall.logger.info")
     @patch(
         "magma_access_gateway_installer.agw_preinstall.open",
         new_callable=mock_open,
@@ -118,7 +119,9 @@ VERSION_ID="20.04"
         "magma_access_gateway_installer.agw_preinstall.check_output",
         return_value=VALID_TEST_USER,
     )
-    def test_given_system_meets_installation_requirements_when_preinstall_checks_then_no_errors_are_raised(  # noqa: E501
-        self, _, __
+    def test_given_system_meets_installation_requirements_when_preinstall_checks_then_preinstall_check_are_completed_without_errors(  # noqa: E501
+        self, _, __, mocked_logger
     ):
-        self.assertEqual(self.agw_preinstall.preinstall_checks(), None)
+        self.agw_preinstall.preinstall_checks()
+
+        mocked_logger.assert_called_with("Magma AGW pre-install checks completed.")
