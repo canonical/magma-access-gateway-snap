@@ -6,7 +6,6 @@ import logging
 import os
 from subprocess import check_call
 
-import jinja2
 from jinja2 import Environment, FileSystemLoader, Template
 
 logger = logging.getLogger("magma_access_gateway_installer")
