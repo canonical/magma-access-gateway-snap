@@ -195,7 +195,7 @@ def configure_network(args: argparse.Namespace):
         network_configurator.apply_netplan_configuration()
 
 
-def generate_network_config(args: argparse.Namespace):
+def generate_network_config(args: argparse.Namespace) -> dict:
     return {
         "sgi_ipv4_address": args.ipv4_address,
         "sgi_ipv4_gateway": args.gw_ipv4_address,
@@ -207,13 +207,13 @@ def generate_network_config(args: argparse.Namespace):
     }
 
 
-def get_mac_address(interface_name: str):
+def get_mac_address(interface_name: str) -> str:
     return netifaces.ifaddresses(interface_name)[netifaces.AF_LINK][0]["addr"]
 
 
-def set_default_sgi_interface():
+def set_default_sgi_interface() -> str:
     return "eth0" if "eth0" in network_interfaces else network_interfaces[0]
 
 
-def set_default_s1_interface():
+def set_default_s1_interface() -> str:
     return "eth1" if "eth1" in network_interfaces else network_interfaces[1]

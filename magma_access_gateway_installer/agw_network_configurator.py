@@ -6,7 +6,8 @@ import logging
 import os
 from subprocess import check_call
 
-from jinja2 import Environment, FileSystemLoader
+import jinja2
+from jinja2 import Environment, FileSystemLoader, Template
 
 logger = logging.getLogger("magma_access_gateway_installer")
 
@@ -53,7 +54,7 @@ class AGWInstallerNetworkConfigurator:
                 ),
             )
 
-    def _load_netplan_config_template(self):
+    def _load_netplan_config_template(self) -> Template:
         file_loader = FileSystemLoader(
             os.path.join(os.path.abspath(os.path.dirname(__file__)), "resources")
         )
