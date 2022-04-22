@@ -55,7 +55,7 @@ magma-access-gateway.install
 > magma-access-gateway.install --help
 > ```
 
-> **NOTE:** If statically allocated IPs have been used, installer will perform automatic system 
+> **NOTE:** By default, the installation assumes DHCP for IP allocation. If statically allocated IPs have been explicitly specified in the configuration options, the system will  
 > restart to apply new network configuration. Once the server is restarted, reconnect to the system 
 > and use `journalctl` to continue monitoring the installation process.
 
