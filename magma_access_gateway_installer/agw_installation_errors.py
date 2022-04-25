@@ -14,10 +14,6 @@ class AGWInstallationError(Exception):
         self._message = f"ERROR: {message} Exiting installation!"
         logger.error(self._message)
 
-    @property
-    def message(self):
-        return self._message
-
 
 class InvalidUserError(AGWInstallationError):
     """Exception raised when installation has been started by user different from root."""

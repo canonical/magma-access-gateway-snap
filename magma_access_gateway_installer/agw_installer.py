@@ -12,7 +12,7 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 class AGWInstaller:
 
-    MAGMA_VERSION = "focal-1.6.1"
+    MAGMA_VERSION = "focal-1.7.0"
     MAGMA_ARTIFACTORY = "artifactory.magmacore.org/artifactory"
     MAGMA_AGW_RUNTIME_DEPENDENCIES = [
         "graphviz",
@@ -42,8 +42,8 @@ class AGWInstaller:
             self.start_magma()
             logger.info(
                 "Magma AGW deployment completed successfully!\n"
-                "System will now go down for the reboot to apply all changes.\n"
-                "After configuring Magma AGW run magma-access-gateway.post-install to verify "
+                "\t\tSystem will now go down for the reboot to apply all changes.\n"
+                "\t\tAfter configuring Magma AGW run magma-access-gateway.post-install to verify "
                 "configuration."
             )
             time.sleep(5)
@@ -52,19 +52,19 @@ class AGWInstaller:
     @property
     def _magma_agw_installed(self) -> bool:
         """Checks whether Magma Access Gateway is already installed or not."""
-        return "magma" in check_output(["apt", "list", "--installed"]).decode()
+        return "magma" in check_output(["apt", "-qq", "list", "--installed"]).decode()
 
     @staticmethod
     def update_apt_cache():
         """Updates apt cache."""
         logger.info("Updating apt cache...")
-        check_call(["apt", "update"])
+        check_call(["apt", "-qq", "update"])
 
     @staticmethod
     def update_ca_certificates_package():
         """Updates ca-certificates package"""
         logger.info("Updating ca-certificates package...")
-        check_call(["apt", "install", "ca-certificates"])
+        check_call(["apt", "-qq", "install", "ca-certificates"])
 
     def forbid_usage_of_expired_dst_root_ca_x3_certificate(self):
         """Forbids usage of mozilla/DST_Root_CA_X3.crt certificate."""
@@ -139,9 +139,9 @@ class AGWInstaller:
                 f"https://{self.MAGMA_ARTIFACTORY}/api/gpg/key/public",
             ]
         )
-        self._ignore_magma_apt_repositorys_ssl_cert()
+        self._ignore_magma_apt_repository_ssl_cert()
 
-    def _ignore_magma_apt_repositorys_ssl_cert(self):
+    def _ignore_magma_apt_repository_ssl_cert(self):
         """Ignores Magma apt repository's SSL certificate."""
         logger.info("Ignoring Magma apt repository's SSL certificate...")
         ignore_cert = f"""Acquire::https::{self.MAGMA_ARTIFACTORY}/debian {{
@@ -190,7 +190,14 @@ Verify-Host "false";
     def _install_apt_package(package_name, dpkg_options: list = None):
         """Installs package using apt."""
         logger.info(f"Installing {package_name} package...")
-        apt_install_command = ["apt", "install", "-y", "--no-install-recommends", package_name]
+        apt_install_command = [
+            "apt",
+            "-qq",
+            "install",
+            "-y",
+            "--no-install-recommends",
+            package_name,
+        ]
         if dpkg_options:
             for option in dpkg_options:
                 apt_install_command.insert(1, f'-o "Dpkg::Options::=--{option}"')

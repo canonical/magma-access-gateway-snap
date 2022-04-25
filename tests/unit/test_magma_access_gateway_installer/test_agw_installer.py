@@ -3,13 +3,14 @@
 # See LICENSE file for licensing details.
 
 import unittest
-from unittest.mock import MagicMock, Mock, call, mock_open, patch
+from unittest.mock import MagicMock, Mock, PropertyMock, call, mock_open, patch
 
 from magma_access_gateway_installer.agw_installer import AGWInstaller
 
 
 class TestAGWInstaller(unittest.TestCase):
 
+    TEST_MAGMA_VERSION = "bla-bla-123"
     APT_LIST_WITH_MAGMA = b"""lua-cjson/focal,now 2.1.0+dfsg-2.1 amd64 [installed,automatic]\n
 lvm2/focal,now 2.03.07-1ubuntu1 amd64 [installed,automatic]\n
 lxd-agent-loader/focal,now 0.4 all [installed,automatic]\n
@@ -57,7 +58,7 @@ mozilla/DigiCert_Assured_ID_Root_G2.crt
     ):
         self.agw_installer.update_apt_cache()
 
-        mock_check_call.assert_called_once_with(["apt", "update"])
+        mock_check_call.assert_called_once_with(["apt", "-qq", "update"])
 
     @patch("magma_access_gateway_installer.agw_installer.check_call")
     def test_given_magma_agw_not_installed_when_update_ca_certificates_package_then_relevant_apt_command_is_called(  # noqa: E501
@@ -65,7 +66,7 @@ mozilla/DigiCert_Assured_ID_Root_G2.crt
     ):
         self.agw_installer.update_ca_certificates_package()
 
-        mock_check_call.assert_called_once_with(["apt", "install", "ca-certificates"])
+        mock_check_call.assert_called_once_with(["apt", "-qq", "install", "ca-certificates"])
 
     @patch(
         "magma_access_gateway_installer.agw_installer.open",
@@ -129,13 +130,19 @@ mozilla/DigiCert_Assured_ID_Root_G2.crt
         mock_check_call.assert_not_called()
 
     @patch("magma_access_gateway_installer.agw_installer.open", new_callable=mock_open)
+    @patch(
+        "magma_access_gateway_installer.agw_installer.AGWInstaller.MAGMA_VERSION",
+        new_callable=PropertyMock,
+    )
     @patch("magma_access_gateway_installer.agw_installer.check_call", Mock())
     @patch("magma_access_gateway_installer.agw_installer.os.path.exists", return_value=False)
     def test_given_magma_apt_repo_not_configured_when_configure_apt_for_magma_agw_deb_package_installation_then_new_apt_repo_config_file_is_created(  # noqa: E501
-        self, _, mock_open_file
+        self, _, mock_magma_version, mock_open_file
     ):
+        mock_magma_version.return_value = self.TEST_MAGMA_VERSION
         expected_apt_repo_config_file_content = (
-            "deb https://artifactory.magmacore.org/artifactory/debian focal-1.6.1 main"
+            "deb https://artifactory.magmacore.org/artifactory/debian "
+            f"{self.TEST_MAGMA_VERSION} main"
         )
 
         self.agw_installer.configure_apt_for_magma_agw_deb_package_installation()
@@ -187,14 +194,14 @@ Verify-Host "false";
     ):
         self.agw_installer.configure_apt_for_magma_agw_deb_package_installation()
 
-        self.assertTrue(call(["apt", "update"]) in mock_check_call.mock_calls)
+        self.assertTrue(call(["apt", "-qq", "update"]) in mock_check_call.mock_calls)
 
     @patch("magma_access_gateway_installer.agw_installer.check_call")
     def test_given_magma_agw_not_installed_when_install_runtime_dependencies_then_apt_installs_required_packages(  # noqa: E501
         self, mock_check_call
     ):
         expected_apt_calls = [
-            call(f"apt install -y --no-install-recommends {package_name}", shell=True)
+            call(f"apt -qq install -y --no-install-recommends {package_name}", shell=True)
             for package_name in self.agw_installer.MAGMA_AGW_RUNTIME_DEPENDENCIES
         ]
 
@@ -221,7 +228,7 @@ Verify-Host "false";
 
         mock_check_call.assert_called_once_with(
             'apt -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" '
-            '-o "Dpkg::Options::=--force-overwrite" install -y --no-install-recommends magma',
+            '-o "Dpkg::Options::=--force-overwrite" -qq install -y --no-install-recommends magma',
             shell=True,
         )
 

@@ -82,7 +82,10 @@ class AGWPostInstallChecks:
         ]:
             raise AGWConfigurationError(
                 f'Following interfaces are not configured: {" ".join(faulty_interfaces)}\n'
-                f"Check each interface's setup under /etc/network/interfaces.d/."
+                "Most common reasons for this error include:\n"
+                "  - Invalid configuration in /etc/netplan/99-magma-config.yaml.\n"
+                "  - Interface not being connected to the network.\n"
+                "  - Problem with Open vSwitch installation."
             )
 
     @staticmethod

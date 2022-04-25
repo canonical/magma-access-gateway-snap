@@ -42,12 +42,6 @@ All actions in this guide are executed using `root` account.
 
 ### 1. Install
 
-> **NOTE:**<br>
-> Installation process will perform **at least one** system restart at the end of the process.
-> Depending on given installation options/initial system state, another restart may be required
-> to apply network configuration changes. All restarts will be carried out by the installer. All
-> restarts will be reported in the journal.
-
 Connect to the machine where you want to install Magma Access Gateway and execute the following 
 commands:
 
@@ -56,14 +50,20 @@ snap install magma-access-gateway --classic
 magma-access-gateway.install
 ```
 
-> **NOTE:** To see the list of currently supported configuration options, execute:
+> **NOTE:** To see the list of currently supported installation options, execute:
 > ```bash
 > magma-access-gateway.install --help
 > ```
 
-After the system restarts, reconnect to the system and use `journalctl` to continue monitoring the 
-installation process. A successful installation will be indicated by the `Magma AGW deployment 
+> **NOTE:** By default, the installation assumes DHCP for IP allocation. If statically allocated IPs have been explicitly specified in the configuration options, the system will  
+> restart to apply new network configuration. Once the server is restarted, reconnect to the system 
+> and use `journalctl` to continue monitoring the installation process.
+
+Successful installation will be indicated by the `Magma AGW deployment
 completed successfully!` message.
+
+After successful Access Gateway installation, installer will perform automatic system restart. Once 
+the server is restarted, reconnect to the system to perform AGW configuration.
 
 ### 2. Configure
 

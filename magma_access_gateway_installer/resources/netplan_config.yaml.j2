@@ -1,0 +1,37 @@
+# This is the network config written by magma-access-gateway snap
+network:
+  ethernets:
+    eth0:
+    {%- if sgi_ipv4_address != None +%}
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - {{ sgi_ipv4_address }}
+      {%- if sgi_ipv6_address != None +%}
+        - {{ sgi_ipv6_address }}
+      {%- endif +%}
+      routes:
+        - to: default
+          via: {{ sgi_ipv4_gateway }}
+        {%- if sgi_ipv6_address != None +%}
+          metric: 200
+        - to: default
+          via: {{ sgi_ipv6_gateway }}
+          metric: 300
+        {%- endif +%}
+    {%- else +%}
+      dhcp4: true
+      dhcp6: true
+    {%- endif +%}
+      match:
+        macaddress: {{ sgi_mac_address }}
+      set-name: eth0
+    eth1:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - 10.0.2.1/24
+      match:
+        macaddress: {{ s1_mac_address }}
+      set-name: eth1
+  version: 2

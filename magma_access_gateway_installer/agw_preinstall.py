@@ -3,7 +3,6 @@
 # See LICENSE file for licensing details.
 
 import logging
-import platform
 from subprocess import check_call, check_output
 
 from .agw_installation_errors import (
@@ -15,7 +14,7 @@ from .agw_installation_errors import (
 logger = logging.getLogger("magma_access_gateway_installer")
 
 
-class AGWInstallerPreinstallChecks:
+class AGWInstallerPreinstall:
 
     REQUIRED_NUMBER_OF_NICS = 2
     REQUIRED_SYSTEM_PACKAGES = ["ifupdown", "net-tools", "sudo"]
@@ -33,6 +32,7 @@ class AGWInstallerPreinstallChecks:
             InvalidNumberOfInterfaces: if number of available network interfaces is different from
                 expected
         """
+        logger.info("Starting pre-install checks...")
         if not self._user_is_root:
             raise InvalidUserError()
         elif not self._ubuntu_is_installed:
@@ -45,11 +45,11 @@ class AGWInstallerPreinstallChecks:
     def install_required_system_packages(self):
         """Installs required system packages using apt."""
         logger.info("Updating apt cache...")
-        check_call(["apt", "update"])
+        check_call(["apt", "-qq", "update"])
         logger.info("Installing required system packages...")
         for required_package in self.REQUIRED_SYSTEM_PACKAGES:
             logger.info(f"Installing {required_package}")
-            check_call(["apt", "install", "-y", required_package])
+            check_call(["apt", "-qq", "install", "-y", required_package])
 
     @property
     def _user_is_root(self) -> bool:
@@ -58,8 +58,13 @@ class AGWInstallerPreinstallChecks:
 
     @property
     def _ubuntu_is_installed(self) -> bool:
-        """Checks whether installed OS is Ubuntu."""
-        return "Ubuntu" in platform.version()
+        """Checks whether installed OS is Ubuntu 20.04."""
+        system_info = {}
+        with open("/etc/os-release", "r") as etc_os_release:
+            for line in etc_os_release:
+                key, value = line.partition("=")[::2]
+                system_info[key.strip()] = str(value.strip().replace('"', ""))
+        return system_info["ID"].lower() == "ubuntu" and system_info["VERSION_ID"] == "20.04"
 
     @property
     def _required_amount_of_network_interfaces_is_available(self) -> bool:

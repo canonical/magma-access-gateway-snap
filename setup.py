@@ -16,7 +16,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="magma-access-gateway-installer",
-    version="1.6.1",
+    version="1.7.0",
     description="Snap installing Magma Access Gateway component.",
     long_description=LONG_DESCRIPTION,
     author="Canonical Ltd.",
@@ -27,7 +27,10 @@ setup(
         "magma_access_gateway_configurator": [
             "resources/control_proxy.yml.j2",
             "resources/control_proxy.yml.j2",
-        ]
+        ],
+        "magma_access_gateway_installer": [
+            "resources/netplan_config.yaml.j2",
+        ],
     },
     packages=[
         "magma_access_gateway_installer",

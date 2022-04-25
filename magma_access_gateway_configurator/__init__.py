@@ -13,10 +13,13 @@ from systemd.journal import JournalHandler  # type: ignore[import]
 from .agw_configurator import AGWConfigurator
 
 logger = logging.getLogger(__name__)
-handler = JournalHandler()
-handler.setFormatter(logging.Formatter("Magma AGW Configurator: %(message)s"))
-logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+journal_handler = JournalHandler()
+journal_handler.setFormatter(logging.Formatter("Magma AGW Configurator: %(message)s"))
+logger.addHandler(journal_handler)
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(logging.Formatter("Magma AGW Configurator: %(message)s"))
+logger.addHandler(stdout_handler)
 
 
 def main():
