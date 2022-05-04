@@ -29,6 +29,8 @@ class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
         "sgi_ipv4_gateway": None,
         "sgi_ipv6_address": None,
         "sgi_ipv6_gateway": None,
+        "s1_ipv4_address": "10.9.8.7/24",
+        "s1_ipv6_address": None,
         "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
         "s1_mac_address": "ff:ee:dd:cc:bb:aa",
         "dns_address": None,
@@ -38,6 +40,8 @@ class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
         "sgi_ipv4_gateway": "5.6.7.8",
         "sgi_ipv6_address": None,
         "sgi_ipv6_gateway": None,
+        "s1_ipv4_address": "10.9.8.7/24",
+        "s1_ipv6_address": None,
         "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
         "s1_mac_address": "ff:ee:dd:cc:bb:aa",
         "dns_address": None,
@@ -47,6 +51,8 @@ class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
         "sgi_ipv4_gateway": "5.6.7.8",
         "sgi_ipv6_address": "aaaa:bbbb:cccc:dddd:1:2:3:4/64",
         "sgi_ipv6_gateway": "dddd:cccc:bbbb:aaaa:5:6:7:8",
+        "s1_ipv4_address": "10.9.8.7/24",
+        "s1_ipv6_address": "aaaa:bbbb:cccc:dddd:10:9:8:7/64",
         "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
         "s1_mac_address": "ff:ee:dd:cc:bb:aa",
         "dns_address": None,
@@ -98,7 +104,7 @@ network:
       dhcp4: false
       dhcp6: false
       addresses:
-        - 10.0.2.1/24
+        - 10.9.8.7/24
       match:
         macaddress: ff:ee:dd:cc:bb:aa
       set-name: eth1
@@ -138,7 +144,7 @@ network:
       dhcp4: false
       dhcp6: false
       addresses:
-        - 10.0.2.1/24
+        - 10.9.8.7/24
       match:
         macaddress: ff:ee:dd:cc:bb:aa
       set-name: eth1
@@ -183,7 +189,8 @@ network:
       dhcp4: false
       dhcp6: false
       addresses:
-        - 10.0.2.1/24
+        - 10.9.8.7/24
+        - aaaa:bbbb:cccc:dddd:10:9:8:7/64
       match:
         macaddress: ff:ee:dd:cc:bb:aa
       set-name: eth1

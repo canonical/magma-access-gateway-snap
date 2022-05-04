@@ -65,10 +65,10 @@ class AGWControlProxyConfigurationError(PostInstallError):
         )
 
 
-class AGWCloudCheckinError(PostInstallError):
+class Orc8rConnectivityError(PostInstallError):
     def __init__(self):
         super().__init__(
-            "Cloud checkin failed!"
+            "Connection to Magma Orchestrator failed!"
             "Please follow Access Gateway Configuration section of Magma AGW documentation "
             "(https://docs.magmacore.org/docs/next/lte/deploy_config_agw) and retry."
         )

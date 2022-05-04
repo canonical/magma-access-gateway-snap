@@ -48,6 +48,8 @@ class AGWInstallerNetworkConfigurator:
                     sgi_ipv4_gateway=self.network_config["sgi_ipv4_gateway"],
                     sgi_ipv6_address=self.network_config["sgi_ipv6_address"],
                     sgi_ipv6_gateway=self.network_config["sgi_ipv6_gateway"],
+                    s1_ipv4_address=self.network_config["s1_ipv4_address"],
+                    s1_ipv6_address=self.network_config["s1_ipv6_address"],
                     sgi_mac_address=self.network_config["sgi_mac_address"],
                     s1_mac_address=self.network_config["s1_mac_address"],
                 ),

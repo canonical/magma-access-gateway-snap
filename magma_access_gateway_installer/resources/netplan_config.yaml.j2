@@ -30,7 +30,10 @@ network:
       dhcp4: false
       dhcp6: false
       addresses:
-        - 10.0.2.1/24
+        - {{ s1_ipv4_address }}
+      {%- if s1_ipv6_address != None +%}
+        - {{ s1_ipv6_address }}
+      {%- endif +%}
       match:
         macaddress: {{ s1_mac_address }}
       set-name: eth1
