@@ -185,14 +185,6 @@ class TestAGWPostInstallChecks(unittest.TestCase):
         with self.assertRaises(Orc8rConnectivityError):
             self.agw_post_install.check_connectivity_with_orc8r()
 
-    @patch("magma_access_gateway_post_install.agw_post_install.journal.Reader", new_callable=Mock)
-    def test_given_journal_containing_cloud_checkin_logs_when_check_cloud_check_in_then_true_is_returned(  # noqa: E501
-        self, mocked_journal_reader
-    ):
-        mocked_journal_reader.return_value = MockedJournalReader(True)
-
-        self.assertTrue(self.agw_post_install.check_connectivity_with_orc8r())
-
 
 class MockedJournalReader:
     def __init__(self, agw_configured: bool):

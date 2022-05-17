@@ -37,3 +37,61 @@ class TestAGWConfiguratorInit(unittest.TestCase):
 
         with self.assertRaises(FileNotFoundError):
             magma_access_gateway_configurator.validate_args(test_args)
+
+    @patch.object(
+        magma_access_gateway_configurator.agw_configurator.AGWConfigurator,
+        "cleanup_old_configs",
+    )
+    @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
+    @patch("builtins.input", Mock(return_value="Y"))
+    @patch("magma_access_gateway_configurator.cli_arguments_parser", Mock())
+    @patch("magma_access_gateway_configurator.validate_args", Mock())
+    @patch("magma_access_gateway_configurator.load_public_key_to_base64der", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())
+    def test_given_agw_config_files_exist_when_main_then_cleanup_old_configs_is_executed(
+        self, mocked_path_exists, mocked_cleanup_old_configs
+    ):
+        mocked_path_exists.side_effect = [True, False, True, False, True]
+
+        magma_access_gateway_configurator.main()
+
+        self.assertTrue(mocked_cleanup_old_configs.called)
+
+    @patch.object(
+        magma_access_gateway_configurator.agw_configurator.AGWConfigurator,
+        "cleanup_old_configs",
+    )
+    @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
+    @patch("magma_access_gateway_configurator.cli_arguments_parser", Mock())
+    @patch("magma_access_gateway_configurator.validate_args", Mock())
+    @patch("magma_access_gateway_configurator.load_public_key_to_base64der", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())
+    def test_given_agw_config_files_do_not_exist_when_main_then_cleanup_old_configs_is_not_executed(  # noqa: E501
+        self, mocked_path_exists, mocked_cleanup_old_configs
+    ):
+        mocked_path_exists.side_effect = [False, False, False, False, False]
+
+        magma_access_gateway_configurator.main()
+
+        self.assertFalse(mocked_cleanup_old_configs.called)
+
+    @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
+    @patch("builtins.input", Mock(return_value="N"))
+    @patch("magma_access_gateway_configurator.cli_arguments_parser", Mock())
+    @patch("magma_access_gateway_configurator.validate_args", Mock())
+    @patch("magma_access_gateway_configurator.load_public_key_to_base64der", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
+    @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())
+    def test_given_agw_config_files_exist_when_main_and_user_refuses_to_reconfigure_agw_then_configurator_exits_with_0_rc(  # noqa: E501
+        self, mocked_path_exists
+    ):
+        mocked_path_exists.side_effect = [True, False, True, False, True]
+
+        with self.assertRaises(SystemExit) as exit_code:
+            magma_access_gateway_configurator.main()
+        self.assertEqual(exit_code.exception.code, 0)

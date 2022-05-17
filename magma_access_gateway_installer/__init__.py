@@ -131,7 +131,14 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
 
 def validate_args(args: argparse.Namespace):
     """Validates operator provided arguments and raises when invalid."""
-    validate_static_ip_allocation(args)
+    validate_static_ip_allocation(
+        args.sgi_ipv4_address,
+        args.sgi_ipv4_gateway,
+        args.sgi_ipv6_address,
+        args.sgi_ipv6_gateway,
+        args.s1_ipv4_address,
+        args.s1_ipv6_address,
+    )
     validate_arbitrary_dns(args)
     validate_custom_sgi_and_s1_interfaces(args)
 
@@ -151,18 +158,23 @@ def validate_arbitrary_dns(args: argparse.Namespace):
             raise ArgumentError(f"Invalid IP address provided for --dns ({dns_ip}).")
 
 
-def validate_static_ip_allocation(args: argparse.Namespace):
-    if (args.sgi_ipv6_address or args.sgi_ipv6_gateway) and not (
-        args.sgi_ipv4_address or args.sgi_ipv4_gateway
-    ):
+def validate_static_ip_allocation(
+    sgi_ipv4_address: str,
+    sgi_ipv4_gateway: str,
+    sgi_ipv6_address: str,
+    sgi_ipv6_gateway: str,
+    s1_ipv4_address: str,
+    s1_ipv6_address: str,
+):
+    if (sgi_ipv6_address or sgi_ipv6_gateway) and not (sgi_ipv4_address or sgi_ipv4_gateway):
         raise ArgumentError(
             "Pure IPv6 configuration not supported. "
             "Static IPv6 configuration can only be specified along with IPv4."
         )
-    validate_sgi_addressing(args.sgi_ipv4_address, args.sgi_ipv4_gateway)
-    validate_sgi_addressing(args.sgi_ipv6_address, args.sgi_ipv6_gateway)
-    validate_s1_addressing(args.s1_ipv4_address)
-    validate_s1_addressing(args.s1_ipv6_address)
+    validate_sgi_addressing(sgi_ipv4_address, sgi_ipv4_gateway)
+    validate_sgi_addressing(sgi_ipv6_address, sgi_ipv6_gateway)
+    validate_s1_addressing(s1_ipv4_address)
+    validate_s1_addressing(s1_ipv6_address)
 
 
 def validate_sgi_addressing(sgi_ip_address: str, sgi_gw_ip_address: str):

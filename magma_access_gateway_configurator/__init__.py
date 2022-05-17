@@ -7,11 +7,14 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser
+from typing import Union
 
 import snowflake  # type: ignore[import]
 import validators  # type: ignore[import]
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from systemd.journal import JournalHandler  # type: ignore[import]
 
 from .agw_configurator import AGWConfigurator
@@ -36,6 +39,17 @@ def main():
     aws_configurator = AGWConfigurator(args.domain, args.root_ca_path)
 
     logger.info("Starting Magma AGW configuration...")
+    if aws_configurator.control_proxy_configured:
+        print("Control Proxy configuration file already exists!")
+        print(
+            "This may indicate that this instance of Magma AGW is already integrated to an "
+            "Orchestrator instance."
+        )
+        print("If you continue, all existing configurations will be erased!")
+        if input("Do you want to proceed with the configuration process [Y/N]?") == "Y":
+            aws_configurator.cleanup_old_configs()
+        else:
+            exit(0)
     aws_configurator.copy_root_ca_pem()
     aws_configurator.configure_control_proxy()
     aws_configurator.restart_magma_services()
@@ -76,7 +90,7 @@ def validate_args(args):
         raise FileNotFoundError(f"Given Root CA PEM path {args.root_ca_path} doesn't exist!")
 
 
-def load_public_key_to_base64der(key_file):
+def load_public_key_to_base64der(key_file: str) -> bytes:
     """Load the public key of a private key and convert to base64 encoded DER
     The return value can be used directly for device registration.
 
@@ -102,7 +116,7 @@ def load_public_key_to_base64der(key_file):
     return encoded
 
 
-def load_key(key_file):
+def load_key(key_file: str) -> Union[RSAPrivateKey, EllipticCurvePrivateKey]:
     """Load a private key encoded in PEM format
 
     Args:
@@ -118,10 +132,10 @@ def load_key(key_file):
     """
     with open(key_file, "rb") as f:
         key_bytes = f.read()
-    return serialization.load_pem_private_key(key_bytes, None, default_backend())
+    return serialization.load_pem_private_key(key_bytes, None, default_backend())  # type: ignore[return-value]  # noqa: E501
 
 
 class AGWConfigurationError(Exception):
-    def __init__(self, message):
+    def __init__(self, message: str):
         logger.error(message)
         super().__init__(message)

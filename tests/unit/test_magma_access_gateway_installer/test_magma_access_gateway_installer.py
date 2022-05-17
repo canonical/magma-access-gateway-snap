@@ -58,6 +58,8 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             sgi_ipv4_gateway=None,
             sgi_ipv6_address=None,
             sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
@@ -72,6 +74,8 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             sgi_ipv4_gateway=self.VALID_TEST_SGi_IPv4_GATEWAY,
             sgi_ipv6_address=None,
             sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
@@ -86,6 +90,8 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             sgi_ipv4_gateway=self.INVALID_TEST_SGi_IPv4_GATEWAY,
             sgi_ipv6_address=None,
             sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
@@ -100,6 +106,8 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             sgi_ipv4_gateway=self.VALID_TEST_SGi_IPv4_GATEWAY,
             sgi_ipv6_address=None,
             sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
@@ -146,6 +154,8 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             sgi_ipv4_gateway=None,
             sgi_ipv6_address=self.VALID_TEST_SGi_IPv6_ADDRESS,
             sgi_ipv6_gateway=self.VALID_TEST_SGi_IPv6_GATEWAY,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
