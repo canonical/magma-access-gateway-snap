@@ -27,6 +27,7 @@ jobs:
         run: pip install tox
       - name: Run tests using tox
         run: |
+          sudo apt update
           sudo apt install libsystemd-dev
           set -eux
           tox -e static
@@ -40,6 +41,7 @@ jobs:
         run: pip install tox
       - name: Run tests using tox
         run: |
+          sudo apt update
           sudo apt install libsystemd-dev
           set -eux
           tox -e unit
