@@ -40,12 +40,12 @@ def main():
 
     logger.info("Starting Magma AGW configuration...")
     if aws_configurator.control_proxy_configured:
-        print("Control Proxy configuration file already exists!")
-        print(
+        logger.info("Control Proxy configuration file already exists!")
+        logger.info(
             "This may indicate that this instance of Magma AGW is already integrated to an "
             "Orchestrator instance."
         )
-        print("If you continue, all existing configurations will be erased!")
+        logger.info("If you continue, all existing configurations will be erased!")
         if input("Do you want to proceed with the configuration process [Y/N]?") == "Y":
             aws_configurator.cleanup_old_configs()
         else:
