@@ -4,7 +4,7 @@
 
 import unittest
 from argparse import Namespace
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import magma_access_gateway_configurator
 
@@ -46,7 +46,7 @@ class TestAGWConfiguratorInit(unittest.TestCase):
     @patch("builtins.input", Mock(return_value="Y"))
     @patch("magma_access_gateway_configurator.cli_arguments_parser", Mock())
     @patch("magma_access_gateway_configurator.validate_args", Mock())
-    @patch("magma_access_gateway_configurator.load_public_key_to_base64der", Mock())
+    @patch("magma_access_gateway_configurator.check_output", MagicMock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())
@@ -66,7 +66,7 @@ class TestAGWConfiguratorInit(unittest.TestCase):
     @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
     @patch("magma_access_gateway_configurator.cli_arguments_parser", Mock())
     @patch("magma_access_gateway_configurator.validate_args", Mock())
-    @patch("magma_access_gateway_configurator.load_public_key_to_base64der", Mock())
+    @patch("magma_access_gateway_configurator.check_output", MagicMock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())
@@ -83,7 +83,7 @@ class TestAGWConfiguratorInit(unittest.TestCase):
     @patch("builtins.input", Mock(return_value="N"))
     @patch("magma_access_gateway_configurator.cli_arguments_parser", Mock())
     @patch("magma_access_gateway_configurator.validate_args", Mock())
-    @patch("magma_access_gateway_configurator.load_public_key_to_base64der", Mock())
+    @patch("magma_access_gateway_configurator.check_output", MagicMock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
     @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())

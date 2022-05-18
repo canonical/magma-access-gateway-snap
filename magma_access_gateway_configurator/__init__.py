@@ -2,19 +2,13 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import base64
 import logging
 import os
 import sys
 from argparse import ArgumentParser
-from typing import Union
+from subprocess import check_output
 
-import snowflake  # type: ignore[import]
 import validators  # type: ignore[import]
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from systemd.journal import JournalHandler  # type: ignore[import]
 
 from .agw_configurator import AGWConfigurator
@@ -55,11 +49,11 @@ def main():
     aws_configurator.restart_magma_services()
     logger.info(
         "Magma AGW configuration done!\n"
-        "\t\tTo add Access Gateway to the network, please use hardware secrets printed below:\n"
-        "\t\tHardware ID:\n"
-        f"\t\t{snowflake.snowflake()}\n"
-        "\t\tChallenge Key:\n"
-        f'\t\t{load_public_key_to_base64der(PUBLIC_KEY_FILE).decode("utf-8")}\n'
+        "\t\tTo add Access Gateway to the network, please use hardware secrets printed below:"
+    )
+    for line in check_output(["show_gateway_info.py"]).decode().split("\n"):
+        logger.info(f"\t\t{line}")
+    logger.info(
         "\t\tOnce Access Gateway is integrated with the Orchestrator, run "
         "magma-access-gateway.post-install to verify the installation."
     )
@@ -88,51 +82,6 @@ def validate_args(args):
 
     if not os.path.exists(args.root_ca_path):
         raise FileNotFoundError(f"Given Root CA PEM path {args.root_ca_path} doesn't exist!")
-
-
-def load_public_key_to_base64der(key_file: str) -> bytes:
-    """Load the public key of a private key and convert to base64 encoded DER
-    The return value can be used directly for device registration.
-
-    Args:
-        key_file: path to the private key file, pem encoded
-
-    Returns:
-        base64 encoded public key in DER format
-
-    Raises:
-        IOError: If file cannot be opened
-        ValueError: If the file content cannot be decoded successfully
-        TypeError: If the key_file is encrypted
-    """
-
-    key = load_key(key_file)
-    pub_key = key.public_key()
-    pub_bytes = pub_key.public_bytes(
-        encoding=serialization.Encoding.DER,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    encoded = base64.b64encode(pub_bytes)
-    return encoded
-
-
-def load_key(key_file: str) -> Union[RSAPrivateKey, EllipticCurvePrivateKey]:
-    """Load a private key encoded in PEM format
-
-    Args:
-        key_file: path to the key file
-
-    Returns:
-        RSAPrivateKey or EllipticCurvePrivateKey depending on the contents of key_file
-
-    Raises:
-        IOError: If file cannot be opened
-        ValueError: If the file content cannot be decoded successfully
-        TypeError: If the key_file is encrypted
-    """
-    with open(key_file, "rb") as f:
-        key_bytes = f.read()
-    return serialization.load_pem_private_key(key_bytes, None, default_backend())  # type: ignore[return-value]  # noqa: E501
 
 
 class AGWConfigurationError(Exception):
