@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser
+from subprocess import check_output
 
 import validators  # type: ignore[import]
 from systemd.journal import JournalHandler  # type: ignore[import]
@@ -22,6 +23,9 @@ stdout_handler.setFormatter(logging.Formatter("Magma AGW Configurator: %(message
 logger.addHandler(stdout_handler)
 
 
+PUBLIC_KEY_FILE = "/var/opt/magma/certs/gw_challenge.key"
+
+
 def main():
     args = cli_arguments_parser(sys.argv[1:])
     validate_args(args)
@@ -29,13 +33,29 @@ def main():
     aws_configurator = AGWConfigurator(args.domain, args.root_ca_path)
 
     logger.info("Starting Magma AGW configuration...")
+    if aws_configurator.control_proxy_configured:
+        logger.info("Control Proxy configuration file already exists!")
+        logger.info(
+            "This may indicate that this instance of Magma AGW is already integrated to an "
+            "Orchestrator instance."
+        )
+        logger.info("If you continue, all existing configurations will be erased!")
+        if input("Do you want to proceed with the configuration process [Y/N]?") == "Y":
+            aws_configurator.cleanup_old_configs()
+        else:
+            exit(0)
     aws_configurator.copy_root_ca_pem()
     aws_configurator.configure_control_proxy()
     aws_configurator.restart_magma_services()
     logger.info(
-        "Magma AGW configuration done! "
-        "To add your Access Gateway to the network, please refer "
-        "https://docs.magmacore.org/docs/next/lte/deploy_config_agw#registering-and-configuring-your-access-gateway"  # noqa: E501, W505
+        "Magma AGW configuration done!\n"
+        "\t\tTo add Access Gateway to the network, please use hardware secrets printed below:"
+    )
+    for line in check_output(["show_gateway_info.py"]).decode().split("\n"):
+        logger.info(f"\t\t{line}")
+    logger.info(
+        "\t\tOnce Access Gateway is integrated with the Orchestrator, run "
+        "magma-access-gateway.post-install to verify the installation."
     )
 
 
@@ -65,6 +85,6 @@ def validate_args(args):
 
 
 class AGWConfigurationError(Exception):
-    def __init__(self, message):
+    def __init__(self, message: str):
         logger.error(message)
         super().__init__(message)

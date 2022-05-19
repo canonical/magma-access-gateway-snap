@@ -11,12 +11,16 @@ import magma_access_gateway_installer
 
 class TestAGWInstallerInit(unittest.TestCase):
 
-    VALID_TEST_IPv4_ADDRESS = "1.2.3.4/24"
-    INVALID_TEST_IPv4_ADDRESS = "321.0.1.5/24"
-    VALID_TEST_GW_IPv4_ADDRESS = "2.3.4.5"
-    INVALID_TEST_GW_IPv4_ADDRESS = "321.3.4.5"
-    VALID_TEST_IPv6_ADDRESS = "fd9c:0175:3d65:cfbd:1:2:3:4/64"
-    VALID_TEST_GW_IPv6_ADDRESS = "fd9c:0175:3d65:cfbd:4:3:2:1"
+    VALID_TEST_SGi_IPv4_ADDRESS = "1.2.3.4/24"
+    INVALID_TEST_SGi_IPv4_ADDRESS = "321.0.1.5/24"
+    VALID_TEST_SGi_IPv4_GATEWAY = "2.3.4.5"
+    INVALID_TEST_SGi_IPv4_GATEWAY = "321.3.4.5"
+    VALID_TEST_SGi_IPv6_ADDRESS = "fd9c:0175:3d65:cfbd:1:2:3:4/64"
+    VALID_TEST_SGi_IPv6_GATEWAY = "fd9c:0175:3d65:cfbd:4:3:2:1"
+    VALID_TEST_S1_IPv4_ADDRESS = "10.9.8.7/24"
+    INVALID_TEST_S1_IPv4_ADDRESS = "100.900.800.700/24"
+    VALID_TEST_S1_IPv6_ADDRESS = "fd9c:0175:3d65:cfbd:10:9:8:7/64"
+    INVALID_TEST_S1_IPv6_ADDRESS = "fd9c:0175:3d65:cfbd:10000:90000:80000:70000/64"
     DNS_LIST_WITH_VALID_ADDRESS = ["1.2.3.4", "5.6.7.8"]
     DNS_LIST_WITH_INVALID_ADDRESS = ["1.2.3.4", "321.3.4.5", "5.6.7.8"]
     TEST_INTERFACES_LIST = ["lo", "bear", "rabbit", "eagle", "moose"]
@@ -27,10 +31,12 @@ class TestAGWInstallerInit(unittest.TestCase):
     TEST_SGi_MAC = "aa:bb:cc:dd:ee:ff"
     TEST_S1_MAC = "ff:ee:dd:cc:bb:aa"
     VALID_CLI_ARGUMENTS = Namespace(
-        ipv4_address=VALID_TEST_IPv4_ADDRESS,
-        gw_ipv4_address=VALID_TEST_GW_IPv4_ADDRESS,
-        ipv6_address=VALID_TEST_IPv6_ADDRESS,
-        gw_ipv6_address=VALID_TEST_GW_IPv6_ADDRESS,
+        sgi_ipv4_address=VALID_TEST_SGi_IPv4_ADDRESS,
+        sgi_ipv4_gateway=VALID_TEST_SGi_IPv4_GATEWAY,
+        sgi_ipv6_address=VALID_TEST_SGi_IPv6_ADDRESS,
+        sgi_ipv6_gateway=VALID_TEST_SGi_IPv6_GATEWAY,
+        s1_ipv4_address=VALID_TEST_S1_IPv4_ADDRESS,
+        s1_ipv6_address=VALID_TEST_S1_IPv6_ADDRESS,
         dns=DNS_LIST_WITH_VALID_ADDRESS,
         sgi=VALID_TEST_SGi_INTERFACE_NAME,
         s1=VALID_TEST_S1_INTERFACE_NAME,
@@ -44,56 +50,96 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
 """
 
     @patch("magma_access_gateway_installer.netifaces.interfaces", MagicMock())
-    def test_given_only_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
+    def test_given_only_sgi_ipv4_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(
-            ipv4_address=self.VALID_TEST_IPv4_ADDRESS,
-            gw_ipv4_address=None,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=self.VALID_TEST_SGi_IPv4_ADDRESS,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
 
     @patch("magma_access_gateway_installer.netifaces.interfaces", MagicMock())
-    def test_given_only_gw_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
+    def test_given_only_sgi_ipv4_gateway_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=self.VALID_TEST_GW_IPv4_ADDRESS,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=self.VALID_TEST_SGi_IPv4_GATEWAY,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
 
     @patch("magma_access_gateway_installer.netifaces.interfaces", MagicMock())
-    def test_given_invalid_gw_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
+    def test_given_invalid_sgi_ipv4_gateway_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(
-            ipv4_address=self.VALID_TEST_IPv4_ADDRESS,
-            gw_ipv4_address=self.INVALID_TEST_GW_IPv4_ADDRESS,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=self.VALID_TEST_SGi_IPv4_ADDRESS,
+            sgi_ipv4_gateway=self.INVALID_TEST_SGi_IPv4_GATEWAY,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
             magma_access_gateway_installer.validate_args(test_args)
 
     @patch("magma_access_gateway_installer.netifaces.interfaces", MagicMock())
-    def test_given_invalid_ip_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
+    def test_given_invalid_sgi_ipv4_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
         self,
     ):
         test_args = Namespace(
-            ipv4_address=self.INVALID_TEST_IPv4_ADDRESS,
-            gw_ipv4_address=self.VALID_TEST_GW_IPv4_ADDRESS,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=self.INVALID_TEST_SGi_IPv4_ADDRESS,
+            sgi_ipv4_gateway=self.VALID_TEST_SGi_IPv4_GATEWAY,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
+        )
+
+        with self.assertRaises(magma_access_gateway_installer.ArgumentError):
+            magma_access_gateway_installer.validate_args(test_args)
+
+    @patch("magma_access_gateway_installer.netifaces.interfaces", MagicMock())
+    def test_given_invalid_s1_ipv4_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
+        self,
+    ):
+        test_args = Namespace(
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=self.INVALID_TEST_S1_IPv4_ADDRESS,
+            s1_ipv6_address=None,
+        )
+
+        with self.assertRaises(magma_access_gateway_installer.ArgumentError):
+            magma_access_gateway_installer.validate_args(test_args)
+
+    @patch("magma_access_gateway_installer.netifaces.interfaces", MagicMock())
+    def test_given_invalid_s1_ipv6_address_cli_argument_is_passed_when_validate_args_then_value_error_is_raised(  # noqa: E501
+        self,
+    ):
+        test_args = Namespace(
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=self.INVALID_TEST_S1_IPv6_ADDRESS,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
@@ -104,10 +150,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self,
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=None,
-            ipv6_address=self.VALID_TEST_IPv6_ADDRESS,
-            gw_ipv6_address=self.VALID_TEST_GW_IPv6_ADDRESS,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=self.VALID_TEST_SGi_IPv6_ADDRESS,
+            sgi_ipv6_gateway=self.VALID_TEST_SGi_IPv6_GATEWAY,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
         )
 
         with self.assertRaises(magma_access_gateway_installer.ArgumentError):
@@ -118,10 +166,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self,
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=None,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
             dns=self.DNS_LIST_WITH_INVALID_ADDRESS,
         )
 
@@ -133,10 +183,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self,
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=None,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
             dns=self.DNS_LIST_WITH_VALID_ADDRESS,
             sgi=self.INVALID_TEST_SGi_INTERFACE_NAME,
             s1=self.VALID_TEST_S1_INTERFACE_NAME,
@@ -150,10 +202,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self,
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=None,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
             dns=self.DNS_LIST_WITH_VALID_ADDRESS,
             sgi=self.VALID_TEST_SGi_INTERFACE_NAME,
             s1=self.INVALID_TEST_S1_INTERFACE_NAME,
@@ -166,10 +220,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self,
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=None,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
             dns=self.DNS_LIST_WITH_VALID_ADDRESS,
             sgi=self.INVALID_TEST_SGi_INTERFACE_NAME,
             s1=self.INVALID_TEST_S1_INTERFACE_NAME,
@@ -183,10 +239,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self,
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=None,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+            s1_ipv4_address=None,
+            s1_ipv6_address=None,
             dns=self.DNS_LIST_WITH_VALID_ADDRESS,
             sgi=self.VALID_TEST_SGi_INTERFACE_NAME,
             s1=self.VALID_TEST_S1_INTERFACE_NAME,
@@ -200,10 +258,12 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
     ):
         mocked_get_mac_address.side_effect = [self.TEST_SGi_MAC, self.TEST_S1_MAC]
         expected_network_config = {
-            "sgi_ipv4_address": self.VALID_TEST_IPv4_ADDRESS,
-            "sgi_ipv4_gateway": self.VALID_TEST_GW_IPv4_ADDRESS,
-            "sgi_ipv6_address": self.VALID_TEST_IPv6_ADDRESS,
-            "sgi_ipv6_gateway": self.VALID_TEST_GW_IPv6_ADDRESS,
+            "sgi_ipv4_address": self.VALID_TEST_SGi_IPv4_ADDRESS,
+            "sgi_ipv4_gateway": self.VALID_TEST_SGi_IPv4_GATEWAY,
+            "sgi_ipv6_address": self.VALID_TEST_SGi_IPv6_ADDRESS,
+            "sgi_ipv6_gateway": self.VALID_TEST_SGi_IPv6_GATEWAY,
+            "s1_ipv4_address": self.VALID_TEST_S1_IPv4_ADDRESS,
+            "s1_ipv6_address": self.VALID_TEST_S1_IPv6_ADDRESS,
             "sgi_mac_address": self.TEST_SGi_MAC,
             "s1_mac_address": self.TEST_S1_MAC,
             "dns_address": " ".join(self.DNS_LIST_WITH_VALID_ADDRESS),
@@ -223,10 +283,10 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self, mock_os_system
     ):
         test_args = Namespace(
-            ipv4_address=self.VALID_TEST_IPv4_ADDRESS,
-            gw_ipv4_address=self.VALID_TEST_GW_IPv4_ADDRESS,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=self.VALID_TEST_SGi_IPv4_ADDRESS,
+            sgi_ipv4_gateway=self.VALID_TEST_SGi_IPv4_GATEWAY,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
         )
 
         magma_access_gateway_installer.configure_network(test_args)
@@ -248,10 +308,10 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         self, mocked_apply_netplan_configuration, mock_os_system
     ):
         test_args = Namespace(
-            ipv4_address=None,
-            gw_ipv4_address=None,
-            ipv6_address=None,
-            gw_ipv6_address=None,
+            sgi_ipv4_address=None,
+            sgi_ipv4_gateway=None,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
         )
 
         magma_access_gateway_installer.configure_network(test_args)

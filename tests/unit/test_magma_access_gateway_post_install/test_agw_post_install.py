@@ -6,7 +6,6 @@ import unittest
 from unittest.mock import Mock, PropertyMock, mock_open, patch
 
 from magma_access_gateway_post_install.agw_post_install import (
-    AGWCloudCheckinError,
     AGWConfigurationError,
     AGWControlProxyConfigFileMissingError,
     AGWControlProxyConfigurationError,
@@ -14,6 +13,7 @@ from magma_access_gateway_post_install.agw_post_install import (
     AGWPostInstallChecks,
     AGWRootCertificateMissingError,
     AGWServicesNotRunningError,
+    Orc8rConnectivityError,
 )
 
 
@@ -182,16 +182,8 @@ class TestAGWPostInstallChecks(unittest.TestCase):
     ):
         mocked_journal_reader.return_value = MockedJournalReader(False)
 
-        with self.assertRaises(AGWCloudCheckinError):
-            self.agw_post_install.check_cloud_check_in()
-
-    @patch("magma_access_gateway_post_install.agw_post_install.journal.Reader", new_callable=Mock)
-    def test_given_journal_containing_cloud_checkin_logs_when_check_cloud_check_in_then_true_is_returned(  # noqa: E501
-        self, mocked_journal_reader
-    ):
-        mocked_journal_reader.return_value = MockedJournalReader(True)
-
-        self.assertTrue(self.agw_post_install.check_cloud_check_in())
+        with self.assertRaises(Orc8rConnectivityError):
+            self.agw_post_install.check_connectivity_with_orc8r()
 
 
 class MockedJournalReader:

@@ -43,8 +43,8 @@ class AGWInstaller:
             logger.info(
                 "Magma AGW deployment completed successfully!\n"
                 "\t\tSystem will now go down for the reboot to apply all changes.\n"
-                "\t\tAfter configuring Magma AGW run magma-access-gateway.post-install to verify "
-                "configuration."
+                "\t\tOnce the system is online again, run magma-access-gateway.configure to "
+                "integrate Access Gateway with the Orchestrator."
             )
             time.sleep(5)
             os.system("reboot")

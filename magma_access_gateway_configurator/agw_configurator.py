@@ -5,11 +5,13 @@
 import logging
 import os
 import shutil
+import sys
 from subprocess import check_call
 
 from jinja2 import Environment, FileSystemLoader
 
 logger = logging.getLogger("magma_access_gateway_configurator")
+sys.tracebacklimit = None  # type: ignore[assignment]
 
 
 class AGWConfigurator:
@@ -18,10 +20,32 @@ class AGWConfigurator:
     ROOT_CA_PEM_FILE_NAME = "rootCA.pem"
     MAGMA_CONTROL_PROXY_CONFIG_DIR = "/var/opt/magma/configs"
     MAGMA_CONTROL_PROXY_CONFIG_FILE_NAME = "control_proxy.yml"
+    GATEWAY_CONFIG_FILE_NAME = "gateway.mconfig"
+    GATEWAY_CERTS_DIR = "/var/opt/magma/certs"
+    GATEWAY_CERT_FILE_NAME = "gateway.crt"
+    GATEWAY_KEY_FILE_NAME = "gateway.key"
 
     def __init__(self, domain: str, root_ca_pem_path: str):
         self.domain = domain
         self.root_ca_pem_path = root_ca_pem_path
+
+    def cleanup_old_configs(self):
+        """Removes old configs to allow reconfiguration of the AGW."""
+        try:
+            os.remove(os.path.join(self.ROOT_CA_PEM_DESTINATION_DIR, self.ROOT_CA_PEM_FILE_NAME))
+            os.remove(
+                os.path.join(
+                    self.MAGMA_CONTROL_PROXY_CONFIG_DIR,
+                    self.MAGMA_CONTROL_PROXY_CONFIG_FILE_NAME,
+                )
+            )
+            os.remove(
+                os.path.join(self.MAGMA_CONTROL_PROXY_CONFIG_DIR, self.GATEWAY_CONFIG_FILE_NAME)
+            )
+            os.remove(os.path.join(self.GATEWAY_CERTS_DIR, self.GATEWAY_CERT_FILE_NAME))
+            os.remove(os.path.join(self.GATEWAY_CERTS_DIR, self.GATEWAY_KEY_FILE_NAME))
+        except FileNotFoundError as e:
+            logger.warning(e)
 
     def copy_root_ca_pem(self):
         """Copies Root CA PEM from specified location to /var/opt/magma/tmp/certs/."""
@@ -75,8 +99,29 @@ class AGWConfigurator:
         self._restart_service("magma@magmad")
 
     @property
+    def control_proxy_configured(self):
+        """Checks whether Control Proxy configuration file already exists."""
+        agw_config_files_status = [
+            os.path.exists(
+                os.path.join(self.ROOT_CA_PEM_DESTINATION_DIR, self.ROOT_CA_PEM_FILE_NAME)
+            ),
+            os.path.exists(
+                os.path.join(
+                    self.MAGMA_CONTROL_PROXY_CONFIG_DIR,
+                    self.MAGMA_CONTROL_PROXY_CONFIG_FILE_NAME,
+                )
+            ),
+            os.path.exists(
+                os.path.join(self.MAGMA_CONTROL_PROXY_CONFIG_DIR, self.GATEWAY_CONFIG_FILE_NAME)
+            ),
+            os.path.exists(os.path.join(self.GATEWAY_CERTS_DIR, self.GATEWAY_CERT_FILE_NAME)),
+            os.path.exists(os.path.join(self.GATEWAY_CERTS_DIR, self.GATEWAY_KEY_FILE_NAME)),
+        ]
+        return any(agw_config_files_status)
+
+    @property
     def _control_proxy_config_dir_exists(self):
-        """Checks whether directory in which Proxy Config stores its configuration exists."""
+        """Checks whether directory in which Control Proxy stores its configuration exists."""
         return os.path.exists(self.MAGMA_CONTROL_PROXY_CONFIG_DIR)
 
     @staticmethod

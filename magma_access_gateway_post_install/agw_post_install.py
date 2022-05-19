@@ -12,13 +12,13 @@ from ping3 import ping  # type: ignore[import]
 from systemd import journal  # type: ignore[import]
 
 from .agw_post_install_errors import (
-    AGWCloudCheckinError,
     AGWConfigurationError,
     AGWControlProxyConfigFileMissingError,
     AGWControlProxyConfigurationError,
     AGWPackagesMissingError,
     AGWRootCertificateMissingError,
     AGWServicesNotRunningError,
+    Orc8rConnectivityError,
 )
 
 logger = logging.getLogger("magma_access_gateway_post_install")
@@ -62,8 +62,8 @@ class AGWPostInstallChecks:
         "fluentd_port",
         "sentry_url_python",
     ]
-    GOT_CLOUD_HEARTBEAT_MSG = "[SyncRPC] Got heartBeat from cloud"
-    CLOUD_CHECKIN_SUCCESSFUL_MSG = "Checkin Successful! Successfully sent states to the cloud!"
+    GOT_HEARTBEAT_MSG = "[SyncRPC] Got heartBeat from cloud"
+    ORC8R_CHECKIN_SUCCESSFUL_MSG = "Checkin Successful! Successfully sent states to the cloud!"
     TIMEOUT_WAITING_FOR_SERVICE = 60
     WAIT_FOR_SERVICE_INTERVAL = 10
 
@@ -148,9 +148,9 @@ class AGWPostInstallChecks:
             raise AGWControlProxyConfigFileMissingError()
         self._check_control_proxy_configuration()
 
-    def check_cloud_check_in(self):
-        """Checks whether Access Gateway successfully checked into cloud."""
-        logger.info("Checking AGW cloud checkin status...")
+    def check_connectivity_with_orc8r(self):
+        """Checks whether Access Gateway successfully connected to the Orchestrator."""
+        logger.info("Checking AGW connectivity with Orchestrator...")
         journal_reader = journal.Reader()
         journal_reader.log_level(journal.LOG_INFO)
         journal_reader.this_boot()
@@ -159,17 +159,15 @@ class AGWPostInstallChecks:
             any(
                 entry["MESSAGE"]
                 for entry in journal_reader
-                if self.GOT_CLOUD_HEARTBEAT_MSG in entry["MESSAGE"]
+                if self.GOT_HEARTBEAT_MSG in entry["MESSAGE"]
             )
             or any(  # noqa: W503
                 entry["MESSAGE"]
                 for entry in journal_reader
-                if self.CLOUD_CHECKIN_SUCCESSFUL_MSG in entry["MESSAGE"]
+                if self.ORC8R_CHECKIN_SUCCESSFUL_MSG in entry["MESSAGE"]
             )
         ):
-            raise AGWCloudCheckinError()
-        else:
-            return True
+            raise Orc8rConnectivityError()
 
     @staticmethod
     def _get_interface_state(interface_name):
