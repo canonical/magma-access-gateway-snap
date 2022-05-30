@@ -47,9 +47,7 @@ def main():
     aws_configurator.copy_root_ca_pem()
     aws_configurator.configure_control_proxy()
     aws_configurator.restart_magma_services()
-    logger.info(
-        "Magma AGW configuration done!"
-    )
+    logger.info("Magma AGW configuration done!")
     logger.info("To add Access Gateway to the network, please use hardware secrets printed below:")
     for line in check_output(["show_gateway_info.py"]).decode().split("\n"):
         logger.info(f"{line}")
