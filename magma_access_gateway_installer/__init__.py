@@ -10,7 +10,12 @@ import time
 from ipaddress import ip_address, ip_network
 
 import netifaces  # type: ignore[import]
-from systemd.journal import JournalHandler  # type: ignore[import]
+
+try:
+    from systemd.journal import JournalHandler  # type: ignore[import]
+except ModuleNotFoundError:
+    sys.tracebacklimit = None
+    raise Exception("systemd module not found! Make sure you're using Ubuntu 20.04!")
 
 from .agw_installation_errors import AGWInstallationError, ArgumentError
 from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
@@ -73,14 +78,14 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         dest="sgi_ipv6_address",
         required=False,
         help="Statically allocated IPv6 address for SGi interface. "
-        "Example: fd9c:0175:3d65:cfbd:1:1:1:1/64.",
+             "Example: fd9c:0175:3d65:cfbd:1:1:1:1/64.",
     )
     cli_options.add_argument(
         "--sgi-ipv6-gateway",
         dest="sgi_ipv6_gateway",
         required=False,
         help="IPv6 address of an upstream router for SGi interface. "
-        "Example: fd9c:0175:3d65:cfbd:1:1:1:200.",
+             "Example: fd9c:0175:3d65:cfbd:1:1:1:200.",
     )
     cli_options.add_argument(
         "--s1-ipv4-address",
@@ -94,7 +99,7 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         dest="s1_ipv6_address",
         required=False,
         help="Statically allocated IPv6 address for S1 interface. "
-        "Example: fd9c:0175:3d65:cfbd:1:1:1:1/64.",
+             "Example: fd9c:0175:3d65:cfbd:1:1:1:1/64.",
     )
     cli_options.add_argument(
         "--skip-networking",
@@ -102,7 +107,7 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         action="store_true",
         required=False,
         help="If used, network configuration part of the installation process will be skipped. "
-        "In this case operator is responsible for providing expected network configuration.",
+             "In this case operator is responsible for providing expected network configuration.",
     )
     cli_options.add_argument(
         "--dns",
@@ -159,12 +164,12 @@ def validate_arbitrary_dns(args: argparse.Namespace):
 
 
 def validate_static_ip_allocation(
-    sgi_ipv4_address: str,
-    sgi_ipv4_gateway: str,
-    sgi_ipv6_address: str,
-    sgi_ipv6_gateway: str,
-    s1_ipv4_address: str,
-    s1_ipv6_address: str,
+        sgi_ipv4_address: str,
+        sgi_ipv4_gateway: str,
+        sgi_ipv6_address: str,
+        sgi_ipv6_gateway: str,
+        s1_ipv4_address: str,
+        s1_ipv6_address: str,
 ):
     if (sgi_ipv6_address or sgi_ipv6_gateway) and not (sgi_ipv4_address or sgi_ipv4_gateway):
         raise ArgumentError(
@@ -213,12 +218,12 @@ def configure_network(args: argparse.Namespace):
     network_configurator.configure_dns()
     network_configurator.configure_network_interfaces()
     if any(
-        [
-            args.sgi_ipv4_address,
-            args.sgi_ipv4_gateway,
-            args.sgi_ipv6_address,
-            args.sgi_ipv6_gateway,
-        ]
+            [
+                args.sgi_ipv4_address,
+                args.sgi_ipv4_gateway,
+                args.sgi_ipv6_address,
+                args.sgi_ipv6_gateway,
+            ]
     ):
         installation_service_creator = AGWInstallerInstallationServiceCreator()
         installation_service_creator.create_magma_agw_installation_service()
