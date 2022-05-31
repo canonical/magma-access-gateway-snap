@@ -38,10 +38,10 @@ network_interfaces.remove("lo")
 
 
 def main():
-    args = cli_arguments_parser(sys.argv[1:])
     try:
         preinstall = AGWInstallerPreinstall(network_interfaces)
         preinstall.preinstall_checks()
+        args = cli_arguments_parser(sys.argv[1:])
         validate_args(args)
     except AGWInstallationError:
         return
