@@ -10,7 +10,12 @@ import time
 from ipaddress import ip_address, ip_network
 
 import netifaces  # type: ignore[import]
-from systemd.journal import JournalHandler  # type: ignore[import]
+
+try:
+    from systemd.journal import JournalHandler  # type: ignore[import]
+except ModuleNotFoundError:
+    sys.tracebacklimit = None  # type: ignore[assignment]
+    raise Exception("systemd module not found! Make sure you're using Ubuntu 20.04!")
 
 from .agw_installation_errors import AGWInstallationError, ArgumentError
 from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
@@ -33,10 +38,10 @@ network_interfaces.remove("lo")
 
 
 def main():
-    args = cli_arguments_parser(sys.argv[1:])
     try:
         preinstall = AGWInstallerPreinstall(network_interfaces)
         preinstall.preinstall_checks()
+        args = cli_arguments_parser(sys.argv[1:])
         validate_args(args)
     except AGWInstallationError:
         return
