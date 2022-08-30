@@ -27,7 +27,7 @@ network:
         macaddress: {{ sgi_mac_address }}
       set-name: eth0
     eth1:
-    {%- if s1_ipv4_address != None+%}
+    {%- if s1_ipv4_address != None +%}
       dhcp4: false
       dhcp6: false
       addresses:
