@@ -91,7 +91,6 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         "--s1-ipv4-address",
         dest="s1_ipv4_address",
         required=False,
-        default="10.0.2.1/24",
         help="Statically allocated IPv4 address fot S1 interface. Example: 1.1.1.1/24.",
     )
     cli_options.add_argument(
