@@ -35,11 +35,11 @@ network:
       {%- if s1_ipv6_address != None +%}
         - {{ s1_ipv6_address }}
       {%- endif +%}
-      match:
-        macaddress: {{ s1_mac_address }}
-      set-name: eth1
     {%- else +%}
       dhcp4: true
       dhcp6: true
     {%- endif +%}
+      match:
+        macaddress: {{ s1_mac_address }}
+      set-name: eth1
   version: 2
