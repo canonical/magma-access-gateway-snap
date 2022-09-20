@@ -9,6 +9,7 @@ from magma_access_gateway_installer.agw_installation_errors import (
     InvalidNumberOfInterfacesError,
     InvalidUserError,
     UnsupportedOSError,
+    UnsupportedKernelVersionError,
 )
 from magma_access_gateway_installer.agw_preinstall import AGWInstallerPreinstall
 
@@ -38,6 +39,7 @@ PRETTY_NAME="Ubuntu 20.04.4 LTS"
 VERSION_ID="20.04"
 """
     INVALID_TEST_NETWORK_INTERFACES = ["test1"]
+    UNSUPPORTED_KERNEL_VERSION = "5.15.0-1045-aws"
 
     def setUp(self) -> None:
         self.agw_preinstall = AGWInstallerPreinstall(self.TEST_NETWORK_INTERFACES)
@@ -80,6 +82,16 @@ VERSION_ID="20.04"
         self, _, __
     ):
         with self.assertRaises(UnsupportedOSError):
+            self.agw_preinstall.preinstall_checks()
+
+    @patch(
+        "magma_access_gateway_installer.agw_preinstall.check_output",
+        return_value=UNSUPPORTED_KERNEL_VERSION,
+    )
+    def test_given_kernel_version_is_not_supported_when_preinstall_checks_then_unsupported_kernel_version_error_is_raised(  # noqa: E501
+        self
+    ):
+        with self.assertRaises(UnsupportedKernelVersionError):
             self.agw_preinstall.preinstall_checks()
 
     @patch(

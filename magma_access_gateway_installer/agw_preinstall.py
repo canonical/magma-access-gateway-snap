@@ -9,6 +9,7 @@ from .agw_installation_errors import (
     InvalidNumberOfInterfacesError,
     InvalidUserError,
     UnsupportedOSError,
+    UnsupportedKernelVersionError,
 )
 
 logger = logging.getLogger("magma_access_gateway_installer")
@@ -18,6 +19,7 @@ class AGWInstallerPreinstall:
 
     REQUIRED_NUMBER_OF_NICS = 2
     REQUIRED_SYSTEM_PACKAGES = ["ifupdown", "net-tools", "sudo"]
+    SUPPORTED_KERNEL_VERSION = "5.4.0"
 
     def __init__(self, network_interfaces: list):
         self.network_interfaces = network_interfaces
@@ -37,6 +39,8 @@ class AGWInstallerPreinstall:
             raise InvalidUserError()
         elif not self._ubuntu_is_installed:
             raise UnsupportedOSError()
+        elif not self._kernel_version_is_supported:
+            raise UnsupportedKernelVersionError()
         elif not self._required_amount_of_network_interfaces_is_available:
             raise InvalidNumberOfInterfacesError()
         else:
@@ -70,3 +74,10 @@ class AGWInstallerPreinstall:
     def _required_amount_of_network_interfaces_is_available(self) -> bool:
         """Checks whether required amount of network interfaces has been attached."""
         return len(self.network_interfaces) >= self.REQUIRED_NUMBER_OF_NICS
+    
+    @property
+    def _kernel_version_is_supported(self) -> bool:
+        """Checks whether kernel version is supported."""
+        kernel_version = check_output(["uname", "-r"]).decode("utf-8").rstrip()
+        return self.SUPPORTED_KERNEL_VERSION in kernel_version
+
