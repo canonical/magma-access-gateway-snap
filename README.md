@@ -34,6 +34,9 @@ For more information on Magma please visit the [official website](https://magmac
 
 - Ubuntu 20.04 LTS
   ([Ubuntu installation guide](https://help.ubuntu.com/lts/installation-guide/amd64/index.html))
+- Linux Kernel version `5.4`
+
+> :warning: Some clouds like AWS use newer kernel versions by default. If you want to downgrade your kernel, please refer to the following [guide](https://discourse.ubuntu.com/t/how-to-downgrade-the-kernel-on-ubuntu-20-04-to-the-5-4-lts-version/26459).
 
 
 ## Usage
