@@ -102,7 +102,8 @@ class AGWPostInstallChecks:
             "utf-8"
         ).rstrip() and error in ovs_show_result:  # noqa: E501  # noqa: W503
             raise AGWConfigurationError(
-                "OVS unsupported gtp error. Please check the following link for more "
+                "OVS does not support gtp. Make sure your kernel is 5.4. For downgrading your kernel, please refer to:"  # noqa E501, W505
+                "https://discourse.ubuntu.com/t/how-to-downgrade-the-kernel-on-ubuntu-20-04-to-the-5-4-lts-version/26459"  # noqa E501, W505
             )
 
     @staticmethod
