@@ -8,8 +8,8 @@ from unittest.mock import PropertyMock, call, mock_open, patch
 from magma_access_gateway_installer.agw_installation_errors import (
     InvalidNumberOfInterfacesError,
     InvalidUserError,
-    UnsupportedOSError,
     UnsupportedKernelVersionError,
+    UnsupportedOSError,
 )
 from magma_access_gateway_installer.agw_preinstall import AGWInstallerPreinstall
 
@@ -85,15 +85,23 @@ VERSION_ID="20.04"
             self.agw_preinstall.preinstall_checks()
 
     @patch(
-        "magma_access_gateway_installer.agw_preinstall.check_output",
-        return_value=UNSUPPORTED_KERNEL_VERSION,
+        "magma_access_gateway_installer.agw_preinstall.AGWInstallerPreinstall._user_is_root",
+        new_callable=PropertyMock,
     )
-    def test_given_kernel_version_is_not_supported_when_preinstall_checks_then_unsupported_kernel_version_error_is_raised(  # noqa: E501
-        self
+    @patch(
+        "magma_access_gateway_installer.agw_preinstall.check_output",
+        return_value=UNSUPPORTED_KERNEL_VERSION.encode("utf-8"),
+    )
+    def test_given_not_supported_kernel_version_when_preinstall_checks_then_unsupported_kernel_version_error_is_raised(  # noqa: E501
+        self, _, __
     ):
         with self.assertRaises(UnsupportedKernelVersionError):
             self.agw_preinstall.preinstall_checks()
 
+    @patch(
+        "magma_access_gateway_installer.agw_preinstall.AGWInstallerPreinstall._kernel_version_is_supported",  # noqa: E501
+        new_callable=PropertyMock,
+    )
     @patch(
         "magma_access_gateway_installer.agw_preinstall.AGWInstallerPreinstall._user_is_root",  # noqa: E501
         new_callable=PropertyMock,
@@ -103,7 +111,7 @@ VERSION_ID="20.04"
         new_callable=PropertyMock,
     )
     def test_given_insufficient_number_of_network_interfaces_when_preinstall_checks_then_invalid_number_of_interfaces_error_is_raised(  # noqa: E501
-        self, _, __
+        self, _, __, ___
     ):
         agw_preinstall = AGWInstallerPreinstall(self.INVALID_TEST_NETWORK_INTERFACES)
         with self.assertRaises(InvalidNumberOfInterfacesError):
@@ -121,6 +129,10 @@ VERSION_ID="20.04"
 
         mock_check_call.assert_has_calls(expected_apt_calls)
 
+    @patch(
+        "magma_access_gateway_installer.agw_preinstall.AGWInstallerPreinstall._kernel_version_is_supported",  # noqa: E501
+        new_callable=PropertyMock,
+    )
     @patch("magma_access_gateway_installer.agw_preinstall.logger.info")
     @patch(
         "magma_access_gateway_installer.agw_preinstall.open",
@@ -132,7 +144,7 @@ VERSION_ID="20.04"
         return_value=VALID_TEST_USER,
     )
     def test_given_system_meets_installation_requirements_when_preinstall_checks_then_preinstall_check_are_completed_without_errors(  # noqa: E501
-        self, _, __, mocked_logger
+        self, _, __, mocked_logger, ___
     ):
         self.agw_preinstall.preinstall_checks()
 
