@@ -7,7 +7,7 @@ on:
 jobs:
   agw-lint-report:
     name: Lint report
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Install tox
@@ -19,7 +19,7 @@ jobs:
 
   agw-static-analysis:
     name: Static analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Install tox
@@ -33,7 +33,7 @@ jobs:
 
   agw-unit-tests-with-coverage:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Install tox
@@ -47,7 +47,7 @@ jobs:
 
   build-snap:
     name: Build Magma AGW snap
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1

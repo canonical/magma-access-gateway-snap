@@ -14,7 +14,7 @@ the AGW implements an evolved packet core (EPC), and a combination of an AAA and
 with existing, unmodified commercial radio hardware.<br>
 For more information on Magma please visit the [official website](https://magmacore.org/).
 
-> **WARNING:** Installing this snap will affect your computer's networking configuration.
+> :warning: Installing this snap will affect your computer's networking configuration.
 > Make sure it is installed on designated hardware (personal computers are strongly discouraged).
 
 ### System requirements
