@@ -5,7 +5,7 @@
 import logging
 import os
 import time
-from subprocess import DEVNULL, call
+from subprocess import DEVNULL, call, check_output
 
 import yaml
 from ping3 import ping  # type: ignore[import]
@@ -86,6 +86,24 @@ class AGWPostInstallChecks:
                 "  - Invalid configuration in /etc/netplan/99-magma-config.yaml.\n"
                 "  - Interface not being connected to the network.\n"
                 "  - Problem with Open vSwitch installation."
+            )
+
+    @staticmethod
+    def check_ovs_has_not_unsupported_gpt_error():
+        """Checks whether ovs has unsupported gtp error.
+
+        :raises:
+            AGWConfigurationError: if OVS has any gtp error
+        """
+        logger.info("Checking whether OVS has unsupported gtp error")
+        error = b'error: "could not add network device'
+
+        if (ovs_show_result := check_output(["sudo", "ovs-vsctl", "show"])).decode(
+            "utf-8"
+        ).rstrip() and error in ovs_show_result:  # noqa: E501  # noqa: W503
+            raise AGWConfigurationError(
+                "OVS does not support gtp. Make sure your kernel is 5.4. For downgrading your kernel, please refer to:"  # noqa E501, W505
+                "https://discourse.ubuntu.com/t/how-to-downgrade-the-kernel-on-ubuntu-20-04-to-the-5-4-lts-version/26459"  # noqa E501, W505
             )
 
     @staticmethod

@@ -25,6 +25,56 @@ class TestAGWPostInstallChecks(unittest.TestCase):
     TEST_TIMEOUT_WAITING_FOR_SERVICE = 1
     TEST_WAIT_FOR_SERVICE_INTERVAL = 1
     TEST_REQUIRED_PACKAGES = ["package1", "package2", "package3"]
+    OVS_SHOW_OUTPUT_WITH_ERROR = (
+        "128dc4f0-80f9-4584-be74-57747ac0a68f"
+        '    Manager "ptcp:6640"'
+        "    Bridge gtp_br0"
+        '        Controller "tcp:127.0.0.1:6654"'
+        "            is_connected: true"
+        '        Controller "tcp:127.0.0.1:6633"'
+        "            is_connected: true"
+        "        fail_mode: secure"
+        "        Port mtr0"
+        "            Interface mtr0"
+        "                type: internal"
+        "        Port gtp0"
+        "            Interface gtp0"
+        "                type: gtpu"
+        "                options: {key=flow, remote_ip=flow}"
+        '                error: "could not add network device gtp0 to ofproto (Address family not supported by protocol)"'  # noqa: W505, E501
+        "        Port ipfix0"
+        "            Interface ipfix0"
+        "                type: internal"
+        "        Port g_20031fac"
+        "            Interface g_20031fac"
+        "                type: gtpu"
+        '                options: {csum="false", key=flow, remote_ip="172.31.3.32"}'
+        '                error: "could not add network device g_20031fac to ofproto (Address family not supported by protocol)"'  # noqa: W505, E501
+        "        Port gtp_br0"
+        "            Interface gtp_br0"
+        "                type: internal"
+        "        Port proxy_port"
+        "            Interface proxy_port"
+        "        Port li_port"
+        "            Interface li_port"
+        "                type: internal"
+        "        Port patch-up"
+        "            Interface patch-up"
+        "                type: patch"
+        "                options: {peer=patch-agw}"
+        "    Bridge uplink_br0"
+        "        Port uplink_br0"
+        "            Interface uplink_br0"
+        "                type: internal"
+        "        Port patch-agw"
+        "            Interface patch-agw"
+        "                type: patch"
+        "                options: {peer=patch-up}"
+        "         Port dhcp0"
+        "             Interface dhcp0"
+        "                 type: internal"
+        '    ovs_version: "2.15.4"'
+    )
 
     def setUp(self) -> None:
         self.agw_post_install = AGWPostInstallChecks()
@@ -71,6 +121,16 @@ class TestAGWPostInstallChecks(unittest.TestCase):
 
         with self.assertRaises(AGWConfigurationError):
             self.agw_post_install.check_whether_required_interfaces_are_configured()
+
+    @patch(
+        "magma_access_gateway_post_install.agw_post_install.check_output",
+        return_value=OVS_SHOW_OUTPUT_WITH_ERROR.encode("utf-8"),
+    )
+    def test_given_ovs_error_when_check_for_ovs_error_then_agwconfigurationerror_is_raised(  # noqa: E501
+        self, _
+    ):
+        with self.assertRaises(AGWConfigurationError):
+            self.agw_post_install.check_ovs_has_not_unsupported_gpt_error()
 
     @patch(
         "magma_access_gateway_post_install.agw_post_install.ping",

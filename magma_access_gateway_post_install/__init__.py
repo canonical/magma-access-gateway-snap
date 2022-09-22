@@ -32,6 +32,7 @@ def main():
         agw_post_install_checks = AGWPostInstallChecks()
         agw_post_install_checks.check_whether_required_interfaces_are_configured()
         agw_post_install_checks.check_eth0_internet_connectivity()
+        agw_post_install_checks.check_ovs_has_not_unsupported_gpt_error()
         agw_post_install_checks.check_whether_required_services_are_running()
         agw_post_install_checks.check_whether_required_packages_are_installed()
         agw_post_install_checks.check_whether_root_certificate_exists()

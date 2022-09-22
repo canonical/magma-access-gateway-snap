@@ -7,13 +7,13 @@ The Snap in this repository is specifically developed for the
 
 ## Developing and testing
 
-**Required software:**
+### Required software:
 
 - [Snapcraft](https://snapcraft.io/docs/snapcraft-overview)
 - [Multipass](https://multipass.run/)
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-**Building Magma AGW snap:**
+### Building Magma AGW snap:
 
 1. Install required software listed above
 2. From the repository's main directory execute:
@@ -21,11 +21,11 @@ The Snap in this repository is specifically developed for the
    ```bash
    snapcraft
    ```
-   
-   To see what's happening during hte snap building process, `-d` can be used along with above
+
+   To see what's happening during the snap building process, `-d` can be used along with above
    command.
 
-**Installing locally built Magma AGW snap:**
+### Installing locally built Magma AGW snap:
 
 1. Copy snap to AGW host machine.
 2. On AGW host machine, as `root` execute:
@@ -34,7 +34,7 @@ The Snap in this repository is specifically developed for the
    snap install <PATH_TO_THE_SNAP_FILE> --dangerous --classic
    ```
 
-**Unit tests and static code analysis**
+### Unit tests and static code analysis
 
 Testing of the snap is done using `tox`. To run tests, from this repository's main directory
 execute one of the following commands:
