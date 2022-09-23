@@ -70,7 +70,12 @@ the server is restarted, reconnect to the system to perform AGW configuration.
 
 ### 2. Configure
 
-Fetch `rootCA.pem` certificate from Orchestrator, upload it to the Access Gateway host and execute:
+Fetch `rootCA.pem` certificate from Orchestrator deployment:
+```bash
+juju scp --container="magma-orc8r-certifier" orc8r-certifier/0:/var/opt/magma/certs/rootCA.pem rootCA.pem
+```
+
+Upload it to the Access Gateway host and execute:
 
 ```bash
 magma-access-gateway.configure --domain <Orc8r domain> --root-ca-pem-path <path to Root CA PEM>
