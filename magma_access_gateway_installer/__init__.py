@@ -4,9 +4,7 @@
 
 import argparse
 import logging
-import os
 import sys
-import time
 from ipaddress import ip_address, ip_network
 
 import netifaces  # type: ignore[import]
@@ -18,7 +16,6 @@ except ModuleNotFoundError:
     raise Exception("systemd module not found! Make sure you're using Ubuntu 20.04!")
 
 from .agw_installation_errors import AGWInstallationError, ArgumentError
-from .agw_installation_service_creator import AGWInstallerInstallationServiceCreator
 from .agw_installer import AGWInstaller
 from .agw_network_configurator import AGWInstallerNetworkConfigurator
 from .agw_preinstall import AGWInstallerPreinstall
@@ -216,26 +213,7 @@ def configure_network(args: argparse.Namespace):
     network_configurator = AGWInstallerNetworkConfigurator(network_config)
     network_configurator.configure_dns()
     network_configurator.configure_network_interfaces()
-    if any(
-        [
-            args.sgi_ipv4_address,
-            args.sgi_ipv4_gateway,
-            args.sgi_ipv6_address,
-            args.sgi_ipv6_gateway,
-        ]
-    ):
-        installation_service_creator = AGWInstallerInstallationServiceCreator()
-        installation_service_creator.create_magma_agw_installation_service()
-        installation_service_creator.create_magma_agw_installation_service_link()
-        logger.info(
-            "Rebooting system to apply new network configuration...\n"
-            "\t\tMagma AGW installation process will be resumed automatically once machine is "
-            "back up."
-        )
-        time.sleep(5)
-        os.system("reboot")
-    else:
-        network_configurator.apply_netplan_configuration()
+    network_configurator.apply_netplan_configuration()
 
 
 def generate_network_config(args: argparse.Namespace) -> dict:

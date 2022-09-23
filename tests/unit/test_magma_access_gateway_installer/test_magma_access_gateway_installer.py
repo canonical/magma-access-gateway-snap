@@ -274,26 +274,6 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             expected_network_config,
         )
 
-    @patch("magma_access_gateway_installer.os.system")
-    @patch("magma_access_gateway_installer.generate_network_config", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerNetworkConfigurator", Mock())
-    @patch("magma_access_gateway_installer.AGWInstallerInstallationServiceCreator", Mock())
-    @patch("magma_access_gateway_installer.time.sleep", Mock())
-    def test_given_static_ip_configuration_when_configure_network_then_system_goes_for_reboot_once_network_config_is_done(  # noqa: E501
-        self, mock_os_system
-    ):
-        test_args = Namespace(
-            sgi_ipv4_address=self.VALID_TEST_SGi_IPv4_ADDRESS,
-            sgi_ipv4_gateway=self.VALID_TEST_SGi_IPv4_GATEWAY,
-            sgi_ipv6_address=None,
-            sgi_ipv6_gateway=None,
-        )
-
-        magma_access_gateway_installer.configure_network(test_args)
-
-        mock_os_system.assert_called_once_with("reboot")
-
-    @patch("magma_access_gateway_installer.os.system")
     @patch.object(
         magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator,
         "apply_netplan_configuration",
@@ -304,8 +284,32 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         "magma_access_gateway_installer.AGWInstallerNetworkConfigurator.configure_network_interfaces",  # noqa: E501
         Mock(),
     )
-    def test_given_dhcp_ip_configuration_when_configure_network_then_system_is_not_rebooted_and_netplan_config_is_applied_once_network_config_is_done(  # noqa: E501
-        self, mocked_apply_netplan_configuration, mock_os_system
+    def test_given_static_ip_configuration_when_configure_network_then_netplan_config_is_applied_once_network_config_is_done(  # noqa: E501
+        self, mocked_apply_netplan_configuration
+    ):
+        test_args = Namespace(
+            sgi_ipv4_address=self.VALID_TEST_SGi_IPv4_ADDRESS,
+            sgi_ipv4_gateway=self.VALID_TEST_SGi_IPv4_GATEWAY,
+            sgi_ipv6_address=None,
+            sgi_ipv6_gateway=None,
+        )
+
+        magma_access_gateway_installer.configure_network(test_args)
+
+        self.assertTrue(mocked_apply_netplan_configuration.called)
+
+    @patch.object(
+        magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator,
+        "apply_netplan_configuration",
+    )
+    @patch("magma_access_gateway_installer.generate_network_config", Mock())
+    @patch("magma_access_gateway_installer.AGWInstallerNetworkConfigurator.configure_dns", Mock())
+    @patch(
+        "magma_access_gateway_installer.AGWInstallerNetworkConfigurator.configure_network_interfaces",  # noqa: E501
+        Mock(),
+    )
+    def test_given_dhcp_ip_configuration_when_configure_network_then_netplan_config_is_applied_once_network_config_is_done(  # noqa: E501
+        self, mocked_apply_netplan_configuration
     ):
         test_args = Namespace(
             sgi_ipv4_address=None,
@@ -316,7 +320,6 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
 
         magma_access_gateway_installer.configure_network(test_args)
 
-        mock_os_system.assert_not_called()
         self.assertTrue(mocked_apply_netplan_configuration.called)
 
     @patch.object(magma_access_gateway_installer, "configure_network")
