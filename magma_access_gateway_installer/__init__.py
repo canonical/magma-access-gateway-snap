@@ -53,7 +53,7 @@ def main():
     if not args.skip_networking:
         configure_network(args)
 
-    AGWInstaller().install()
+    AGWInstaller().install(args.no_reboot)
 
 
 def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
@@ -126,6 +126,14 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         required=False,
         default=set_default_s1_interface(),
         help="Defines which interface should be used as S1 interface.",
+    )
+    cli_options.add_argument(
+        "--no-reboot",
+        dest="no_reboot",
+        action="store_true",
+        required=False,
+        help="If used, the installer will not automatically reboot "
+        "and will invite the user to reboot manually.",
     )
     return cli_options.parse_args(cli_arguments)
 
