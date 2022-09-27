@@ -25,7 +25,7 @@ class AGWInstaller:
     ]
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
 
-    def install(self):
+    def install(self, no_reboot: bool = False):
         if self._magma_agw_installed:
             logger.info("Magma Access Gateway already installed. Exiting...")
             return
@@ -40,14 +40,24 @@ class AGWInstaller:
             self.install_magma_agw()
             self.start_open_vswitch()
             self.start_magma()
-            logger.info(
-                "Magma AGW deployment completed successfully!\n"
-                "\t\tSystem will now go down for the reboot to apply all changes.\n"
-                "\t\tOnce the system is online again, run magma-access-gateway.configure to "
-                "integrate Access Gateway with the Orchestrator."
-            )
-            time.sleep(5)
-            os.system("reboot")
+            if no_reboot:
+                logger.info(
+                    "Magma AGW deployment completed successfully!\n"
+                    "\t\t--no-reboot specified. To complete the installation process,\n"
+                    "\t\tplease reboot manually.\n"
+                    "\t\tOnce the system is online again, run magma-access-gateway.configure to "
+                    "integrate Access Gateway with the Orchestrator."
+                )
+                return
+            else:
+                logger.info(
+                    "Magma AGW deployment completed successfully!\n"
+                    "\t\tSystem will now go down for the reboot to apply all changes.\n"
+                    "\t\tOnce the system is online again, run magma-access-gateway.configure to "
+                    "integrate Access Gateway with the Orchestrator."
+                )
+                time.sleep(5)
+                os.system("reboot")
 
     @property
     def _magma_agw_installed(self) -> bool:

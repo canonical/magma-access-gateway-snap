@@ -89,11 +89,15 @@ VERSION_ID="20.04"
         new_callable=PropertyMock,
     )
     @patch(
+        "magma_access_gateway_installer.agw_preinstall.AGWInstallerPreinstall._ubuntu_is_installed",  # noqa: E501
+        new_callable=PropertyMock,
+    )
+    @patch(
         "magma_access_gateway_installer.agw_preinstall.check_output",
         return_value=UNSUPPORTED_KERNEL_VERSION.encode("utf-8"),
     )
     def test_given_not_supported_kernel_version_when_preinstall_checks_then_unsupported_kernel_version_error_is_raised(  # noqa: E501
-        self, _, __
+        self, _, __, ___
     ):
         with self.assertRaises(UnsupportedKernelVersionError):
             self.agw_preinstall.preinstall_checks()
