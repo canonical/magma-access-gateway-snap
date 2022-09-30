@@ -2,6 +2,7 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+import pathlib
 import unittest
 from argparse import Namespace
 from unittest.mock import MagicMock, Mock, patch
@@ -274,6 +275,8 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
             expected_network_config,
         )
 
+    @patch.object(pathlib.Path, "mkdir")
+    @patch.object(pathlib.Path, "write_text", autospec=True)
     @patch.object(
         magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator,
         "apply_netplan_configuration",
@@ -285,7 +288,7 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         Mock(),
     )
     def test_given_static_ip_configuration_when_configure_network_then_netplan_config_is_applied_once_network_config_is_done(  # noqa: E501
-        self, mocked_apply_netplan_configuration
+        self, mocked_apply_netplan_configuration, mocked_write_text, mocked_mkdir
     ):
         test_args = Namespace(
             sgi_ipv4_address=self.VALID_TEST_SGi_IPv4_ADDRESS,
@@ -297,7 +300,14 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         magma_access_gateway_installer.configure_network(test_args)
 
         self.assertTrue(mocked_apply_netplan_configuration.called)
+        mocked_mkdir.assert_called_with(parents=True, exist_ok=True)
+        mocked_write_text.assert_called_with(
+            pathlib.Path("/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"),
+            "network: {config: disabled}",
+        )
 
+    @patch("pathlib.Path.mkdir")
+    @patch.object(pathlib.Path, "write_text", autospec=True)
     @patch.object(
         magma_access_gateway_installer.agw_network_configurator.AGWInstallerNetworkConfigurator,
         "apply_netplan_configuration",
@@ -309,7 +319,7 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         Mock(),
     )
     def test_given_dhcp_ip_configuration_when_configure_network_then_netplan_config_is_applied_once_network_config_is_done(  # noqa: E501
-        self, mocked_apply_netplan_configuration
+        self, mocked_apply_netplan_configuration, mocked_write_text, mocked_mkdir
     ):
         test_args = Namespace(
             sgi_ipv4_address=None,
@@ -321,6 +331,11 @@ man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
         magma_access_gateway_installer.configure_network(test_args)
 
         self.assertTrue(mocked_apply_netplan_configuration.called)
+        mocked_mkdir.assert_called_with(parents=True, exist_ok=True)
+        mocked_write_text.assert_called_with(
+            pathlib.Path("/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"),
+            "network: {config: disabled}",
+        )
 
     @patch.object(magma_access_gateway_installer, "configure_network")
     @patch("sys.argv", ["test.py", "--skip-networking"])
