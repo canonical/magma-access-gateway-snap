@@ -219,6 +219,7 @@ def validate_s1_addressing(s1_ip_address: str):
 def configure_network(args: argparse.Namespace):
     network_config = generate_network_config(args)
     network_configurator = AGWInstallerNetworkConfigurator(network_config)
+    network_configurator.disable_cloudinit_network_management()
     network_configurator.configure_dns()
     network_configurator.configure_network_interfaces()
     network_configurator.apply_netplan_configuration()

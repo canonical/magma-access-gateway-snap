@@ -4,6 +4,7 @@
 
 import logging
 import os
+import pathlib
 from subprocess import check_call
 
 from jinja2 import Environment, FileSystemLoader, Template
@@ -16,6 +17,7 @@ class AGWInstallerNetworkConfigurator:
     MAGMA_NETPLAN_CONFIG_FILE = "/etc/netplan/99-magma-config.yaml"
     MAGMA_NETPLAN_CONFIG_TEMPLATE = "netplan_config.yaml.j2"
     ETC_SYSTEMD_RESOLVED_CONF_PATH = "/etc/systemd/resolved.conf"
+    CLOUDINIT_CONFIG_DIR = "/etc/cloud/cloud.cfg.d"
 
     def __init__(
         self,
@@ -31,6 +33,13 @@ class AGWInstallerNetworkConfigurator:
     def configure_network_interfaces(self):
         """Creates and applies network configuration required by Magma AGW."""
         self._create_netplan_config()
+
+    def disable_cloudinit_network_management(self):
+        """Disable network management by cloudinit."""
+        cloudinit_dir = pathlib.Path(self.CLOUDINIT_CONFIG_DIR)
+        cloudinit_dir.mkdir(parents=True, exist_ok=True)
+        disable_network_conf = cloudinit_dir / "99-disable-network-config.cfg"
+        disable_network_conf.write_text("network: {config: disabled}")
 
     @staticmethod
     def apply_netplan_configuration():
