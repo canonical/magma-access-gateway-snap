@@ -40,4 +40,4 @@ def main():
         agw_post_install_checks.check_connectivity_with_orc8r()
         logger.info("Magma AGW post-installation checks finished successfully.")
     except PostInstallError:
-        return
+        sys.exit(1)
