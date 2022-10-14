@@ -60,7 +60,6 @@ class AGWPostInstallChecks:
         "rootca_cert",
         "fluentd_address",
         "fluentd_port",
-        "sentry_url_python",
     ]
     GOT_HEARTBEAT_MSG = "[SyncRPC] Got heartBeat from cloud"
     ORC8R_CHECKIN_SUCCESSFUL_MSG = "Checkin Successful! Successfully sent states to the cloud!"
