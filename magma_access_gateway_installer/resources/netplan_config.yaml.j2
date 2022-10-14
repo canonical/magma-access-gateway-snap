@@ -2,18 +2,18 @@
 network:
   ethernets:
     eth0:
-    {%- if sgi_ipv4_address != None +%}
+    {%- if sgi_ipv4_address_cidr != None +%}
       dhcp4: false
       dhcp6: false
       addresses:
-        - {{ sgi_ipv4_address }}
-      {%- if sgi_ipv6_address != None +%}
-        - {{ sgi_ipv6_address }}
+        - {{ sgi_ipv4_address_cidr }}
+      {%- if sgi_ipv6_address_cidr != None +%}
+        - {{ sgi_ipv6_address_cidr }}
       {%- endif +%}
       routes:
         - to: default
           via: {{ sgi_ipv4_gateway }}
-        {%- if sgi_ipv6_address != None +%}
+        {%- if sgi_ipv6_address_cidr != None +%}
           metric: 200
         - to: default
           via: {{ sgi_ipv6_gateway }}
@@ -27,13 +27,39 @@ network:
         macaddress: {{ sgi_mac_address }}
       set-name: eth0
     eth1:
-    {%- if s1_ipv4_address != None +%}
+    {%- if s1_ipv4_address_cidr != None +%}
       dhcp4: false
       dhcp6: false
       addresses:
-        - {{ s1_ipv4_address }}
-      {%- if s1_ipv6_address != None +%}
-        - {{ s1_ipv6_address }}
+        - {{ s1_ipv4_address_cidr }}
+        {%- if s1_ipv6_address_cidr != None +%}
+        - {{ s1_ipv6_address_cidr }}
+        {%- endif +%}
+      {%- if s1_ipv4_gateway != None +%}
+      routes:
+        - to: 0.0.0.0/0
+          via: {{ s1_ipv4_gateway }}
+          table: 1000
+        - to: {{ s1_ipv4_address }}
+          via: 0.0.0.0
+          scope: link
+          table: 1000
+        {%- if s1_ipv6_gateway != None +%}
+        - to: ::/0
+          via: {{ s1_ipv6_gateway }}
+          table: 1001
+        - to: {{ s1_ipv6_address }}
+          via: ::/0
+          scope: link
+          table: 1001
+        {%- endif +%}
+      routing-policy:
+        - from: {{ s1_ipv4_address }}
+          table: 1000
+        {%- if s1_ipv6_gateway != None +%}
+        - from: {{ s1_ipv6_address }}
+          table: 1001
+        {%- endif +%}
       {%- endif +%}
     {%- else +%}
       dhcp4: true

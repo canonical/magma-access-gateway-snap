@@ -91,11 +91,24 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         help="Statically allocated IPv4 address fot S1 interface. Example: 1.1.1.1/24.",
     )
     cli_options.add_argument(
+        "--s1-ipv4-gateway",
+        dest="s1_ipv4_gateway",
+        required=False,
+        help="IPv4 address of an upstream router for S1 interface. Example: 1.1.1.200.",
+    )
+    cli_options.add_argument(
         "--s1-ipv6-address",
         dest="s1_ipv6_address",
         required=False,
         help="Statically allocated IPv6 address for S1 interface. "
         "Example: fd9c:0175:3d65:cfbd:1:1:1:1/64.",
+    )
+    cli_options.add_argument(
+        "--s1-ipv6-gateway",
+        dest="s1_ipv6_gateway",
+        required=False,
+        help="IPv6 address of an upstream router for S1 interface. "
+        "Example: fd9c:0175:3d65:cfbd:1:1:1:200.",
     )
     cli_options.add_argument(
         "--skip-networking",
@@ -146,7 +159,9 @@ def validate_args(args: argparse.Namespace):
         args.sgi_ipv6_address,
         args.sgi_ipv6_gateway,
         args.s1_ipv4_address,
+        args.s1_ipv4_gateway,
         args.s1_ipv6_address,
+        args.s1_ipv6_gateway,
     )
     validate_arbitrary_dns(args)
     validate_custom_sgi_and_s1_interfaces(args)
@@ -173,7 +188,9 @@ def validate_static_ip_allocation(
     sgi_ipv6_address: str,
     sgi_ipv6_gateway: str,
     s1_ipv4_address: str,
+    s1_ipv4_gateway: str,
     s1_ipv6_address: str,
+    s1_ipv6_gateway: str,
 ):
     if (sgi_ipv6_address or sgi_ipv6_gateway) and not (sgi_ipv4_address or sgi_ipv4_gateway):
         raise ArgumentError(
@@ -182,8 +199,8 @@ def validate_static_ip_allocation(
         )
     validate_sgi_addressing(sgi_ipv4_address, sgi_ipv4_gateway)
     validate_sgi_addressing(sgi_ipv6_address, sgi_ipv6_gateway)
-    validate_s1_addressing(s1_ipv4_address)
-    validate_s1_addressing(s1_ipv6_address)
+    validate_s1_addressing(s1_ipv4_address, s1_ipv4_gateway)
+    validate_s1_addressing(s1_ipv6_address, s1_ipv6_gateway)
 
 
 def validate_sgi_addressing(sgi_ip_address: str, sgi_gw_ip_address: str):
@@ -195,7 +212,7 @@ def validate_sgi_addressing(sgi_ip_address: str, sgi_gw_ip_address: str):
     elif not sgi_ip_address and sgi_gw_ip_address:
         raise ArgumentError(
             f"SGi address is missing for given gateway address ({sgi_gw_ip_address}). "
-            "Specify SGi address using --ipv4-address or --ipv6-address."
+            "Specify SGi address using --sgi-ipv4-address or --sgi-ipv6-address."
         )
     elif sgi_ip_address and sgi_gw_ip_address:
         try:
@@ -208,12 +225,22 @@ def validate_sgi_addressing(sgi_ip_address: str, sgi_gw_ip_address: str):
             raise ArgumentError(f"Invalid SGi gateway IP address provided ({sgi_gw_ip_address}).")
 
 
-def validate_s1_addressing(s1_ip_address: str):
+def validate_s1_addressing(s1_ip_address: str, s1_gw_ip_address: str):
+    if s1_gw_ip_address and not s1_ip_address:
+        raise ArgumentError(
+            f"S1 address is missing for given gateway address ({s1_gw_ip_address}). "
+            "Specify S1 address using --s1-ipv4-address or --s1-ipv6-address."
+        )
     if s1_ip_address:
         try:
             ip_network(s1_ip_address, False)
         except ValueError:
             raise ArgumentError(f"Invalid SGi IP address provided ({s1_ip_address}).")
+    if s1_gw_ip_address:
+        try:
+            ip_address(s1_gw_ip_address)
+        except ValueError:
+            raise ArgumentError(f"Invalid S1 gateway IP address provided ({s1_gw_ip_address}).")
 
 
 def configure_network(args: argparse.Namespace):
@@ -227,12 +254,16 @@ def configure_network(args: argparse.Namespace):
 
 def generate_network_config(args: argparse.Namespace) -> dict:
     return {
-        "sgi_ipv4_address": args.sgi_ipv4_address,
+        "sgi_ipv4_address_cidr": args.sgi_ipv4_address,
         "sgi_ipv4_gateway": args.sgi_ipv4_gateway,
-        "sgi_ipv6_address": args.sgi_ipv6_address,
+        "sgi_ipv6_address_cidr": args.sgi_ipv6_address,
         "sgi_ipv6_gateway": args.sgi_ipv6_gateway,
-        "s1_ipv4_address": args.s1_ipv4_address,
-        "s1_ipv6_address": args.s1_ipv6_address,
+        "s1_ipv4_address_cidr": args.s1_ipv4_address,
+        "s1_ipv4_address": args.s1_ipv4_address.split("/")[0] if args.s1_ipv4_address else None,
+        "s1_ipv4_gateway": args.s1_ipv4_gateway,
+        "s1_ipv6_address_cidr": args.s1_ipv6_address,
+        "s1_ipv6_address": args.s1_ipv6_address.split("/")[0] if args.s1_ipv6_address else None,
+        "s1_ipv6_gateway": args.s1_ipv6_gateway,
         "sgi_mac_address": get_mac_address(args.sgi),
         "s1_mac_address": get_mac_address(args.s1),
         "dns_address": " ".join(args.dns),

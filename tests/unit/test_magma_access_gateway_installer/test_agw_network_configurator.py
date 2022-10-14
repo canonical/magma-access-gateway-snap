@@ -15,44 +15,47 @@ class TestAGWInstallerNetworkConfigurator(unittest.TestCase):
     DNS_TEST_NETWORK_CONFIG = {
         "dns_address": "1.2.3.4 5.6.7.8",
     }
-    EMPTY_NETWORK_CONFIG = {
-        "sgi_ipv4_address": None,
-        "sgi_ipv4_gateway": None,
-        "sgi_ipv6_address": None,
-        "sgi_ipv6_gateway": None,
-        "sgi_mac_address": None,
-        "s1_mac_address": None,
-        "dns_address": None,
-    }
     DHCP_BASED_NETWORK_CONFIG = {
-        "sgi_ipv4_address": None,
+        "sgi_ipv4_address_cidr": None,
         "sgi_ipv4_gateway": None,
-        "sgi_ipv6_address": None,
+        "sgi_ipv6_address_cidr": None,
         "sgi_ipv6_gateway": None,
-        "s1_ipv4_address": "10.9.8.7/24",
+        "s1_ipv4_address_cidr": None,
+        "s1_ipv4_address": None,
+        "s1_ipv4_gateway": None,
+        "s1_ipv6_address_cidr": None,
         "s1_ipv6_address": None,
+        "s1_ipv6_gateway": None,
         "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
         "s1_mac_address": "ff:ee:dd:cc:bb:aa",
         "dns_address": None,
     }
     STATIC_IPv4_NETWORK_CONFIG = {
-        "sgi_ipv4_address": "1.2.3.4/24",
+        "sgi_ipv4_address_cidr": "1.2.3.4/24",
         "sgi_ipv4_gateway": "5.6.7.8",
-        "sgi_ipv6_address": None,
+        "sgi_ipv6_address_cidr": None,
         "sgi_ipv6_gateway": None,
-        "s1_ipv4_address": "10.9.8.7/24",
+        "s1_ipv4_address_cidr": "10.9.8.7/24",
+        "s1_ipv4_address": "10.9.8.7",
+        "s1_ipv4_gateway": None,
+        "s1_ipv6_address_cidr": None,
         "s1_ipv6_address": None,
+        "s1_ipv6_gateway": None,
         "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
         "s1_mac_address": "ff:ee:dd:cc:bb:aa",
         "dns_address": None,
     }
     STATIC_DUALSTACK_NETWORK_CONFIG = {
-        "sgi_ipv4_address": "1.2.3.4/24",
+        "sgi_ipv4_address_cidr": "1.2.3.4/24",
         "sgi_ipv4_gateway": "5.6.7.8",
-        "sgi_ipv6_address": "aaaa:bbbb:cccc:dddd:1:2:3:4/64",
+        "sgi_ipv6_address_cidr": "aaaa:bbbb:cccc:dddd:1:2:3:4/64",
         "sgi_ipv6_gateway": "dddd:cccc:bbbb:aaaa:5:6:7:8",
-        "s1_ipv4_address": "10.9.8.7/24",
-        "s1_ipv6_address": "aaaa:bbbb:cccc:dddd:10:9:8:7/64",
+        "s1_ipv4_address_cidr": "10.9.8.7/24",
+        "s1_ipv4_address": "10.9.8.7",
+        "s1_ipv4_gateway": None,
+        "s1_ipv6_address_cidr": "aaaa:bbbb:cccc:dddd:10:9:8:7/64",
+        "s1_ipv6_address": "aaaa:bbbb:cccc:dddd:10:9:8:7",
+        "s1_ipv6_gateway": None,
         "sgi_mac_address": "aa:bb:cc:dd:ee:ff",
         "s1_mac_address": "ff:ee:dd:cc:bb:aa",
         "dns_address": None,
@@ -101,10 +104,8 @@ network:
         macaddress: aa:bb:cc:dd:ee:ff
       set-name: eth0
     eth1:
-      dhcp4: false
-      dhcp6: false
-      addresses:
-        - 10.9.8.7/24
+      dhcp4: true
+      dhcp6: true
       match:
         macaddress: ff:ee:dd:cc:bb:aa
       set-name: eth1

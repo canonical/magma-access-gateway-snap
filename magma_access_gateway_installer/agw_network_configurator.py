@@ -53,12 +53,16 @@ class AGWInstallerNetworkConfigurator:
         with open(self.MAGMA_NETPLAN_CONFIG_FILE, "w") as magma_netplan_config:
             magma_netplan_config.write(
                 netplan_config_template.render(
-                    sgi_ipv4_address=self.network_config["sgi_ipv4_address"],
+                    sgi_ipv4_address_cidr=self.network_config["sgi_ipv4_address_cidr"],
                     sgi_ipv4_gateway=self.network_config["sgi_ipv4_gateway"],
-                    sgi_ipv6_address=self.network_config["sgi_ipv6_address"],
+                    sgi_ipv6_address_cidr=self.network_config["sgi_ipv6_address_cidr"],
                     sgi_ipv6_gateway=self.network_config["sgi_ipv6_gateway"],
+                    s1_ipv4_address_cidr=self.network_config["s1_ipv4_address_cidr"],
                     s1_ipv4_address=self.network_config["s1_ipv4_address"],
+                    s1_ipv4_gateway=self.network_config["s1_ipv4_gateway"],
+                    s1_ipv6_address_cidr=self.network_config["s1_ipv6_address_cidr"],
                     s1_ipv6_address=self.network_config["s1_ipv6_address"],
+                    s1_ipv6_gateway=self.network_config["s1_ipv6_gateway"],
                     sgi_mac_address=self.network_config["sgi_mac_address"],
                     s1_mac_address=self.network_config["s1_mac_address"],
                 ),
