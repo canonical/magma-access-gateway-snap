@@ -37,7 +37,11 @@ network:
       {%- endif +%}
     {%- else +%}
       dhcp4: true
+      dhcp4-overrides:
+        use-routes: false
       dhcp6: true
+      dhcp6-overrides:
+        use-routes: false
     {%- endif +%}
       match:
         macaddress: {{ s1_mac_address }}
