@@ -5,7 +5,7 @@
   Magma Access Gateway Snap
 </h1>
 
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/terraform)
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io//magma-access-gateway)
 
 [Don't have snapd installed?](https://snapcraft.io/docs/core/install)
 
@@ -28,7 +28,7 @@ For more information on Magma please visit the [official website](https://magmac
 
 ## System requirements
 
-### Hardware (baremetal strongly recommended)
+### Hardware (baremetal strongly recommended)
 
 - Processor: x86-64 dual-core processor (around 2GHz clock speed or faster)
 - Memory: 4GB RAM
