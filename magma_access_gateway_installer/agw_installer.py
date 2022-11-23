@@ -197,7 +197,7 @@ Verify-Host "false";
             self._bring_up_interface(interface)
 
     @staticmethod
-    def _install_apt_package(package_name, dpkg_options: list = None):
+    def _install_apt_package(package_name, dpkg_options: list = None):  # type: ignore[assignment]
         """Installs package using apt."""
         logger.info(f"Installing {package_name} package...")
         apt_install_command = [
