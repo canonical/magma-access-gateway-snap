@@ -141,7 +141,7 @@ mozilla/DigiCert_Assured_ID_Root_G2.crt
     ):
         mock_magma_version.return_value = self.TEST_MAGMA_VERSION
         expected_apt_repo_config_file_content = (
-            "deb https://artifactory.magmacore.org/artifactory/debian "
+            "deb https://linuxfoundation.jfrog.io/artifactory/magma-packages "
             f"{self.TEST_MAGMA_VERSION} main"
         )
 
@@ -160,7 +160,7 @@ mozilla/DigiCert_Assured_ID_Root_G2.crt
     def test_given_magma_apt_repo_not_configured_when_configure_apt_for_magma_agw_deb_package_installation_then_unvalidated_apt_signing_key_is_added(  # noqa: E501
         self, _, mock_check_call, mock_open_file
     ):
-        expected_99insecurehttpsrepo_content = """Acquire::https::artifactory.magmacore.org/artifactory/debian {
+        expected_99insecurehttpsrepo_content = """Acquire::https::linuxfoundation.jfrog.io/artifactory/magma-packages {
 Verify-Peer "false";
 Verify-Host "false";
 };
@@ -174,7 +174,7 @@ Verify-Host "false";
                     "apt-key",
                     "adv",
                     "--fetch-keys",
-                    "https://artifactory.magmacore.org/artifactory/api/gpg/key/public",
+                    "https://linuxfoundation.jfrog.io/artifactory/api/security/keypair/magmaci/public",  # noqa: E501
                 ]
             )
             in mock_check_call.mock_calls
