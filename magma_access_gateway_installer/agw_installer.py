@@ -13,7 +13,7 @@ logger = logging.getLogger("magma_access_gateway_installer")
 class AGWInstaller:
 
     MAGMA_VERSION = "focal-1.6.1"
-    MAGMA_ARTIFACTORY = "artifactory.magmacore.org/artifactory"
+    MAGMA_ARTIFACTORY = "linuxfoundation.jfrog.io/artifactory"
     MAGMA_AGW_RUNTIME_DEPENDENCIES = [
         "graphviz",
         "python-all",
@@ -135,7 +135,7 @@ class AGWInstaller:
         logger.info("Configuring private apt repository for install Magma AGW from...")
         with open("/etc/apt/sources.list.d/magma.list", "w") as magma_private_apt_repo:
             magma_private_apt_repo.write(
-                f"deb https://{self.MAGMA_ARTIFACTORY}/debian {self.MAGMA_VERSION} main"
+                f"deb https://{self.MAGMA_ARTIFACTORY}/magma-packages {self.MAGMA_VERSION} main"
             )
 
     def _add_unvalidated_apt_signing_key(self):
@@ -146,7 +146,7 @@ class AGWInstaller:
                 "apt-key",
                 "adv",
                 "--fetch-keys",
-                f"https://{self.MAGMA_ARTIFACTORY}/api/gpg/key/public",
+                f"https://{self.MAGMA_ARTIFACTORY}/api/security/keypair/magmaci/public",
             ]
         )
         self._ignore_magma_apt_repository_ssl_cert()
@@ -154,7 +154,7 @@ class AGWInstaller:
     def _ignore_magma_apt_repository_ssl_cert(self):
         """Ignores Magma apt repository's SSL certificate."""
         logger.info("Ignoring Magma apt repository's SSL certificate...")
-        ignore_cert = f"""Acquire::https::{self.MAGMA_ARTIFACTORY}/debian {{
+        ignore_cert = f"""Acquire::https::{self.MAGMA_ARTIFACTORY}/magma-packages {{
 Verify-Peer "false";
 Verify-Host "false";
 }};
