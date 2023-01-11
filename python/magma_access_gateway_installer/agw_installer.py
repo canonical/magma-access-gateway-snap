@@ -23,6 +23,12 @@ class AGWInstaller:
         "uuid-runtime",
         "ca-certificates",
     ]
+    MAGMA_PACKAGES = [
+        "/snap/magma-access-gateway/current/libopenvswitch_2.15.4-10-magma_amd64.deb",
+        "/snap/magma-access-gateway/current/openvswitch-common_2.15.4-10-magma_amd64.deb",
+        "/snap/magma-access-gateway/current/openvswitch-datapath-dkms_2.15.4-10-magma_all.deb",
+        "/snap/magma-access-gateway/current/openvswitch-switch_2.15.4-10-magma_amd64.deb",
+    ]
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
 
     def install(self, no_reboot: bool = False):
@@ -34,7 +40,6 @@ class AGWInstaller:
             self.update_apt_cache()
             self.update_ca_certificates_package()
             self.forbid_usage_of_expired_dst_root_ca_x3_certificate()
-            self.configure_apt_for_magma_agw_deb_package_installation()
             self.install_runtime_dependencies()
             self.preconfigure_wireshark_suid_property()
             self.install_magma_agw()
@@ -114,54 +119,6 @@ class AGWInstaller:
         logger.info("Updating ca-certificates...")
         check_call(["update-ca-certificates"])
 
-    def configure_apt_for_magma_agw_deb_package_installation(self):
-        """Prepares apt repository for Magma AGW installation."""
-        if not self._magma_apt_repository_configured:
-            self._configure_apt_for_magma_agw_deb_package_installation()
-            self.update_apt_cache()
-
-    @property
-    def _magma_apt_repository_configured(self) -> bool:
-        """Checks whether Magma custom apt repository has already been configured."""
-        return os.path.exists("/etc/apt/sources.list.d/magma.list")
-
-    def _configure_apt_for_magma_agw_deb_package_installation(self):
-        """Configures apt (repository and keys) to allow Magma AGW deb package installation."""
-        self._configure_private_apt_repository_to_install_magma_agw_from()
-        self._add_unvalidated_apt_signing_key()
-
-    def _configure_private_apt_repository_to_install_magma_agw_from(self):
-        """Creates an apt repository configuration to allow Magma AGW deb package installation."""
-        logger.info("Configuring private apt repository for install Magma AGW from...")
-        with open("/etc/apt/sources.list.d/magma.list", "w") as magma_private_apt_repo:
-            magma_private_apt_repo.write(
-                f"deb https://{self.MAGMA_ARTIFACTORY}/magma-packages {self.MAGMA_VERSION} main"
-            )
-
-    def _add_unvalidated_apt_signing_key(self):
-        """Adds unvalidated apt signing key."""
-        logger.info("Adding unvalidated apt signing key...")
-        check_call(
-            [
-                "apt-key",
-                "adv",
-                "--fetch-keys",
-                f"https://{self.MAGMA_ARTIFACTORY}/api/security/keypair/magmaci/public",
-            ]
-        )
-        self._ignore_magma_apt_repository_ssl_cert()
-
-    def _ignore_magma_apt_repository_ssl_cert(self):
-        """Ignores Magma apt repository's SSL certificate."""
-        logger.info("Ignoring Magma apt repository's SSL certificate...")
-        ignore_cert = f"""Acquire::https::{self.MAGMA_ARTIFACTORY}/magma-packages {{
-Verify-Peer "false";
-Verify-Host "false";
-}};
-"""
-        with open("/etc/apt/apt.conf.d/99insecurehttpsrepo", "w") as insecured_repo_host:
-            insecured_repo_host.write(ignore_cert)
-
     def install_runtime_dependencies(self):
         """Installs Magma AGW's runtime dependencies using apt."""
         logger.info("Installing Magma AGW's runtime dependencies...")
@@ -178,7 +135,8 @@ Verify-Host "false";
         """Installs Magma AGW's deb packages from the private apt repository."""
         logger.info("Installing Magma Access Gateway...")
         dpkg_options = ["force-overwrite", "force-confold", "force-confdef"]
-        self._install_apt_package("magma", dpkg_options)
+        for magma_package in self.MAGMA_PACKAGES:
+            self._install_apt_package(magma_package, dpkg_options)
 
     def start_open_vswitch(self):
         """Start openvswitch-switch service."""
@@ -197,7 +155,7 @@ Verify-Host "false";
             self._bring_up_interface(interface)
 
     @staticmethod
-    def _install_apt_package(package_name, dpkg_options: list = None):  # type: ignore[assignment]
+    def _install_apt_package(package_name: str, dpkg_options: list = None):
         """Installs package using apt."""
         logger.info(f"Installing {package_name} package...")
         apt_install_command = [
@@ -218,19 +176,19 @@ Verify-Host "false";
             raise any_exception
 
     @staticmethod
-    def _bring_up_interface(interface_name):
+    def _bring_up_interface(interface_name: str):
         """Brings up interface using ifup command."""
         logger.info(f"Bringing up {interface_name}...")
         check_call(["ifup", interface_name])
 
     @staticmethod
-    def _stop_service(service_name):
+    def _stop_service(service_name: str):
         """Stops system service."""
         logger.info(f"Stopping {service_name} service...")
         check_call(["service", service_name, "stop"])
 
     @staticmethod
-    def _start_service(service_name):
+    def _start_service(service_name: str):
         """Starts system service."""
         logger.info(f"Starting {service_name} service...")
         check_call(["service", service_name, "start"])
