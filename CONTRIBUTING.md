@@ -36,10 +36,11 @@ The Snap in this repository is specifically developed for the
 
 ### Unit tests and static code analysis
 
-Testing of the snap is done using `tox`. To run tests, from this repository's main directory
-execute one of the following commands:
+Testing of the python component of the snap is done using `tox`. To run tests, navigate to the
+`python` directory and execute one of the following commands:
 
 ```shell
+cd python
 tox -e lint      # code style
 tox -e static    # static analysis
 tox -e unit      # unit tests

@@ -45,7 +45,7 @@ apps:
 parts:
   magma-access-gateway:
     plugin: python
-    source: .
+    source: python
     build-packages:
       - libsystemd-dev
       - pkg-config
