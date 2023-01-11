@@ -16,7 +16,7 @@ jobs:
       - name: Run tests using tox
         run: |
           set -eux
-          tox -e lint
+          cd python && tox -e lint
 
   agw-static-analysis:
     name: Static analysis
@@ -30,7 +30,7 @@ jobs:
           sudo apt update
           sudo apt install libsystemd-dev
           set -eux
-          tox -e static
+          cd python && tox -e static
 
   agw-unit-tests-with-coverage:
     name: Unit tests
@@ -44,7 +44,7 @@ jobs:
           sudo apt update
           sudo apt install libsystemd-dev
           set -eux
-          tox -e unit
+          cd python && tox -e unit
 
   build-snap:
     name: Build Magma AGW snap
