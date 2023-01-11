@@ -6,14 +6,13 @@ import logging
 import os
 import time
 from subprocess import check_call, check_output
+from typing import List
 
 logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstaller:
 
-    MAGMA_VERSION = "focal-1.6.1"
-    MAGMA_ARTIFACTORY = "linuxfoundation.jfrog.io/artifactory"
     MAGMA_AGW_RUNTIME_DEPENDENCIES = [
         "graphviz",
         "python-all",
@@ -31,7 +30,7 @@ class AGWInstaller:
     ]
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
 
-    def install(self, no_reboot: bool = False):
+    def install(self, no_reboot: bool = False) -> None:
         if self._magma_agw_installed:
             logger.info("Magma Access Gateway already installed. Exiting...")
             return
@@ -155,7 +154,7 @@ class AGWInstaller:
             self._bring_up_interface(interface)
 
     @staticmethod
-    def _install_apt_package(package_name: str, dpkg_options: list = None):
+    def _install_apt_package(package_name: str, dpkg_options: List[str] = None):
         """Installs package using apt."""
         logger.info(f"Installing {package_name} package...")
         apt_install_command = [
