@@ -52,3 +52,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1
+        env:
+          SNAPCRAFT_BUILD_ENVIRONMENT_MEMORY: 8G
+          SNAPCRAFT_BUILD_ENVIRONMENT_CPU: 4

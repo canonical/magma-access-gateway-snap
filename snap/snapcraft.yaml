@@ -99,10 +99,15 @@ parts:
       
       cd $SNAPCRAFT_PART_SRC
       
+      ls -a
+      
+      mkdir build
+      cd build
+      
       cmake ..
       make
       make install DESTDIR="$WORK_DIR"/install
-      cmake -DPYTHON_CMD=python3 .. # build python3 binding
+      cmake -DPYTHON_CMD=python3 ..
       pushd src/python/
       make
       make DESTDIR="$WORK_DIR"/install install

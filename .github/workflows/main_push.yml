@@ -1,6 +1,6 @@
-name: main-branch-pull-request-created
+name: merge-to-main
 on:
-  pull_request:
+  push:
     branches:
       - main
 
@@ -45,9 +45,18 @@ jobs:
           set -eux
           cd python && tox -e unit
 
-  build-snap:
-    name: Build Magma AGW snap
+  build-and-publish-snap:
+    name: Build and publish Magma AGW snap
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: snapcore/action-build@v1
+        id: build
+        env:
+          SNAPCRAFT_BUILD_ENVIRONMENT_MEMORY: 8G
+          SNAPCRAFT_BUILD_ENVIRONMENT_CPU: 4
+      - uses: snapcore/action-publish@v1
+        with:
+          store_login: ${{ secrets.SNAPSTORE_LOGIN }}
+          snap: ${{ steps.build.outputs.snap }}
+          release: edge
