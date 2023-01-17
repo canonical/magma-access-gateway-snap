@@ -60,6 +60,7 @@ parts:
       - libsystemd-dev
       - pkg-config
 
+
   bcc-tools:
     plugin: cmake
     source: https://github.com/iovisor/bcc.git
@@ -75,6 +76,7 @@ parts:
       - llvm-7-dev
       - libclang-7-dev
       - python3
+      - python3-distutils
       - zlib1g-dev
       - libelf-dev
       - libfl-dev
@@ -91,6 +93,9 @@ parts:
       - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
     override-build: |
       set -x
+      
+      pip3 install setuptools==65.6.3
+      
       snapcraftctl build
       
       gem install fpm
@@ -107,7 +112,7 @@ parts:
       --package ${PACKAGE} \
       --description 'bcc tools' \
       -C $SNAPCRAFT_PART_INSTALL \
-      
+
       mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
 
   liblfds:
@@ -129,7 +134,7 @@ parts:
       make so_vanilla
       mkdir -p $SNAPCRAFT_PART_INSTALL/usr/local/include $SNAPCRAFT_PART_INSTALL/usr/local/lib
       make INSINCDIR="$SNAPCRAFT_PART_INSTALL/usr/local/include" INSLIBDIR="$SNAPCRAFT_PART_INSTALL/usr/local/lib" so_install
-      
+
       gem install fpm
       fpm \
       -s dir \
@@ -144,70 +149,119 @@ parts:
       --package ${PACKAGE} \
       --description 'Lock-free data structure library' \
       -C $SNAPCRAFT_PART_INSTALL \
-      
+
       mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
 
-#  prometheus-cpp-dev:
-#    plugin: cmake
-#    build-packages:
-#      - libprotobuf-dev
-#      - protobuf-compiler
-#    override-build: |
-#      set -x
-#
-#      cd $SNAPCRAFT_PART_SRC
-#      rm -rf prometheus-cpp
-#
-#      git clone https://github.com/jupp0r/prometheus-cpp
-#      cd prometheus-cpp
-#      git checkout d8326b2bba945a435f299e7526c403d7a1f68c1f
-#      git submodule update --init
-#      cd ..
-#      cp -rf $SNAPCRAFT_PART_SRC/prometheus-cpp/* $SNAPCRAFT_PART_SRC/
-#
-#      snapcraftctl build
-#
-#      fpm \
-#      -s dir \
-#      -t ${PKGFMT} \
-#      -a ${ARCH} \
-#      -n ${PKGNAME} \
-#      -v ${VERSION} \
-#      --iteration ${ITERATION} \
-#      --provides ${PKGNAME} \
-#      --conflicts ${PKGNAME} \
-#      --replaces ${PKGNAME} \
-#      --package ${PACKAGE} \
-#      --description 'Prometheus C++ Library' \
-#      -C $SNAPCRAFT_PART_INSTALL \
-#
-#      mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
+  magma-libfluid:
+    plugin: autotools
+    source: patches/magma-libfluid
+    build-environment:
+      - LIBFLUID_BASE_COMMIT: "56df5e20c49387ab8e6b5cd363c6c10d309f263e"
+      - LIBFLUID_MSG_COMMIT: "71a4fccdedfabece730082fbe87ef8ae5f92059f"
+      - PKGNAME: "magma-libfluid"
+      - ITERATION: "7"
+      - GIT_VERSION: "0.1.0"
+      - PKGVERSION: ${GIT_VERSION}.7
+      - WORK_DIR: "/tmp/build-${PKGNAME}"
+      - PKGFMT: "deb"
+      - ARCH: "amd64"
+      - BUILD_PATH: ${OUTPUT_DIR}/${PKGFILE}
+      - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
+    override-build: |
+      set -x
+      cd $SNAPCRAFT_PART_SRC
+      rm -rf libfluid_base libfluid_msg
 
-#  magma-cpp-redis:
-#    plugin: cmake
-#    after:
-#      - magma-libtacopie
-#    source: https://github.com/Cylix/cpp_redis.git
-#    source-commit: e7ef1f30eef8a073b0ff4ef90ad7e254167afc18
-#    source-type: git
-#    override-build: |
-#      set -x
-#      snapcraftctl build
-#
-#      fpm \
-#      -s dir \
-#      -t ${PKGFMT} \
-#      -a ${ARCH} \
-#      -n ${PKGNAME} \
-#      -v ${PKGVERSION} \
-#      --iteration ${ITERATION} \
-#      --provides ${PKGNAME} \
-#      --conflicts ${PKGNAME} \
-#      --replaces ${PKGNAME} \
-#      --package ${PACKAGE} \
-#      --depends magma-libtacopie \
-#      --description 'Redis C++ client library' \
-#      -C $SNAPCRAFT_PART_INSTALL \
+      git clone https://github.com/OpenNetworkingFoundation/libfluid_base.git
+      git -C libfluid_base checkout $LIBFLUID_BASE_COMMIT
+
+      pushd libfluid_base
+      git apply $SNAPCRAFT_PART_SRC/base/ExternalEventPatch.patch
+      git apply $SNAPCRAFT_PART_SRC/base/EVLOOP_NO_EXIT_ON_EMPTY_compat.patch
+      ./autogen.sh
+      ./configure --prefix=/usr
+      make
+      make install DESTDIR=$SNAPCRAFT_PART_INSTALL
+      popd
+
+      git clone https://github.com/OpenNetworkingFoundation/libfluid_msg.git
+      git -C libfluid_msg checkout $LIBFLUID_MSG_COMMIT
+      pushd libfluid_msg
+      git apply $SNAPCRAFT_PART_SRC/msg/0001-Add-TunnelIPv4Dst-support.patch
+      git apply $SNAPCRAFT_PART_SRC/msg/0002-Add-support-for-setting-OVS-reg8.patch
+      git apply $SNAPCRAFT_PART_SRC/msg/0003-Add-Reg-field-match-support.patch
+      git apply $SNAPCRAFT_PART_SRC/msg/0004-Add-TunnelIPv6Dst-support.patch
+      ./autogen.sh
+      ./configure --prefix=/usr
+      make
+      make install DESTDIR=$SNAPCRAFT_PART_INSTALL
+      popd
+
+      rm -f ${PACKAGE}
+
+      fpm \
+      -s dir \
+      -t ${PKGFMT} \
+      -a ${ARCH} \
+      -n ${PKGNAME} \
+      -v ${PKGVERSION} \
+      --iteration ${ITERATION} \
+      --provides ${PKGNAME} \
+      --conflicts ${PKGNAME} \
+      --replaces ${PKGNAME} \
+      --package ${PACKAGE} \
+      --depends "libevent-dev" \
+      --depends "libssl-dev" \
+      --description 'Libfluid Openflow Controller' \
+      -C $SNAPCRAFT_PART_INSTALL \
+
+      mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
+
+  prometheus-cpp-dev:
+    plugin: cmake
+    build-packages:
+      - libprotobuf-dev
+      - protobuf-compiler
+    build-environment:
+      - PKGNAME: "prometheus-cpp-dev"
+      - COMMIT: "d8326b2bba945a435f299e7526c403d7a1f68c1f"
+      - ITERATION: "1"
+      - PKGVERSION: "1.0.2"
+      - WORK_DIR: "/tmp/build-${PKGNAME}"
+      - PKGFMT: "deb"
+      - ARCH: "amd64"
+      - BUILD_PATH: ${OUTPUT_DIR}/${PKGFILE}
+      - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
+    override-build: |
+      set -x
+
+      cd $SNAPCRAFT_PART_SRC
+      rm -rf prometheus-cpp
+
+      git clone https://github.com/jupp0r/prometheus-cpp
+      cd prometheus-cpp
+      git checkout ${COMMIT}
+      git submodule update --init
+      cd ..
+      cp -rf $SNAPCRAFT_PART_SRC/prometheus-cpp/* $SNAPCRAFT_PART_SRC/
+
+      snapcraftctl build
+
+      fpm \
+      -s dir \
+      -t ${PKGFMT} \
+      -a ${ARCH} \
+      -n ${PKGNAME} \
+      -v ${PKGVERSION} \
+      --iteration ${ITERATION} \
+      --provides ${PKGNAME} \
+      --conflicts ${PKGNAME} \
+      --replaces ${PKGNAME} \
+      --package ${PACKAGE} \
+      --description 'Prometheus C++ Library' \
+      -C $SNAPCRAFT_PART_INSTALL \
+
+      mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
 
   magma-libtacopie:
     plugin: cmake
@@ -246,6 +300,51 @@ parts:
       -C $SNAPCRAFT_PART_INSTALL \
 
       mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
+
+  magma-cpp-redis:
+    plugin: cmake
+    after:
+      - magma-libtacopie
+    source: https://github.com/Cylix/cpp_redis.git
+    source-commit: e7ef1f30eef8a073b0ff4ef90ad7e254167afc18
+    source-type: git
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE=Release
+    build-environment:
+      - PKGNAME: "magma-cpp-redis"
+      - ITERATION: "2"
+      - PKGVERSION: "4.3.1.2"
+      - WORK_DIR: "/tmp/build-${PKGNAME}"
+      - PKGFMT: "deb"
+      - ARCH: "amd64"
+      - BUILD_PATH: ${OUTPUT_DIR}/${PKGFILE}
+      - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
+    override-build: |
+      set -x
+
+      cp -r -L /root/parts/magma-libtacopie/install/usr/local/include/* /usr/local/include/
+      cp -r -L /root/parts/magma-libtacopie/install/usr/local/lib/* /usr/local/lib/
+
+      snapcraftctl build
+
+      fpm \
+      -s dir \
+      -t ${PKGFMT} \
+      -a ${ARCH} \
+      -n ${PKGNAME} \
+      -v ${PKGVERSION} \
+      --iteration ${ITERATION} \
+      --provides ${PKGNAME} \
+      --conflicts ${PKGNAME} \
+      --replaces ${PKGNAME} \
+      --package ${PACKAGE} \
+      --depends magma-libtacopie \
+      --description 'Redis C++ client library' \
+      -C $SNAPCRAFT_PART_INSTALL \
+
+      mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
+
+      rm -rf $SNAPCRAFT_PART_INSTALL/usr/local/lib/libtacopie.a
 
   oai-asn1c:
     plugin: autotools
@@ -305,14 +404,12 @@ parts:
       - libtasn1-6-dev
       - libp11-kit-dev
       - libtspi-dev
+      - libtspi1
       - libidn2-0-dev
       - libidn11-dev
       - ruby
       - ruby-dev
       - rubygems
-    stage-packages:
-      - libidn11
-      - libtspi1
     build-environment:
       - PKGNAME: "oai-gnutls"
       - ITERATION: "1"
@@ -372,7 +469,7 @@ parts:
     plugin: cmake
     after:
       - oai-gnutls
-    source: .
+    source: patches/oai-freediameter
     cmake-parameters:
       - -DCMAKE_C_FLAGS=-DOLD_SCTP_SOCKET_API=1
     build-packages:
@@ -388,7 +485,7 @@ parts:
     build-environment:
       - PKGNAME: "oai-freediameter"
       - ITERATION: "1"
-      - PKGVERSION: "0.0.1"
+      - PKGVERSION: "0.0.2"
       - WORK_DIR: "/tmp/build-${PKGNAME}"
       - PKGFMT: "deb"
       - ARCH: "amd64"
@@ -401,8 +498,8 @@ parts:
       git clone https://github.com/lionelgo/opencord.org.freeDiameter.git
       cd opencord.org.freeDiameter
       git checkout 13b0e7de0d66906d50e074a339f890d6e59813ad
-      patch -p1 < "$SNAPCRAFT_PART_SRC/patches/oai-freediameter/0001-opencoord.org.freeDiameter.patch"
-      patch -p1 < "$SNAPCRAFT_PART_SRC/patches/oai-freediameter/0002-opencoord.org.freeDiameter.patch"
+      patch -p1 < "$SNAPCRAFT_PART_SRC/0001-opencoord.org.freeDiameter.patch"
+      patch -p1 < "$SNAPCRAFT_PART_SRC/0002-opencoord.org.freeDiameter.patch"
       awk '{if (/^DISABLE_SCTP/) gsub(/OFF/, "ON"); print}' CMakeCache.txt > tmp && mv tmp CMakeCache.txt
       cp -rf $SNAPCRAFT_PART_SRC/opencord.org.freeDiameter/* $SNAPCRAFT_PART_SRC/
 
@@ -528,6 +625,8 @@ parts:
       - ARCH: "amd64"
       - BUILD_PATH: ${OUTPUT_DIR}/${PKGFILE}
       - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
+    build-packages:
+      - libprotoc-dev
     override-build: |
       set -x
 
@@ -550,6 +649,27 @@ parts:
 
          timer = static_cast<time_t>(now.tv_sec);
          final_slash = strrchr(args->file, '/');
+      EOF
+
+      patch src/core/lib/gpr/log_posix.cc <<'EOF'
+      @@ -30,7 +30,7 @@
+       #include <string.h>
+       #include <time.h>
+
+      -static intptr_t gettid(void) { return (intptr_t)pthread_self(); }
+      +static intptr_t sys_gettid(void) { return (intptr_t)pthread_self(); }
+
+       void gpr_log(const char* file, int line, gpr_log_severity severity,
+                    const char* format, ...) {
+      @@ -86,7 +86,7 @@ void gpr_default_log(gpr_log_func_args* args) {
+         char* prefix;
+         gpr_asprintf(&prefix, "%s%s.%09d %7" PRIdPTR " %s:%d]",
+                      gpr_log_severity_string(args->severity), time_buffer,
+      -               (int)(now.tv_nsec), gettid(), display_file, args->line);
+      +               (int)(now.tv_nsec), sys_gettid(), display_file, args->line);
+
+         fprintf(stderr, "%-70s %s\n", prefix, args->message);
+         gpr_free(prefix);
       EOF
 
       patch src/core/lib/iomgr/ev_epollex_linux.cc <<'EOF'
@@ -616,7 +736,7 @@ parts:
       - libunwind-dev
     override-build: |
       set -x
-      
+
       cd $SNAPCRAFT_PART_SRC
       rm -rf ovs
       git clone  https://github.com/openvswitch/ovs
@@ -624,58 +744,168 @@ parts:
       git checkout 31288dc725be6bc8eaa4e8641ee28895c9d0fd7a
       git apply $SNAPCRAFT_PART_SRC/00*
       DEB_BUILD_OPTIONS='parallel=8 nocheck' fakeroot debian/rules binary
-      
+
       mv ../*.deb $SNAPCRAFT_PART_INSTALL/
 
-  fmt:
-    plugin: cmake
-    source: https://github.com/fmtlib/fmt.git
-    source-type: git
-    source-tag: 9.1.0
-    cmake-parameters:
-      - -DBUILD_SHARED_LIBS=ON
-      - -DFMT_TEST=0
-
-  folly:
-    plugin: cmake
-    after:
-      - fmt
-    source: https://github.com/facebook/folly
-    source-type: git
-    source-tag: v2021.02.15.00
-    cmake-parameters:
-      - -DBUILD_SHARED_LIBS=on
+  bazel:
+    plugin: nil
     build-packages:
-      - libgoogle-glog-dev
-      - libgflags-dev
+      - wget
+    override-build: |
+      set -x
+      wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
+      chmod +x /usr/local/bin/bazel
+
+#  envoy:
+#    plugin: nil
+#    after:
+#      - bazel
+#    source: https://github.com/envoyproxy/envoy
+#    source-type: git
+#    source-tag: v1.24.1
+#    build-packages:
+#      - cmake
+#      - ninja-build
+#    override-build: |
+#      set -x
+#      cd $SNAPCRAFT_PART_SRC
+#      bazel build distribution:debs
+#      ls bazel-bin/distribution/
+#
+#      mv bazel-bin/distribution/envoy*.deb $SNAPCRAFT_PART_INSTALL/
+
+  envoy:
+    plugin: nil
+    build-packages:
+      - curl
+    build-environment:
+      - GETENVOY_VERSION: "1.16.2.p0.ge98e41a-1p71.gbe6132a"
+    override-build: |
+      set -x
+      rm -rf /etc/apt/sources.list.d/getenvoy.list /usr/share/keyrings/getenvoy-keyring.gpg
+      curl -sL 'https://deb.dl.getenvoy.io/public/gpg.8115BA8E629CC074.key' | gpg --dearmor -o /usr/share/keyrings/getenvoy-keyring.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/getenvoy-keyring.gpg] https://deb.dl.getenvoy.io/public/deb/ubuntu focal main" | tee /etc/apt/sources.list.d/getenvoy.list
+      apt update
+      apt-cache policy getenvoy-envoy
+      apt download getenvoy-envoy=$GETENVOY_VERSION
+      mv getenvoy-envoy*.deb $SNAPCRAFT_PART_INSTALL/
+
+  td-agent-bit:
+    plugin: nil
+    build-environment:
+      - TD_AGENT_BIT_VERSION: "1.7.8"
+    override-build: |
+      set -x
+      rm -rf /etc/apt/sources.list.d/fluentbit.list /usr/share/keyrings/fluentbit-keyring.gpg
+      curl -sL 'https://packages.fluentbit.io/fluentbit.key' | gpg --dearmor -o /usr/share/keyrings/fluentbit-keyring.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/fluentbit-keyring.gpg] https://packages.fluentbit.io/ubuntu/focal focal main" | tee /etc/apt/sources.list.d/fluentbit.list
+      apt update
+      apt download td-agent-bit=$TD_AGENT_BIT_VERSION
+      mv td-agent-bit*.deb $SNAPCRAFT_PART_INSTALL/
+
+  libfolly-dev:
+    plugin: autotools
+    source: https://github.com/facebook/folly.git
+    source-type: git
+    source-tag: v2018.02.26.00
+    build-packages:
       - libboost-all-dev
       - libevent-dev
       - libdouble-conversion-dev
-      - libboost-chrono-dev
+      - libgoogle-glog-dev
+      - libgflags-dev
       - libiberty-dev
+      - liblz4-dev
+      - liblzma-dev
+      - libsnappy-dev
+      - zlib1g-dev
+      - binutils-dev
+      - libjemalloc-dev
       - libssl-dev
-    stage-packages:
-      - libboost-context1.71.0
-      - libboost-filesystem1.71.0
-      - libboost-program-options1.71.0
-      - libboost-regex1.71.0
-      - libdouble-conversion3
-      - libevent-2.1-7
-      - libgflags2.2
-      - libgoogle-glog0v5
-      - libicu66
-      - libsodium23
-      - libunwind8
+      - pkg-config
+    build-environment:
+      - BOOST_VERSION: "1.71.0"
+      - LIBGFLAGS: "libgflags2.2"
+      - LIBEVENT_VERSION: "2.1-7"
+      - SSL_VERSION: "1.1"
+      - LIBICU: "libicu66"
+      - DOUBLE_CONVERSION_VERSION: "3"
+      - JEMALLOC_VERSION: "2"
+      - DESTDIR: $SNAPCRAFT_PART_INSTALL/
+      - DEBUGDIR: ${DESTDIR}/usr/local/lib/debug
+      - PKGNAME: "libfolly-dev"
+      - ITERATION: "7"
+      - GIT_VERSION: "2018.02.26.00"
+      - WORK_DIR: "/tmp/build-${PKGNAME}"
+      - PKGFMT: "deb"
+      - ARCH: "amd64"
+      - BUILD_PATH: ${OUTPUT_DIR}/${PKGFILE}
+      - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
     override-build: |
       set -x
-      cp -r /root/parts/fmt/install/usr/local/include/* /usr/local/include/
-      cp -r /root/parts/fmt/install/usr/local/lib/* /usr/local/lib/
-      snapcraftctl build
+
+      cd folly
+
+      autoreconf -ivf
+      ./configure
+      make -j $(nproc)
+      make install DESTDIR=${DESTDIR}
+
+      # Only include stripped .so files
+      [ -d "$DEBUGDIR/usr/local/lib" ] || mkdir -p "$DEBUGDIR/usr/local/lib"
+      find "$DESTDIR/usr/local/lib" -maxdepth 1 -iname "lib*.so.*" -type f \
+        -execdir objcopy --only-keep-debug {} "$DEBUGDIR/usr/local/lib/{}.debug" \; \
+        -execdir strip --strip-debug --strip-unneeded {} \; \
+        -execdir objcopy --add-gnu-debuglink "$DEBUGDIR/usr/local/lib/{}.debug" {} \;
+
+      fpm \
+      -s dir \
+      -t ${PKGFMT} \
+      -a ${ARCH} \
+      -n ${PKGNAME} \
+      -v ${GIT_VERSION} \
+      -C $SNAPCRAFT_PART_INSTALL \
+      --iteration ${ITERATION} \
+      --description "Facebook Folly C++ Library" \
+      --provides ${PKGNAME} \
+      --conflicts ${PKGNAME} \
+      --replaces ${PKGNAME} \
+      --package ${PACKAGE} \
+      --depends libc6 \
+      --depends libstdc++6 \
+      --depends libboost-context"$BOOST_VERSION" \
+      --depends libboost-filesystem"$BOOST_VERSION" \
+      --depends libboost-program-options"$BOOST_VERSION" \
+      --depends libboost-regex"$BOOST_VERSION" \
+      --depends libboost-system"$BOOST_VERSION" \
+      --depends libboost-thread"$BOOST_VERSION" \
+      --depends libdouble-conversion"${DOUBLE_CONVERSION_VERSION}" \
+      --depends libevent-"$LIBEVENT_VERSION" \
+      --depends "${LIBGFLAGS}" \
+      --depends libgoogle-glog0v5 \
+      --depends "${LIBICU}" \
+      --depends libjemalloc"${JEMALLOC_VERSION}" \
+      --depends liblz4-1 \
+      --depends liblzma5 \
+      --depends libsnappy1v5 \
+      --depends libssl"$SSL_VERSION" \
+      --depends zlib1g \
+      --exclude usr/local/lib/debug \
+      --exclude usr/local/lib/*.a \
+      --exclude usr/local/lib/*.la \
+      --exclude usr/local/lib/*init* \
+      --exclude usr/local/lib/*logging* \
+      --exclude usr/local/lib/*benchmark* \
+      usr/local/lib \
+      usr/local/include
+
+      mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
 
   magma-access-gateway:
     plugin: nil
     after:
-      - folly
+      - bazel
+      - libfolly-dev
       - bcc-tools
       - oai-asn1c
       - oai-freediameter
@@ -686,7 +916,6 @@ parts:
     build-packages:
       - apt-transport-https
       - apt-utils
-      - bazel=5.2.0
       - bison
       - build-essential
       - ca-certificates
@@ -724,8 +953,8 @@ parts:
     override-build: |
       set -x
 
-      cp -r -L /root/parts/folly/install/usr/local/include/* /usr/local/include/
-      cp -r -L /root/parts/folly/install/usr/local/lib/* /usr/local/lib/
+      cp -r -L /root/parts/libfolly-dev/install/usr/local/include/* /usr/local/include/
+      cp -r -L /root/parts/libfolly-dev/install/usr/local/lib/* /usr/local/lib/
 
       cp -r -L /root/parts/oai-gnutls/install/usr/local/include/* /usr/include/
       cp -r -L /root/parts/oai-gnutls/install/usr/local/lib/* /usr/lib/
