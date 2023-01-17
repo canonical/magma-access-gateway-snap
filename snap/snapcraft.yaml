@@ -97,7 +97,15 @@ parts:
       
       pip3 install setuptools==65.6.3
       
-      snapcraftctl build
+      cd $SNAPCRAFT_PART_SRC
+      
+      cmake ..
+      make
+      make install DESTDIR="$WORK_DIR"/install
+      cmake -DPYTHON_CMD=python3 .. # build python3 binding
+      pushd src/python/
+      make
+      make DESTDIR="$WORK_DIR"/install install
       
       gem install fpm
       fpm \
@@ -756,24 +764,6 @@ parts:
       set -x
       wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
       chmod +x /usr/local/bin/bazel
-
-#  envoy:
-#    plugin: nil
-#    after:
-#      - bazel
-#    source: https://github.com/envoyproxy/envoy
-#    source-type: git
-#    source-tag: v1.24.1
-#    build-packages:
-#      - cmake
-#      - ninja-build
-#    override-build: |
-#      set -x
-#      cd $SNAPCRAFT_PART_SRC
-#      bazel build distribution:debs
-#      ls bazel-bin/distribution/
-#
-#      mv bazel-bin/distribution/envoy*.deb $SNAPCRAFT_PART_INSTALL/
 
   envoy:
     plugin: nil

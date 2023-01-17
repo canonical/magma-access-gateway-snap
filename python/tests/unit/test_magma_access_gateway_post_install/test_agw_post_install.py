@@ -23,8 +23,8 @@ class TestAGWPostInstallChecks(unittest.TestCase):
     TEST_MAGMA_AGW_INTERFACES = ["iface1", "iface2", "iface3"]
     TEST_MAGMA_AGW_SERVICES = ["magma@service1", "magma@service2", "magma@service3"]
     TEST_NON_MAGMA_SERVICES = ["service1", "service2", "service3"]
-    TEST_TIMEOUT_WAITING_FOR_SERVICE = 1
-    TEST_WAIT_FOR_SERVICE_INTERVAL = 1
+    TEST_TIMEOUT_WAITING_FOR_SERVICE = 0.001
+    TEST_WAIT_FOR_SERVICE_INTERVAL = 0.001
     TEST_REQUIRED_PACKAGES = ["package1", "package2", "package3"]
     OVS_SHOW_OUTPUT_WITH_ERROR = (
         "128dc4f0-80f9-4584-be74-57747ac0a68f"

@@ -3,7 +3,7 @@
 # See LICENSE file for licensing details.
 
 import unittest
-from unittest.mock import MagicMock, Mock, PropertyMock, call, mock_open, patch
+from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 from magma_access_gateway_installer.agw_installer import AGWInstaller
 
@@ -148,10 +148,97 @@ mozilla/DigiCert_Assured_ID_Root_G2.crt
     ):
         self.agw_installer.install_magma_agw()
 
-        mock_check_call.assert_called_once_with(
-            'apt -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" '
-            '-o "Dpkg::Options::=--force-overwrite" -qq install -y --no-install-recommends magma',
-            shell=True,
+        mock_check_call.assert_has_calls(
+            calls=[
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/libopenvswitch_2.15.4-10-magma_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/openvswitch-common_2.15.4-10-magma_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/openvswitch-datapath-dkms_2.15.4-10-magma_all.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/openvswitch-switch_2.15.4-10-magma_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/magma-libtacopie_3.2.0.1-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/magma-cpp-redis_4.3.1.2-2_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/prometheus-cpp-dev_1.0.2-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/bcc-tools_0.23-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/oai-nettle_2.5-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/oai-gnutls_3.1.23-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/oai-freediameter_0.0.2-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/liblfds710_7.1.0-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/oai-asn1c_0~20190423+c0~rf12568d6-0_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/magma-dhcp-cli_1.9.0-VERSION-SUFFIX_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/sentry-native_0.4.12-1_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/grpc-dev_-3_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/magma-libfluid_0.1.0.7-7_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/libfolly-dev_-7_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/td-agent-bit_1.7.8_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/getenvoy-envoy_1.16.2.p0.ge98e41a-1p71.gbe6132a_amd64.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/sctpd_deb_pkg.deb",  # noqa: E501
+                    shell=True,
+                ),
+                call(
+                    "apt -qq install -y --no-install-recommends /snap/magma-access-gateway/current/magma_deb_pkg.deb",  # noqa: E501
+                    shell=True,
+                ),
+            ]
         )
 
     @patch("magma_access_gateway_installer.agw_installer.check_call")
