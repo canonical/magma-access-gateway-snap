@@ -1,42 +1,38 @@
 # Contributing / Hacking
 
-## Intended use case
-
-The Snap in this repository is specifically developed for the
-[Magma](https://www.magmacore.org/) use case.
-
-## Developing and testing
-
-### Required software:
+## Required software:
 
 - [Snapcraft](https://snapcraft.io/docs/snapcraft-overview)
 - [Multipass](https://multipass.run/)
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-### Building Magma AGW snap:
+## Building the snap with snapcraft
 
 1. Install required software listed above
-2. From the repository's main directory execute:
+2. Clone the repository
+3. From the repository's root directory execute:
 
    ```bash
+   export SNAPCRAFT_BUILD_ENVIRONMENT_MEMORY=8G
+   export SNAPCRAFT_BUILD_ENVIRONMENT_CPU=4
    snapcraft
    ```
 
    To see what's happening during the snap building process, `-d` can be used along with above
    command.
 
-### Installing locally built Magma AGW snap:
+## Installing the locally built snap
 
-1. Copy snap to AGW host machine.
-2. On AGW host machine, as `root` execute:
+1. Copy the snap to a host
+2. Connect to the host and execute:
 
    ```bash
-   snap install <PATH_TO_THE_SNAP_FILE> --dangerous --classic
+   sudo snap install <PATH_TO_THE_SNAP_FILE> --dangerous --classic
    ```
 
-### Unit tests and static code analysis
+## Testing
 
-Testing of the python component of the snap is done using `tox`. To run tests, navigate to the
+Testing the python component of the snap is done using `tox`. To run tests, navigate to the
 `python` directory and execute one of the following commands:
 
 ```shell
@@ -46,7 +42,7 @@ tox -e static    # static analysis
 tox -e unit      # unit tests
 ```
 
-To run all test envs at once, just run:<br>
+To run all test envs at once, just run:
 
 ```bash
 tox

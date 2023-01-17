@@ -42,7 +42,7 @@ class AGWInstaller:
         "/snap/magma-access-gateway/current/magma-libfluid_0.1.0.7-7_amd64.deb",
         "/snap/magma-access-gateway/current/libfolly-dev_-7_amd64.deb",
         "/snap/magma-access-gateway/current/td-agent-bit_1.7.8_amd64.deb",
-        "/snap/magma-access-gateway/current/getenvoy-envoy_1.18.2.p0.gd362e79-1p75.g76c310e_amd64.deb",
+        "/snap/magma-access-gateway/current/getenvoy-envoy_1.16.2.p0.ge98e41a-1p71.gbe6132a_amd64.deb",
         "/snap/magma-access-gateway/current/sctpd_deb_pkg.deb",
         "/snap/magma-access-gateway/current/magma_deb_pkg.deb",
     ]
