@@ -13,6 +13,7 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 class AGWInstaller:
 
+    DEB_BASE_DIRECTORY = "/snap/magma-access-gateway/current"
     MAGMA_AGW_RUNTIME_DEPENDENCIES = [
         "graphviz",
         "python-all",
@@ -23,28 +24,28 @@ class AGWInstaller:
         "ca-certificates",
     ]
     MAGMA_PACKAGES = [
-        "/snap/magma-access-gateway/current/libopenvswitch_2.15.4-10-magma_amd64.deb",
-        "/snap/magma-access-gateway/current/openvswitch-common_2.15.4-10-magma_amd64.deb",
-        "/snap/magma-access-gateway/current/openvswitch-datapath-dkms_2.15.4-10-magma_all.deb",
-        "/snap/magma-access-gateway/current/openvswitch-switch_2.15.4-10-magma_amd64.deb",
-        "/snap/magma-access-gateway/current/magma-libtacopie_3.2.0.1-1_amd64.deb",
-        "/snap/magma-access-gateway/current/magma-cpp-redis_4.3.1.2-2_amd64.deb",
-        "/snap/magma-access-gateway/current/prometheus-cpp-dev_1.0.2-1_amd64.deb",
-        "/snap/magma-access-gateway/current/bcc-tools_0.23-1_amd64.deb",
-        "/snap/magma-access-gateway/current/oai-nettle_2.5-1_amd64.deb",
-        "/snap/magma-access-gateway/current/oai-gnutls_3.1.23-1_amd64.deb",
-        "/snap/magma-access-gateway/current/oai-freediameter_0.0.2-1_amd64.deb",
-        "/snap/magma-access-gateway/current/liblfds710_7.1.0-1_amd64.deb",
-        "/snap/magma-access-gateway/current/oai-asn1c_0~20190423+c0~rf12568d6-0_amd64.deb",
-        "/snap/magma-access-gateway/current/magma-dhcp-cli_1.9.0-VERSION-SUFFIX_amd64.deb",
-        "/snap/magma-access-gateway/current/sentry-native_0.4.12-1_amd64.deb",
-        "/snap/magma-access-gateway/current/grpc-dev_-3_amd64.deb",
-        "/snap/magma-access-gateway/current/magma-libfluid_0.1.0.7-7_amd64.deb",
-        "/snap/magma-access-gateway/current/libfolly-dev_-7_amd64.deb",
-        "/snap/magma-access-gateway/current/td-agent-bit_1.7.8_amd64.deb",
-        "/snap/magma-access-gateway/current/getenvoy-envoy_1.16.2.p0.ge98e41a-1p71.gbe6132a_amd64.deb",  # noqa: E501
-        "/snap/magma-access-gateway/current/sctpd_deb_pkg.deb",
-        "/snap/magma-access-gateway/current/magma_deb_pkg.deb",
+        f"{DEB_BASE_DIRECTORY}/libopenvswitch_2.15.4-10-magma_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/openvswitch-common_2.15.4-10-magma_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/openvswitch-datapath-dkms_2.15.4-10-magma_all.deb",
+        f"{DEB_BASE_DIRECTORY}/openvswitch-switch_2.15.4-10-magma_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/magma-libtacopie_3.2.0.1-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/magma-cpp-redis_4.3.1.2-2_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/prometheus-cpp-dev_1.0.2-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/bcc-tools_0.23-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/oai-nettle_2.5-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/oai-gnutls_3.1.23-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/oai-freediameter_0.0.2-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/liblfds710_7.1.0-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/oai-asn1c_0~20190423+c0~rf12568d6-0_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/magma-dhcp-cli_1.9.0-VERSION-SUFFIX_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/sentry-native_0.4.12-1_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/grpc-dev_1.15.0-3_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/magma-libfluid_0.1.0.7-7_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/libfolly-dev_-7_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/td-agent-bit_1.7.8_amd64.deb",
+        f"{DEB_BASE_DIRECTORY}/getenvoy-envoy_1.16.2.p0.ge98e41a-1p71.gbe6132a_amd64.deb",  # noqa: E501
+        f"{DEB_BASE_DIRECTORY}/sctpd_deb_pkg.deb",
+        f"{DEB_BASE_DIRECTORY}/magma_deb_pkg.deb",
     ]
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
 

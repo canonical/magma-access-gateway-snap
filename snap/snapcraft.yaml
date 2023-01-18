@@ -61,22 +61,23 @@ parts:
       - pkg-config
 
   bcc-tools:
-    plugin: cmake
-    source: https://github.com/iovisor/bcc.git
-    source-type: git
-    source-branch: v0.23.0
-    cmake-parameters:
-      - -DPYTHON_CMD=python3
+    plugin: nil
     build-packages:
       - bison
+      - cmake
       - flex
+      - git
       - libedit-dev
       - libllvm7
       - llvm-7-dev
       - libclang-7-dev
+      - python-is-python3
       - python3
       - python3-distutils
       - python3-pip
+      - ruby
+      - ruby-dev
+      - rubygems
       - zlib1g-dev
       - libelf-dev
       - libfl-dev
@@ -90,23 +91,25 @@ parts:
       - ARCH: "amd64"
       - BUILD_PATH: ${OUTPUT_DIR}/${PKGFILE}
       - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
+      - WORK_DIR: /tmp/build-${PKGNAME}
     override-build: |
       set -x
 
-      pip3 install setuptools==65.6.3
-
       cd $SNAPCRAFT_PART_SRC
-
-      mkdir -p build
-      cd build
+      rm -rf bcc
+      git clone https://github.com/iovisor/bcc.git
+      mkdir -p bcc/build
+      cd bcc/build
+      git checkout "v$PKGVERSION.0"
 
       cmake ..
       make
-      make install DESTDIR=$SNAPCRAFT_PART_INSTALL
+      make install DESTDIR="$WORK_DIR"/install
       cmake -DPYTHON_CMD=python3 ..
       pushd src/python/
       make
-      make DESTDIR=$SNAPCRAFT_PART_INSTALL install
+      make DESTDIR="$WORK_DIR"/install install
+      popd
 
       gem install fpm
       fpm \
@@ -121,7 +124,7 @@ parts:
       --replaces "$PKGNAME" \
       --package ${PACKAGE} \
       --description 'bcc tools' \
-      -C $SNAPCRAFT_PART_INSTALL \
+      -C "$WORK_DIR"/install
 
       mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
 
@@ -427,7 +430,7 @@ parts:
       - PACKAGE: ${PKGNAME}_${PKGVERSION}-${ITERATION}_${ARCH}.${PKGFMT}
     override-build: |
       set -x
-      
+
       cp -r -L /root/parts/oai-nettle/install/usr/local/include/* /usr/include/
       cp -r -L /root/parts/oai-nettle/install/usr/local/lib/* /usr/lib/
       cp -r -L /root/parts/oai-nettle/install/usr/local/bin/* /usr/bin/
@@ -439,15 +442,15 @@ parts:
       cd gnutls-$PKGVERSION/
       patch -t -p0 < $SNAPCRAFT_PART_SRC/stdio.patch
       patch -t -p0 < $SNAPCRAFT_PART_SRC/fseterr.patch
-      
-      rsync -a $SNAPCRAFT_PART_SRC/gnutls-$PKGVERSION/ $SNAPCRAFT_PART_SRC/ 
+
+      rsync -a $SNAPCRAFT_PART_SRC/gnutls-$PKGVERSION/ $SNAPCRAFT_PART_SRC/
       rm -rf $SNAPCRAFT_PART_SRC/gnutls-$PKGVERSION
       cd $SNAPCRAFT_PART_SRC
-      
+
       ./configure --prefix=/usr
       make -j`nproc`
       make install DESTDIR=$SNAPCRAFT_PART_INSTALL
-      
+
       rm -f $SNAPCRAFT_PART_INSTALL/usr/share/info/dir
 
       gem install fpm
@@ -504,7 +507,7 @@ parts:
       patch -p1 < "$SNAPCRAFT_PART_SRC/0002-opencoord.org.freeDiameter.patch"
       awk '{if (/^DISABLE_SCTP/) gsub(/OFF/, "ON"); print}' CMakeCache.txt > tmp && mv tmp CMakeCache.txt
       cp -rf $SNAPCRAFT_PART_SRC/opencord.org.freeDiameter/* $SNAPCRAFT_PART_SRC/
-      
+
       cp -r -L /root/parts/oai-gnutls/install/usr/include/* /usr/include/
       cp -r -L /root/parts/oai-gnutls/install/usr/lib/* /usr/lib/
       cp -r -L /root/parts/oai-gnutls/install/usr/bin/* /usr/bin/
@@ -628,20 +631,20 @@ parts:
       - libprotoc-dev
     override-build: |
       set -x
-            
+
       cd $SNAPCRAFT_PART_SRC
       rm -rf grpc
       git clone https://github.com/grpc/grpc
       cd grpc
       git checkout -b v"${GIT_VERSION}" tags/v"${GIT_VERSION}"
       git submodule update --init
-      
+
       patch -p0 < $SNAPCRAFT_PART_SRC/log_linux.patch
       patch -p0 < $SNAPCRAFT_PART_SRC/log_posix.patch
       patch -p0 < $SNAPCRAFT_PART_SRC/ev_epollex_linux.patch
       sed -i 's/-Werror/ /g' Makefile
       sed -i 's/.usr.local$/\/tmp\/build-grpc-dev\/install\/usr\/local/' Makefile
-      rsync -a $SNAPCRAFT_PART_SRC/grpc/ $SNAPCRAFT_PART_SRC/ 
+      rsync -a $SNAPCRAFT_PART_SRC/grpc/ $SNAPCRAFT_PART_SRC/
       rm -rf $SNAPCRAFT_PART_SRC/grpc
       cd $SNAPCRAFT_PART_SRC
 
@@ -890,7 +893,7 @@ parts:
       cp -r -L /root/parts/oai-gnutls/install/usr/lib/* /usr/lib/
       cp -r -L /root/parts/oai-gnutls/install/usr/bin/* /usr/bin/
       cp -r -L /root/parts/oai-gnutls/install/usr/share/* /usr/share/
-      
+
       cp -r -L /root/parts/oai-nettle/install/usr/local/include/* /usr/include/
       cp -r -L /root/parts/oai-nettle/install/usr/local/lib/* /usr/lib/
       cp -r -L /root/parts/oai-nettle/install/usr/local/bin/* /usr/bin/
