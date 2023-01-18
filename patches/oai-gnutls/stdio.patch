@@ -1,0 +1,11 @@
+---  gl/stdio-impl.h       2023-01-17 20:39:30.815660459 -0500
++++  gl/stdio-impl.h       2023-01-17 20:39:30.815660459 -0500
+@@ -18,6 +18,9 @@
+    the same implementation of stdio extension API, except that some fields
+    have different naming conventions, or their access requires some casts.  */
+
++#if !defined _IO_IN_BACKUP && defined _IO_EOF_SEEN
++# define _IO_IN_BACKUP 0x100
++#endif
+
+ /* BSD stdio derived implementations.  */

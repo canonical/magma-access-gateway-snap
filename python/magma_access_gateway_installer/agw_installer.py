@@ -139,8 +139,7 @@ class AGWInstaller:
     def install_runtime_dependencies(self):
         """Installs Magma AGW's runtime dependencies using apt."""
         logger.info("Installing Magma AGW's runtime dependencies...")
-        for required_package in self.MAGMA_AGW_RUNTIME_DEPENDENCIES:
-            self._install_apt_package(required_package)
+        self._install_apt_packages(self.MAGMA_AGW_RUNTIME_DEPENDENCIES)
 
     @staticmethod
     def preconfigure_wireshark_suid_property():
@@ -151,8 +150,7 @@ class AGWInstaller:
     def install_magma_agw(self):
         """Installs Magma AGW's deb packages from the private apt repository."""
         logger.info("Installing Magma Access Gateway...")
-        for magma_package in self.MAGMA_PACKAGES:
-            self._install_apt_package(magma_package)
+        self._install_apt_packages(self.MAGMA_PACKAGES)
 
     def start_open_vswitch(self):
         """Start openvswitch-switch service."""
@@ -171,16 +169,16 @@ class AGWInstaller:
             self._bring_up_interface(interface)
 
     @staticmethod
-    def _install_apt_package(package_name: str, dpkg_options: Optional[List[str]] = None):
-        """Installs package using apt."""
-        logger.info(f"Installing {package_name} package...")
+    def _install_apt_packages(packages: List[str], dpkg_options: Optional[List[str]] = None):
+        """Installs packages using apt."""
+        logger.info(f"Installing packages: {packages}")
         apt_install_command = [
             "apt",
             "-qq",
             "install",
             "-y",
             "--no-install-recommends",
-            package_name,
+            " ".join(packages),
         ]
         if dpkg_options:
             for option in dpkg_options:
