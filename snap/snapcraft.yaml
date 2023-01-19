@@ -661,7 +661,7 @@ parts:
       mv ${PACKAGE} $SNAPCRAFT_PART_INSTALL/
 
   ovs:
-    plugin: cmake
+    plugin: nil
     source: patches/ovs
     build-packages:
       - git
@@ -683,10 +683,12 @@ parts:
 
       cd $SNAPCRAFT_PART_SRC
       rm -rf ovs
-      git clone  https://github.com/openvswitch/ovs
+      git clone https://github.com/openvswitch/ovs
       cd ovs/
       git checkout 31288dc725be6bc8eaa4e8641ee28895c9d0fd7a
+      ls $SNAPCRAFT_PART_SRC
       git apply $SNAPCRAFT_PART_SRC/00*
+       
       DEB_BUILD_OPTIONS='parallel=8 nocheck' fakeroot debian/rules binary
 
       mv ../*.deb $SNAPCRAFT_PART_INSTALL/
@@ -896,5 +898,5 @@ parts:
       cp -r -L /root/parts/oai-freediameter/install/usr/local/lib/* /usr/local/lib/
       cp -r -L /root/parts/oai-freediameter/install/usr/local/bin/* /usr/local/bin/
 
-      bazel build lte/gateway/release:release_build --config=production
+      bazel run lte/gateway/release:release_build --config=production
       cp -L -r bazel-bin/lte/gateway/release/* $SNAPCRAFT_PART_INSTALL/
