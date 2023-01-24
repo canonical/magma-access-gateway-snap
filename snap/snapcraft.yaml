@@ -31,6 +31,20 @@ description: |-
 grade: devel
 confinement: classic
 
+package-repositories:
+  - type: apt
+    components: [main]
+    suites: [focal]
+    key-id: 86743222EAB6B721669E453A8115BA8E629CC074
+    key-server: https://deb.dl.getenvoy.io/public/gpg.8115BA8E629CC074.key
+    url: https://deb.dl.getenvoy.io/public/deb/ubuntu
+  - type: apt
+    components: [main]
+    suites: [focal]
+    key-id: C3C0A28534B9293EAF51FABD9F9DDC083888C1CD
+    key-server: https://packages.fluentbit.io/fluentbit.key
+    url: https://packages.fluentbit.io/ubuntu/focal
+
 environment:
   PYTHONPATH: "$SNAP/lib/python3.8/site-packages"
 
@@ -680,15 +694,13 @@ parts:
       - libunwind-dev
     override-build: |
       set -x
-
       cd $SNAPCRAFT_PART_SRC
       rm -rf ovs
       git clone https://github.com/openvswitch/ovs
       cd ovs/
       git checkout 31288dc725be6bc8eaa4e8641ee28895c9d0fd7a
-      ls $SNAPCRAFT_PART_SRC
       git apply $SNAPCRAFT_PART_SRC/00*
-       
+
       DEB_BUILD_OPTIONS='parallel=8 nocheck' fakeroot debian/rules binary
 
       mv ../*.deb $SNAPCRAFT_PART_INSTALL/
@@ -704,17 +716,10 @@ parts:
 
   envoy:
     plugin: nil
-    build-packages:
-      - curl
     build-environment:
       - GETENVOY_VERSION: "1.16.2.p0.ge98e41a-1p71.gbe6132a"
     override-build: |
       set -x
-      rm -rf /etc/apt/sources.list.d/getenvoy.list /usr/share/keyrings/getenvoy-keyring.gpg
-      curl -sL 'https://deb.dl.getenvoy.io/public/gpg.8115BA8E629CC074.key' | gpg --dearmor -o /usr/share/keyrings/getenvoy-keyring.gpg
-      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/getenvoy-keyring.gpg] https://deb.dl.getenvoy.io/public/deb/ubuntu focal main" | tee /etc/apt/sources.list.d/getenvoy.list
-      apt update
-      apt-cache policy getenvoy-envoy
       apt download getenvoy-envoy=$GETENVOY_VERSION
       mv getenvoy-envoy*.deb $SNAPCRAFT_PART_INSTALL/
 
@@ -723,11 +728,7 @@ parts:
     build-environment:
       - TD_AGENT_BIT_VERSION: "1.7.8"
     override-build: |
-      set -x
-      rm -rf /etc/apt/sources.list.d/fluentbit.list /usr/share/keyrings/fluentbit-keyring.gpg
-      curl -sL 'https://packages.fluentbit.io/fluentbit.key' | gpg --dearmor -o /usr/share/keyrings/fluentbit-keyring.gpg
-      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/fluentbit-keyring.gpg] https://packages.fluentbit.io/ubuntu/focal focal main" | tee /etc/apt/sources.list.d/fluentbit.list
-      apt update
+      set -x      
       apt download td-agent-bit=$TD_AGENT_BIT_VERSION
       mv td-agent-bit*.deb $SNAPCRAFT_PART_INSTALL/
 
@@ -839,6 +840,8 @@ parts:
       - oai-nettle
     source: https://github.com/magma/magma
     source-type: git
+    build-environment:
+      - MAGMA_ROOT: $SNAPCRAFT_PART_SRC
     build-packages:
       - apt-transport-https
       - apt-utils
@@ -897,6 +900,8 @@ parts:
       cp -r -L /root/parts/oai-freediameter/install/usr/local/include/* /usr/local/include/
       cp -r -L /root/parts/oai-freediameter/install/usr/local/lib/* /usr/local/lib/
       cp -r -L /root/parts/oai-freediameter/install/usr/local/bin/* /usr/local/bin/
+      cd $SNAPCRAFT_PART_SRC
 
-      bazel run lte/gateway/release:release_build --config=production
-      cp -L -r bazel-bin/lte/gateway/release/* $SNAPCRAFT_PART_INSTALL/
+      bazel run //lte/gateway/release:release_build --config=production
+
+      cp -L -r /tmp/packages/*.deb $SNAPCRAFT_PART_INSTALL/

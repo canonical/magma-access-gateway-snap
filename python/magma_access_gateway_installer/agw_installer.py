@@ -37,15 +37,15 @@ class AGWInstaller:
         f"{DEB_BASE_DIRECTORY}/oai-freediameter_0.0.2-1_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/liblfds710_7.1.0-1_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/oai-asn1c_0~20190423+c0~rf12568d6-0_amd64.deb",
-        f"{DEB_BASE_DIRECTORY}/magma-dhcp-cli_1.9.0-VERSION-SUFFIX_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/sentry-native_0.4.12-1_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/grpc-dev_1.15.0-3_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/magma-libfluid_0.1.0.7-7_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/libfolly-dev_-7_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/td-agent-bit_1.7.8_amd64.deb",
         f"{DEB_BASE_DIRECTORY}/getenvoy-envoy_1.16.2.p0.ge98e41a-1p71.gbe6132a_amd64.deb",  # noqa: E501
-        f"{DEB_BASE_DIRECTORY}/sctpd_deb_pkg.deb",
-        f"{DEB_BASE_DIRECTORY}/magma_deb_pkg.deb",
+        f"{DEB_BASE_DIRECTORY}/magma-sctpd_1.9.0*.deb",
+        f"{DEB_BASE_DIRECTORY}/magma-dhcp-cli_1.9.0*.deb",
+        f"{DEB_BASE_DIRECTORY}/magma_1.9.0*.deb",
     ]
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
 
