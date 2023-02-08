@@ -10,7 +10,6 @@ from magma_access_gateway_configurator.agw_configurator import AGWConfigurator
 
 
 class TestAGWConfigurator(unittest.TestCase):
-
     TEST_DOMAIN = "test_domain.com"
     TEST_ROOT_CA_PEM_PATH = "/test/rootCA.pem"
     TEST_ROOT_CA_PEM_DESTINATION_DIR = "/test/root/ca/pem/dest/dir"

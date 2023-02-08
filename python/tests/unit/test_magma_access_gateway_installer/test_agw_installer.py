@@ -9,7 +9,6 @@ from magma_access_gateway_installer.agw_installer import AGWInstaller
 
 
 class TestAGWInstaller(unittest.TestCase):
-
     TEST_MAGMA_VERSION = "bla-bla-123"
     APT_LIST_WITH_MAGMA = b"""lua-cjson/focal,now 2.1.0+dfsg-2.1 amd64 [installed,automatic]\n
 lvm2/focal,now 2.03.07-1ubuntu1 amd64 [installed,automatic]\n

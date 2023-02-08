@@ -12,7 +12,6 @@ from magma_access_gateway_installer.agw_service_user_creator import (
 
 
 class TestAGWInstallerServiceUserCreator(unittest.TestCase):
-
     MAGMA_USER_DETAILS = pwd.struct_passwd(
         ("magma", "x", 1001, 1001, ",,,", "/home/magma", "/bin/bash")
     )

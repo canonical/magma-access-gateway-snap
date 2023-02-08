@@ -2,7 +2,7 @@ name: merge-to-main
 on:
   push:
     branches:
-      - main
+      - 1.6
 
 jobs:
   agw-lint-report:
@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==3.21.4
       - name: Run tests using tox
         run: |
           set -eux
@@ -23,11 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==3.21.4
       - name: Run tests using tox
         run: |
           sudo apt update
-          sudo apt install libsystemd-dev
+          sudo apt install libsystemd-dev=245.4-4ubuntu3.19
           set -eux
           cd python && tox -e static
 
@@ -37,11 +37,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==3.21.4
       - name: Run tests using tox
         run: |
           sudo apt update
-          sudo apt install libsystemd-dev
+          sudo apt install libsystemd-dev=245.4-4ubuntu3.19
           set -eux
           cd python && tox -e unit
 
@@ -56,4 +56,4 @@ jobs:
         with:
           store_login: ${{ secrets.SNAPSTORE_LOGIN }}
           snap: ${{ steps.build.outputs.snap }}
-          release: edge
+          release: 1.6/edge

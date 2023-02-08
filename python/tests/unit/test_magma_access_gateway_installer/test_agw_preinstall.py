@@ -15,7 +15,6 @@ from magma_access_gateway_installer.agw_preinstall import AGWInstallerPreinstall
 
 
 class TestAGWInstallerPreinstall(unittest.TestCase):
-
     TEST_NETWORK_INTERFACES = ["eth0", "eth1"]
     VALID_TEST_USER = b"root"
     INVALID_TEST_USER = b"test_user"

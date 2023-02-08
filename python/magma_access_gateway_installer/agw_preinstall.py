@@ -16,7 +16,6 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstallerPreinstall:
-
     REQUIRED_NUMBER_OF_NICS = 2
     REQUIRED_SYSTEM_PACKAGES = ["ifupdown", "net-tools", "sudo"]
     SUPPORTED_KERNEL_VERSION = "5.4.0"
