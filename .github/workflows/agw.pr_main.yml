@@ -1,4 +1,4 @@
-name: main-branch-pull-request-created
+name: 1.6-branch-pull-request-created
 on:
   pull_request:
     branches:
