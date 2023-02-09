@@ -1,4 +1,4 @@
-name: merge-to-main
+name: merge-to-1.6-branch
 on:
   push:
     branches:
