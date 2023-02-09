@@ -47,5 +47,5 @@ parts:
     plugin: python
     source: python
     build-packages:
-      - libsystemd-dev=245.4-4ubuntu3.19
-      - pkg-config=0.29.1-0ubuntu4
+      - libsystemd-dev
+      - pkg-config

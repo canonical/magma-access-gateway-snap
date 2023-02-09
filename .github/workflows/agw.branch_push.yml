@@ -12,8 +12,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@latest
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox==3.21.4
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           set -eux
@@ -24,12 +28,16 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@latest
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox==3.21.4
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           sudo apt update
-          sudo apt install libsystemd-dev=245.4-4ubuntu3.19
+          sudo apt install libsystemd-dev
           set -eux
           cd python && tox -e static
 
@@ -38,12 +46,16 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@latest
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox==3.21.4
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           sudo apt update
-          sudo apt install libsystemd-dev=245.4-4ubuntu3.19
+          sudo apt install libsystemd-dev
           set -eux
           cd python && tox -e unit
 
