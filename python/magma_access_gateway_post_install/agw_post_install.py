@@ -25,7 +25,6 @@ logger = logging.getLogger("magma_access_gateway_post_install")
 
 
 class AGWPostInstallChecks:
-
     MAGMA_AGW_INTERFACES = ["eth0", "eth1", "gtp_br0", "uplink_br0"]
     MAGMA_AGW_SERVICES = [
         "magma@control_proxy",

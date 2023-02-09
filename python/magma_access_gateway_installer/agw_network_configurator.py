@@ -13,7 +13,6 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstallerNetworkConfigurator:
-
     MAGMA_NETPLAN_CONFIG_FILE = "/etc/netplan/99-magma-config.yaml"
     MAGMA_NETPLAN_CONFIG_TEMPLATE = "netplan_config.yaml.j2"
     ETC_SYSTEMD_RESOLVED_CONF_PATH = "/etc/systemd/resolved.conf"

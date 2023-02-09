@@ -22,7 +22,7 @@ The Snap in this repository is specifically developed for the
    snapcraft
    ```
 
-   To see what's happening during the snap building process, `-d` can be used along with above
+   To see what's happening during the snap building process, `--debug` can be used along with above
    command.
 
 ### Installing locally built Magma AGW snap:
@@ -46,7 +46,7 @@ tox -e static    # static analysis
 tox -e unit      # unit tests
 ```
 
-To run all test envs at once, just run:<br>
+To run all test envs at once, just run:
 
 ```bash
 tox

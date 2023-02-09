@@ -57,7 +57,7 @@ Connect to the machine where you want to install Magma Access Gateway and execut
 commands:
 
 ```bash
-snap install magma-access-gateway --classic
+snap install magma-access-gateway --channel=1.6/edge --classic
 magma-access-gateway.install
 ```
 
