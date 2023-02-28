@@ -10,7 +10,6 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstallerServiceUserCreator:
-
     MAGMA_USER = "magma"
 
     def create_magma_user(self):

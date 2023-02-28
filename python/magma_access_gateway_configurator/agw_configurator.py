@@ -15,7 +15,6 @@ sys.tracebacklimit = None  # type: ignore[assignment]
 
 
 class AGWConfigurator:
-
     ROOT_CA_PEM_DESTINATION_DIR = "/var/opt/magma/tmp/certs"
     ROOT_CA_PEM_FILE_NAME = "rootCA.pem"
     MAGMA_CONTROL_PROXY_CONFIG_DIR = "/var/opt/magma/configs"

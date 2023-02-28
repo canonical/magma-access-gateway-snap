@@ -1,6 +1,6 @@
 name: magma-access-gateway
 base: core20
-version: '1.6.1'
+version: '1.8.0'
 summary: Snap for Magma Access Gateway
 description: |-
   The Access Gateway (AGW) provides network services and policy enforcement. In an LTE network, 

@@ -10,7 +10,6 @@ import magma_access_gateway_configurator
 
 
 class TestAGWConfiguratorInit(unittest.TestCase):
-
     VALID_TEST_DOMAIN = "agw-test.com"
     INVALID_TEST_DOMAIN = "agw-test"
 

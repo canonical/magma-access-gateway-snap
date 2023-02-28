@@ -9,17 +9,16 @@ from magma_access_gateway_installer.agw_installer import AGWInstaller
 
 
 class TestAGWInstaller(unittest.TestCase):
-
     TEST_MAGMA_VERSION = "bla-bla-123"
     APT_LIST_WITH_MAGMA = b"""lua-cjson/focal,now 2.1.0+dfsg-2.1 amd64 [installed,automatic]\n
 lvm2/focal,now 2.03.07-1ubuntu1 amd64 [installed,automatic]\n
 lxd-agent-loader/focal,now 0.4 all [installed,automatic]\n
 lz4/focal-updates,focal-security,now 1.9.2-2ubuntu0.20.04.1 amd64 [installed,automatic]\n
-magma-cpp-redis/focal-1.6.1,now 4.3.1.1-2 amd64 [installed,automatic]\n
-magma-libfluid/focal-1.6.1,now 0.1.0.6-1 amd64 [installed,automatic]\n
-magma-libtacopie/focal-1.6.1,now 3.2.0.1-1 amd64 [installed,automatic]\n
-magma-sctpd/focal-1.6.1,now 1.6.1-1636529012-5d886707 amd64 [installed,automatic]\n
-magma/focal-1.6.1,now 1.6.1-1636529012-5d886707 amd64 [installed]\n
+magma-cpp-redis/focal-1.8.0,now 4.3.1.1-2 amd64 [installed,automatic]\n
+magma-libfluid/focal-1.8.0,now 0.1.0.6-1 amd64 [installed,automatic]\n
+magma-libtacopie/focal-1.8.0,now 3.2.0.1-1 amd64 [installed,automatic]\n
+magma-sctpd/focal-1.8.0,now 1.8.0-1636529012-5d886707 amd64 [installed,automatic]\n
+magma/focal-1.8.0,now 1.8.0-1636529012-5d886707 amd64 [installed]\n
 make/focal,now 4.2.1-1.2 amd64 [installed,automatic]\n
 man-db/focal,now 2.9.1-1 amd64 [installed,automatic]\n
 """
