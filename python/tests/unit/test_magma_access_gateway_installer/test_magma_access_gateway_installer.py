@@ -11,7 +11,6 @@ import magma_access_gateway_installer
 
 
 class TestAGWInstallerInit(unittest.TestCase):
-
     VALID_TEST_SGi_IPv4_ADDRESS = "1.2.3.4/24"
     INVALID_TEST_SGi_IPv4_ADDRESS = "321.0.1.5/24"
     VALID_TEST_SGi_IPv4_GATEWAY = "2.3.4.5"

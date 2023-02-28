@@ -19,7 +19,6 @@ from magma_access_gateway_post_install.agw_post_install import (
 
 
 class TestAGWPostInstallChecks(unittest.TestCase):
-
     TEST_MAGMA_AGW_INTERFACES = ["iface1", "iface2", "iface3"]
     TEST_MAGMA_AGW_SERVICES = ["magma@service1", "magma@service2", "magma@service3"]
     TEST_NON_MAGMA_SERVICES = ["service1", "service2", "service3"]

@@ -11,8 +11,7 @@ logger = logging.getLogger("magma_access_gateway_installer")
 
 
 class AGWInstaller:
-
-    MAGMA_VERSION = "focal-1.6.1"
+    MAGMA_VERSION = "focal-1.8.0"
     MAGMA_ARTIFACTORY = "linuxfoundation.jfrog.io/artifactory"
     MAGMA_AGW_RUNTIME_DEPENDENCIES = [
         "graphviz",
