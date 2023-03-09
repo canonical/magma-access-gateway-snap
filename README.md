@@ -34,6 +34,12 @@ For more information on Magma please visit the [official website](https://magmac
 - Memory: 4GB RAM
 - Storage: 32GB or greater SSD
 
+> **NOTE:** For small networks (i.e. 10 eNBs, 10 active subscribers), Magma can produce
+> around 1 GB of logs per week. Most of these logs will go to /var/log/journal.
+> To avoid problems with insufficient disk space, it is recommended to configure log rotation
+> for systemd-journald. For more information please visit
+> [Ubuntu manuals](https://manpages.ubuntu.com/manpages/focal/man5/journald.conf.5.html).
+
 ### Networking
 
 - At least two ethernet interfaces (SGi and S1)
