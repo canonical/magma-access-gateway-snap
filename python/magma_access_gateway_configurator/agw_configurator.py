@@ -100,7 +100,6 @@ class AGWConfigurator:
             pipelined_config = yaml.load(pipelined_config_orig)
         pipelined_config["access_control"]["block_agw_local_ips"] = False
         with open(self.PIPELINED_CONFIG_FILE, "w") as pipelined_config_updated:
-            logger.error(pipelined_config_updated)
             yaml.dump(pipelined_config, pipelined_config_updated)
 
     def restart_magma_services(self):
