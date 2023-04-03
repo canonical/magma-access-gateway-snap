@@ -3,8 +3,11 @@
 # See LICENSE file for licensing details.
 
 import os
+import tempfile
 import unittest
 from unittest.mock import Mock, PropertyMock, call, mock_open, patch
+
+import ruamel.yaml
 
 from magma_access_gateway_configurator.agw_configurator import AGWConfigurator
 
@@ -16,6 +19,10 @@ class TestAGWConfigurator(unittest.TestCase):
     TEST_ROOT_CA_PEM_FILE_NAME = "test_rootCA.pem"
     TEST_MAGMA_CONTROL_PROXY_CONFIG_DIR = "/test/magma/configs/dir"
     TEST_MAGMA_CONTROL_PROXY_CONFIG_FILE_NAME = "test_control_proxy.yml"
+    TEST_PIPELINED_CONFIG = """# Pipeline application level configs
+access_control:
+  # Blocks access to all AGW local IPs from UEs.
+  block_agw_local_ips: true"""
 
     def setUp(self) -> None:
         self.mocked_root_ca_pem_file_name = patch(
@@ -35,6 +42,7 @@ class TestAGWConfigurator(unittest.TestCase):
             new_callable=PropertyMock(return_value=self.TEST_MAGMA_CONTROL_PROXY_CONFIG_FILE_NAME),
         )
         self.agw_configurator = AGWConfigurator(self.TEST_DOMAIN, self.TEST_ROOT_CA_PEM_PATH)
+        self.yaml = ruamel.yaml.YAML()
 
     @patch("magma_access_gateway_configurator.agw_configurator.os.makedirs")
     @patch(
@@ -154,6 +162,45 @@ rootca_cert: {self.TEST_ROOT_CA_PEM_DESTINATION_DIR}/{self.TEST_ROOT_CA_PEM_FILE
         self.agw_configurator.configure_control_proxy()
 
         mocked_open.assert_not_called()
+
+    @patch(
+        "magma_access_gateway_configurator.agw_configurator.open",
+        new_callable=mock_open,
+        read_data=TEST_PIPELINED_CONFIG,
+    )
+    def test_given_pipelined_config_file_when_unblock_local_ips_then_pipelined_file_is_opened_for_read_and_write(  # noqa: E501
+        self, mocked_open
+    ):
+        self.agw_configurator.unblock_local_ips()
+
+        mocked_open.assert_has_calls(
+            [call("/etc/magma/pipelined.yaml", "r"), call("/etc/magma/pipelined.yaml", "w")],
+            any_order=True,
+        )
+
+    @patch(
+        "magma_access_gateway_configurator.agw_configurator.AGWConfigurator.PIPELINED_CONFIG_FILE",
+        new_callable=PropertyMock,
+    )
+    def test_given_pipelined_config_file_when_unblock_local_ips_then_block_agw_local_ips_is_set_to_false(  # noqa: E501
+        self, mocked_pipelined_config_file
+    ):
+        expected_pipelined_config = """# Pipeline application level configs
+access_control:
+  # Blocks access to all AGW local IPs from UEs.
+  block_agw_local_ips: false"""
+        with tempfile.TemporaryDirectory() as tempdir:
+            tmpfilepath = os.path.join(tempdir, "fake_pipelined.yaml")
+            with open(tmpfilepath, "w") as fake_pipelined:
+                fake_pipelined.write(self.TEST_PIPELINED_CONFIG)
+
+            mocked_pipelined_config_file.return_value = tmpfilepath
+            self.agw_configurator.unblock_local_ips()
+
+            with open(tmpfilepath, "r") as fake_pipelined:
+                config = self.yaml.load(fake_pipelined)
+
+            self.assertEqual(config, self.yaml.load(expected_pipelined_config))
 
     @patch("magma_access_gateway_configurator.agw_configurator.check_call")
     def test_given_magma_agw_configuration_done_when_restart_magma_services_then_relevant_commands_are_called(  # noqa: E501

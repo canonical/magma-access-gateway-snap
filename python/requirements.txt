@@ -25,3 +25,4 @@ certifi
 urllib3
 idna
 snowflake
+ruamel.yaml
