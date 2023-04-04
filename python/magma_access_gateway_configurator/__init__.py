@@ -46,6 +46,8 @@ def main():
             exit(0)
     aws_configurator.copy_root_ca_pem()
     aws_configurator.configure_control_proxy()
+    if args.unblock_local_ips:
+        aws_configurator.unblock_local_ips()
     aws_configurator.restart_magma_services()
     logger.info("Magma Access Gateway configuration done!")
     logger.info(
@@ -72,6 +74,13 @@ def cli_arguments_parser(cli_arguments):
         dest="root_ca_path",
         required=True,
         help="Path to Root CA PEM used during Orc8r deployment. Example: /home/magma/rootCA.pem",
+    )
+    cli_options.add_argument(
+        "--unblock-local-ips",
+        dest="unblock_local_ips",
+        required=False,
+        action="store_false",
+        help="Unblocks access to all AGW local IPs from UEs.",
     )
     return cli_options.parse_args(cli_arguments)
 
