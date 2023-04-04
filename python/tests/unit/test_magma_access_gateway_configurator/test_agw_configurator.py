@@ -174,7 +174,7 @@ rootca_cert: {self.TEST_ROOT_CA_PEM_DESTINATION_DIR}/{self.TEST_ROOT_CA_PEM_FILE
         self.agw_configurator.unblock_local_ips()
 
         mocked_open.assert_has_calls(
-            [call("/etc/magma/pipelined.yaml", "r"), call("/etc/magma/pipelined.yaml", "w")],
+            [call("/etc/magma/pipelined.yml", "r"), call("/etc/magma/pipelined.yml", "w")],
             any_order=True,
         )
 
@@ -190,7 +190,7 @@ access_control:
   # Blocks access to all AGW local IPs from UEs.
   block_agw_local_ips: false"""
         with tempfile.TemporaryDirectory() as tempdir:
-            tmpfilepath = os.path.join(tempdir, "fake_pipelined.yaml")
+            tmpfilepath = os.path.join(tempdir, "fake_pipelined.yml")
             with open(tmpfilepath, "w") as fake_pipelined:
                 fake_pipelined.write(self.TEST_PIPELINED_CONFIG)
 
