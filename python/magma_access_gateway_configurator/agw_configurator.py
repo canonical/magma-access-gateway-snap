@@ -24,7 +24,7 @@ class AGWConfigurator:
     GATEWAY_CERTS_DIR = "/var/opt/magma/certs"
     GATEWAY_CERT_FILE_NAME = "gateway.crt"
     GATEWAY_KEY_FILE_NAME = "gateway.key"
-    PIPELINED_CONFIG_FILE = "/etc/magma/pipelined.yaml"
+    PIPELINED_CONFIG_FILE = "/etc/magma/pipelined.yml"
 
     def __init__(self, domain: str, root_ca_pem_path: str):
         self.domain = domain
