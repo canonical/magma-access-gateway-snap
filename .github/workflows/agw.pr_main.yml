@@ -9,7 +9,7 @@ jobs:
     name: Lint report
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install tox
         run: pip install tox
       - name: Run tests using tox
@@ -21,7 +21,7 @@ jobs:
     name: Static analysis
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install tox
         run: pip install tox
       - name: Run tests using tox
@@ -35,7 +35,7 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install tox
         run: pip install tox
       - name: Run tests using tox
@@ -49,5 +49,5 @@ jobs:
     name: Build Magma AGW snap
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: snapcore/action-build@v1
