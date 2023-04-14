@@ -1,17 +1,21 @@
-name: merge-to-main
+name: merge-to-1.8-branch
 on:
   push:
     branches:
-      - main
+      - 1.8
 
 jobs:
   agw-lint-report:
     name: Lint report
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           set -eux
@@ -21,9 +25,13 @@ jobs:
     name: Static analysis
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           sudo apt update
@@ -35,9 +43,13 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           sudo apt update
@@ -49,7 +61,7 @@ jobs:
     name: Build and publish Magma AGW snap
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: snapcore/action-build@v1
         id: build
       - uses: snapcore/action-publish@v1
@@ -57,4 +69,4 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
         with:
           snap: ${{ steps.build.outputs.snap }}
-          release: edge
+          release: 1.8/edge

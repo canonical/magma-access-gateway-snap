@@ -1,17 +1,21 @@
-name: main-branch-pull-request-created
+name: 1.6-branch-pull-request-created
 on:
   pull_request:
     branches:
-      - main
+      - 1.6
 
 jobs:
   agw-lint-report:
     name: Lint report
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           set -eux
@@ -21,9 +25,13 @@ jobs:
     name: Static analysis
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           sudo apt update
@@ -35,9 +43,13 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
+        with:
+          varFilePath: ./.github/variables/dependencies_versions.env
       - name: Install tox
-        run: pip install tox
+        run: pip install tox==$TOX_VERSION
       - name: Run tests using tox
         run: |
           sudo apt update
@@ -49,5 +61,5 @@ jobs:
     name: Build Magma AGW snap
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: snapcore/action-build@v1
