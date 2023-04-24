@@ -28,7 +28,6 @@ description: |-
 
   - Ubuntu 20.04 LTS
 
-grade: devel
 confinement: classic
 
 environment:
