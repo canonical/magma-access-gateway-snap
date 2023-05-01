@@ -15,12 +15,6 @@ class TestAGWConfiguratorInit(unittest.TestCase):
     TEST_CLI_ARGS = Namespace(
         domain="example.com",
         root_ca_path="whatever",
-        unblock_local_ips=False,
-    )
-    UNBLOCK_LOCAL_IPS_CLI_ARGS = Namespace(
-        domain="example.com",
-        root_ca_path="whatever",
-        unblock_local_ips=True,
     )
 
     @patch(
@@ -91,51 +85,6 @@ class TestAGWConfiguratorInit(unittest.TestCase):
         magma_access_gateway_configurator.main()
 
         mocked_cleanup_old_configs.assert_not_called()
-
-    @patch.object(
-        magma_access_gateway_configurator.agw_configurator.AGWConfigurator,
-        "unblock_local_ips",
-    )
-    @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
-    @patch(
-        "magma_access_gateway_configurator.cli_arguments_parser",
-        Mock(return_value=UNBLOCK_LOCAL_IPS_CLI_ARGS),
-    )
-    @patch("magma_access_gateway_configurator.validate_args", Mock())
-    @patch("magma_access_gateway_configurator.check_output", MagicMock())
-    @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
-    @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
-    @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())
-    def test_given_unblock_local_ips_is_true_when_main_then_agw_local_ips_are_unblocked(
-        self, mocked_path_exists, mocked_unblock_local_ips
-    ):
-        mocked_path_exists.side_effect = [False, False, False, False, False]
-
-        magma_access_gateway_configurator.main()
-
-        mocked_unblock_local_ips.assert_called_once()
-
-    @patch.object(
-        magma_access_gateway_configurator.agw_configurator.AGWConfigurator,
-        "unblock_local_ips",
-    )
-    @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
-    @patch(
-        "magma_access_gateway_configurator.cli_arguments_parser", Mock(return_value=TEST_CLI_ARGS)
-    )
-    @patch("magma_access_gateway_configurator.validate_args", Mock())
-    @patch("magma_access_gateway_configurator.check_output", MagicMock())
-    @patch("magma_access_gateway_configurator.AGWConfigurator.copy_root_ca_pem", Mock())
-    @patch("magma_access_gateway_configurator.AGWConfigurator.configure_control_proxy", Mock())
-    @patch("magma_access_gateway_configurator.AGWConfigurator.restart_magma_services", Mock())
-    def test_given_unblock_local_ips_is_false_when_main_then_agw_local_ips_remain_blocked(
-        self, mocked_path_exists, mocked_unblock_local_ips
-    ):
-        mocked_path_exists.side_effect = [False, False, False, False, False]
-
-        magma_access_gateway_configurator.main()
-
-        mocked_unblock_local_ips.assert_not_called()
 
     @patch("magma_access_gateway_configurator.agw_configurator.os.path.exists")
     @patch("builtins.input", Mock(return_value="N"))
