@@ -8,7 +8,6 @@ import shutil
 import sys
 from subprocess import check_call
 
-import ruamel.yaml
 from jinja2 import Environment, FileSystemLoader
 
 logger = logging.getLogger("magma_access_gateway_configurator")
@@ -24,7 +23,6 @@ class AGWConfigurator:
     GATEWAY_CERTS_DIR = "/var/opt/magma/certs"
     GATEWAY_CERT_FILE_NAME = "gateway.crt"
     GATEWAY_KEY_FILE_NAME = "gateway.key"
-    PIPELINED_CONFIG_FILE = "/etc/magma/pipelined.yml"
 
     def __init__(self, domain: str, root_ca_pem_path: str):
         self.domain = domain
@@ -92,15 +90,6 @@ class AGWConfigurator:
                         root_ca_pem_file_name=self.ROOT_CA_PEM_FILE_NAME,
                     ),
                 )
-
-    def unblock_local_ips(self):
-        """Unblocks access to AGW local IPs from UEs."""
-        yaml = ruamel.yaml.YAML()
-        with open(self.PIPELINED_CONFIG_FILE, "r") as pipelined_config_orig:
-            pipelined_config = yaml.load(pipelined_config_orig)
-        pipelined_config["access_control"]["block_agw_local_ips"] = False
-        with open(self.PIPELINED_CONFIG_FILE, "w") as pipelined_config_updated:
-            yaml.dump(pipelined_config, pipelined_config_updated)
 
     def restart_magma_services(self):
         """Restart Magma AGW services."""

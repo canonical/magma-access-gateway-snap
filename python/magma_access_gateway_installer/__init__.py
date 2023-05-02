@@ -53,7 +53,7 @@ def main():
     if not args.skip_networking:
         configure_network(args)
 
-    AGWInstaller().install(args.no_reboot)
+    AGWInstaller().install(args.unblock_local_ips, args.no_reboot)
 
 
 def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
@@ -126,6 +126,13 @@ def cli_arguments_parser(cli_arguments: list) -> argparse.Namespace:
         required=False,
         default=set_default_s1_interface(),
         help="Defines which interface should be used as S1 interface.",
+    )
+    cli_options.add_argument(
+        "--unblock-local-ips",
+        dest="unblock_local_ips",
+        required=False,
+        action="store_true",
+        help="Unblocks access to all AGW local IPs from UEs.",
     )
     cli_options.add_argument(
         "--no-reboot",
