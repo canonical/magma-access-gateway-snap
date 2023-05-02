@@ -2,8 +2,12 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+import os
+import tempfile
 import unittest
 from unittest.mock import MagicMock, Mock, PropertyMock, call, mock_open, patch
+
+import ruamel.yaml
 
 from magma_access_gateway_installer.agw_installer import AGWInstaller
 
@@ -38,9 +42,15 @@ mozilla/DST_Root_CA_X3.crt
 mozilla/DigiCert_Assured_ID_Root_CA.crt
 mozilla/DigiCert_Assured_ID_Root_G2.crt
 """
+    TEST_PIPELINED_CONFIG = """# Pipeline application level configs
+access_control:
+  # Blocks access to all AGW local IPs from UEs.
+  block_agw_local_ips: true
+"""
 
     def setUp(self) -> None:
         self.agw_installer = AGWInstaller()
+        self.yaml = ruamel.yaml.YAML()
 
     @patch(
         "magma_access_gateway_installer.agw_installer.check_output",
@@ -279,3 +289,42 @@ Verify-Host "false";
         self.agw_installer.install(no_reboot=True)
 
         mock_os_system.assert_not_called()
+
+    @patch(
+        "magma_access_gateway_installer.agw_installer.open",
+        new_callable=mock_open,
+        read_data=TEST_PIPELINED_CONFIG,
+    )
+    def test_given_pipelined_config_file_when_unblock_local_ips_then_pipelined_file_is_opened_for_read_and_write(  # noqa: E501
+        self, mocked_open
+    ):
+        self.agw_installer.unblock_local_ips()
+
+        mocked_open.assert_has_calls(
+            [call("/etc/magma/pipelined.yml", "r"), call("/etc/magma/pipelined.yml", "w")],
+            any_order=True,
+        )
+
+    @patch(
+        "magma_access_gateway_installer.agw_installer.AGWInstaller.PIPELINED_CONFIG_FILE",
+        new_callable=PropertyMock,
+    )
+    def test_given_pipelined_config_file_when_unblock_local_ips_then_block_agw_local_ips_is_set_to_false(  # noqa: E501
+        self, mocked_pipelined_config_file
+    ):
+        expected_pipelined_config = """# Pipeline application level configs
+access_control:
+  # Blocks access to all AGW local IPs from UEs.
+  block_agw_local_ips: false"""
+        with tempfile.TemporaryDirectory() as tempdir:
+            tmpfilepath = os.path.join(tempdir, "fake_pipelined.yml")
+            with open(tmpfilepath, "w") as fake_pipelined:
+                fake_pipelined.write(self.TEST_PIPELINED_CONFIG)
+
+            mocked_pipelined_config_file.return_value = tmpfilepath
+            self.agw_installer.unblock_local_ips()
+
+            with open(tmpfilepath, "r") as fake_pipelined:
+                config = self.yaml.load(fake_pipelined)
+
+            self.assertEqual(config, self.yaml.load(expected_pipelined_config))

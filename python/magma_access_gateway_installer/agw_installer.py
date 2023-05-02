@@ -7,6 +7,8 @@ import os
 import time
 from subprocess import check_call, check_output
 
+import ruamel.yaml
+
 logger = logging.getLogger("magma_access_gateway_installer")
 
 
@@ -23,8 +25,9 @@ class AGWInstaller:
         "ca-certificates",
     ]
     MAGMA_INTERFACES = ["gtp_br0", "mtr0", "uplink_br0", "ipfix0", "dhcp0"]
+    PIPELINED_CONFIG_FILE = "/etc/magma/pipelined.yml"
 
-    def install(self, no_reboot: bool = False):
+    def install(self, unblock_local_ips: bool = False, no_reboot: bool = False):
         if self._magma_agw_installed:
             logger.info("Magma Access Gateway already installed. Exiting...")
             return
@@ -39,6 +42,8 @@ class AGWInstaller:
             self.install_magma_agw()
             self.start_open_vswitch()
             self.start_magma()
+            if unblock_local_ips:
+                self.unblock_local_ips()
             if no_reboot:
                 logger.info(
                     "Magma AGW deployment completed successfully!\n"
@@ -188,6 +193,16 @@ Verify-Host "false";
         self._stop_service("magma@*")
         self._bring_up_magma_interfaces()
         self._start_service("magma@magma")
+
+    def unblock_local_ips(self):
+        """Unblocks access to AGW local IPs from UEs."""
+        yaml = ruamel.yaml.YAML()
+        logger.info("Unblocking AGW local IPs usage...")
+        with open(self.PIPELINED_CONFIG_FILE, "r") as pipelined_config_orig:
+            pipelined_config = yaml.load(pipelined_config_orig)
+        pipelined_config["access_control"]["block_agw_local_ips"] = False
+        with open(self.PIPELINED_CONFIG_FILE, "w") as pipelined_config_updated:
+            yaml.dump(pipelined_config, pipelined_config_updated)
 
     def _bring_up_magma_interfaces(self):
         """Brings up interfaces created by Magma AGW."""
