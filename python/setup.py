@@ -16,7 +16,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="magma-access-gateway-installer",
-    version="1.8.0",
+    version="1.9.0",
     description="Snap installing Magma Access Gateway component.",
     long_description=LONG_DESCRIPTION,
     author="Canonical Ltd.",
